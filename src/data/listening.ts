@@ -1,0 +1,161 @@
+export const LISTENING: Array<{
+  id: string;
+  title: string;
+  level: "N5" | "N4";
+  promptJp: string;
+  promptRomaji: string;
+  promptVi: string;
+  options: { jp: string; vi: string }[];
+  answerIndex: number;
+}> = [
+  {
+    id: "ls-n5-01",
+    title: "Hỏi giờ",
+    level: "N5",
+    promptJp: "今、何時ですか。",
+    promptRomaji: "Ima, nanji desu ka.",
+    promptVi: "Bây giờ là mấy giờ?",
+    options: [
+      { jp: "三時です。", vi: "Ba giờ." },
+      { jp: "電車です。", vi: "Là tàu điện." },
+      { jp: "水をください。", vi: "Cho tôi nước." },
+      { jp: "はい、学生です。", vi: "Vâng, tôi là học sinh." },
+    ],
+    answerIndex: 0,
+  },
+  {
+    id: "ls-n5-02",
+    title: "Mời trà",
+    level: "N5",
+    promptJp: "お茶を飲みませんか。",
+    promptRomaji: "Ocha o nomimasen ka.",
+    promptVi: "Bạn uống trà chứ?",
+    options: [
+      { jp: "駅はどこですか。", vi: "Ga ở đâu?" },
+      { jp: "ええ、ありがとう。", vi: "Vâng, cảm ơn." },
+      { jp: "明日は試験です。", vi: "Ngày mai có kỳ thi." },
+      { jp: "これは本です。", vi: "Đây là sách." },
+    ],
+    answerIndex: 1,
+  },
+  {
+    id: "ls-n5-03",
+    title: "Hỏi giá táo",
+    level: "N5",
+    promptJp: "このりんごはいくらですか。",
+    promptRomaji: "Kono ringo wa ikura desu ka.",
+    promptVi: "Quả táo này bao nhiêu tiền?",
+    options: [
+      { jp: "赤いです。", vi: "Màu đỏ." },
+      { jp: "五つです。", vi: "Năm quả." },
+      { jp: "百円です。", vi: "Một trăm yên." },
+      { jp: "図書館です。", vi: "Là thư viện." },
+    ],
+    answerIndex: 2,
+  },
+  {
+    id: "ls-n5-04",
+    title: "Đến trường bằng gì",
+    level: "N5",
+    promptJp: "学校までどうやって行きますか。",
+    promptRomaji: "Gakkou made dou yatte ikimasu ka.",
+    promptVi: "Bạn đến trường bằng cách nào?",
+    options: [
+      { jp: "自転車で行きます。", vi: "Tôi đi xe đạp." },
+      { jp: "魚を食べます。", vi: "Tôi ăn cá." },
+      { jp: "静かな部屋です。", vi: "Là phòng yên tĩnh." },
+      { jp: "黒い猫です。", vi: "Là mèo đen." },
+    ],
+    answerIndex: 0,
+  },
+  {
+    id: "ls-n5-05",
+    title: "Thời tiết ngày mai",
+    level: "N5",
+    promptJp: "明日の天気はどうですか。",
+    promptRomaji: "Ashita no tenki wa dou desu ka.",
+    promptVi: "Thời tiết ngày mai thế nào?",
+    options: [
+      { jp: "私は学生です。", vi: "Tôi là học sinh." },
+      { jp: "雨です。傘を持って行きます。", vi: "Trời mưa. Tôi sẽ mang ô." },
+      { jp: "机の上にあります。", vi: "Ở trên bàn." },
+      { jp: "八時に寝ます。", vi: "Tôi ngủ lúc tám giờ." },
+    ],
+    answerIndex: 1,
+  },
+  {
+    id: "ls-n5-06",
+    title: "Nhà vệ sinh ở đâu",
+    level: "N5",
+    promptJp: "すみません、トイレはどこですか。",
+    promptRomaji: "Sumimasen, toire wa doko desu ka.",
+    promptVi: "Xin lỗi, nhà vệ sinh ở đâu?",
+    options: [
+      { jp: "階段の隣です。", vi: "Ở cạnh cầu thang." },
+      { jp: "日本語が好きです。", vi: "Tôi thích tiếng Nhật." },
+      { jp: "三千円です。", vi: "Ba nghìn yên." },
+      { jp: "ゆっくり話してください。", vi: "Hãy nói chậm." },
+    ],
+    answerIndex: 0,
+  },
+  {
+    id: "ls-n4-01",
+    title: "Liên lạc vì trễ",
+    level: "N4",
+    promptJp: "電車が遅れそうです。会社に連絡したほうがいいですか。",
+    promptRomaji: "Densha ga okure sou desu. Kaisha ni renraku shita hou ga ii desu ka.",
+    promptVi: "Tàu có vẻ sẽ trễ. Tôi nên liên lạc công ty chứ?",
+    options: [
+      { jp: "写真を撮りましょう。", vi: "Mình chụp ảnh nhé." },
+      { jp: "はい、必ず連絡してください。", vi: "Vâng, nhất định hãy liên lạc." },
+      { jp: "この本は面白いです。", vi: "Quyển sách này thú vị." },
+      { jp: "冷房を消してください。", vi: "Hãy tắt điều hòa." },
+    ],
+    answerIndex: 1,
+  },
+  {
+    id: "ls-n4-02",
+    title: "Đặt khách sạn",
+    level: "N4",
+    promptJp: "旅行の前にホテルを予約しておきましょうか。",
+    promptRomaji: "Ryokou no mae ni hoteru o yoyaku shite okimashou ka.",
+    promptVi: "Trước chuyến đi mình đặt khách sạn sẵn nhé?",
+    options: [
+      { jp: "ええ、お願いしたほうが安心です。", vi: "Vâng, đặt thì yên tâm hơn." },
+      { jp: "窓が開いています。", vi: "Cửa sổ đang mở." },
+      { jp: "私は肉が好きです。", vi: "Tôi thích thịt." },
+      { jp: "七時に起きました。", vi: "Tôi dậy lúc bảy giờ." },
+    ],
+    answerIndex: 0,
+  },
+  {
+    id: "ls-n4-03",
+    title: "Tin đồn cửa hàng mới",
+    level: "N4",
+    promptJp: "駅の前に新しい店ができたそうです。",
+    promptRomaji: "Eki no mae ni atarashii mise ga dekita sou desu.",
+    promptVi: "Nghe nói trước ga có cửa hàng mới.",
+    options: [
+      { jp: "自分で昨日作りました。", vi: "Tôi tự làm hôm qua." },
+      { jp: "本当ですか。今度行ってみましょう。", vi: "Thật à? Lần này mình thử đến xem." },
+      { jp: "足が痛いです。", vi: "Chân tôi đau." },
+      { jp: "辞書を貸してください。", vi: "Cho mượn từ điển." },
+    ],
+    answerIndex: 1,
+  },
+  {
+    id: "ls-n4-04",
+    title: "Khuyên hỏi thầy",
+    level: "N4",
+    promptJp: "進路が決まらなくて困っています。",
+    promptRomaji: "Shinro ga kimaranakute komatte imasu.",
+    promptVi: "Tôi đang bối rối vì chưa quyết được hướng đi.",
+    options: [
+      { jp: "先生に相談したらどうですか。", vi: "Hay là hỏi ý thầy cô?" },
+      { jp: "これは百円です。", vi: "Cái này một trăm yên." },
+      { jp: "電車に乗ってください。", vi: "Hãy lên tàu." },
+      { jp: "空が青いです。", vi: "Bầu trời xanh." },
+    ],
+    answerIndex: 0,
+  },
+];
