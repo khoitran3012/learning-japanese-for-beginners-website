@@ -1,4 +1,7 @@
 @echo off
-cd /d F:\learning-japanese-for-beginners-website
+setlocal
+chcp 65001 >nul
+cd /d "%~dp0"
+
 npm run dev
 pause

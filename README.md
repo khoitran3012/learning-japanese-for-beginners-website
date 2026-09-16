@@ -87,6 +87,24 @@ Xuất toàn bộ catalog: nút **Xuất dictionary.json** trên trang import.
 
 Sao lưu trong **Cài đặt**.
 
+## Chạy trên máy (Windows)
+
+Cần [Node.js LTS](https://nodejs.org) (có kèm npm).
+
+1. Giải nén / mở thư mục project
+2. Double-click `start-akari.bat` (hoặc trong PowerShell: `.\start-akari.bat`)
+3. Lần đầu sẽ tự `npm install` (vài phút). Khi hiện sẵn sàng, mở [http://localhost:8080](http://localhost:8080)
+
+Lệnh tay:
+
+```bat
+cd /d F:\learning-japanese-for-beginners-website
+npm install
+npm run dev
+```
+
+Lỗi `spawn vite ENOENT` = chưa cài thư viện, hoặc Windows không tìm thấy Vite. File `start-akari.bat` mới sẽ `npm install` giúp bạn; `npm run dev` chạy Vite qua Node nên không còn phụ thuộc `vite.cmd`.
+
 ## Phát âm
 
 Mặc định Web Speech API (`ja-JP`). Nếu máy chưa có giọng Nhật, app vẫn học được — chỉ không đọc.
