@@ -60,6 +60,11 @@
   --color-warn: #9a7040;
   --color-danger: #8f3a32;
   --color-ring: #3d4f66;
+  --color-sky: #7ea8c4;
+  --color-meadow: #5d8a6a;
+  --color-forest: #3d5c4a;
+  --color-clay: #b56a4e;
+  --color-mist: #d7e4dc;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -103,6 +108,11 @@
     --color-warn: #d4a25a;
     --color-danger: #d07068;
     --color-ring: #8b9bb4;
+    --color-sky: #6d8ea8;
+    --color-meadow: #6f9a7c;
+    --color-forest: #9ec7ad;
+    --color-clay: #c88870;
+    --color-mist: #2a332e;
     --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px rgb(0 0 0 / 0.28);
   }
 
@@ -210,6 +220,33 @@
 
 .akari-rise {
   animation: akari-rise var(--motion-fast) var(--ease-smooth-out) both;
+}
+
+.ghibli-panel {
+  background-color: var(--color-surface);
+  background-image: url("/art/ghibli-meadow.jpg");
+  background-size: cover;
+  background-position: center top;
+}
+
+.ghibli-panel-wash {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-sky) 22%, transparent),
+      color-mix(in oklab, var(--color-surface) 78%, transparent) 42%,
+      color-mix(in oklab, var(--color-surface) 92%, transparent)
+    );
+}
+
+.dark .ghibli-panel-wash {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-bg) 35%, transparent),
+      color-mix(in oklab, var(--color-surface) 82%, transparent) 50%,
+      var(--color-surface)
+    );
 }
 
 .dark body {

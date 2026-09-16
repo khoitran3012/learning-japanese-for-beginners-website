@@ -1,10 +1,10 @@
 import { o as __toESM } from "../_runtime.mjs";
 import { E as require_react, T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { v as Link } from "../_libs/@tanstack/react-router+[...].mjs";
+import { n as GRAMMAR_N5, t as GRAMMAR_N4 } from "./grammar-n4-Dv0a1spF.mjs";
 import { t as Button } from "./button-D6esF8zp.mjs";
 import { t as PageHeader } from "./page-header-BwwPPGfl.mjs";
 import { n as CardContent, t as Card } from "./card-BGiMB6P_.mjs";
-import { n as GRAMMAR_N5, t as GRAMMAR_N4 } from "./grammar-n4-Dv0a1spF.mjs";
 import { t as Badge } from "./badge-BjjZgNOo.mjs";
 import { r as groupGrammar, t as GRAMMAR_CATEGORY_BLURB } from "./grammar-categories-CJmstdUW.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/grammar.index-D6kHUp8s.js

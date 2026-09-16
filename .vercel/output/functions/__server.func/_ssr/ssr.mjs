@@ -107,7 +107,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-CvukMJFM.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-NLjMOC5E.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -133,15 +133,19 @@ var manifest = {
 	},
 	"1d4e3183cb8db7033a0ca02e6dac07bb98cd810afe8a70b063ec61e7d7b1f550": {
 		functionName: "getMyStats_createServerFn_handler",
-		importer: () => import("./leaderboard-L-sLuo8Q.mjs")
+		importer: () => import("./leaderboard-DTSc78Q4.mjs")
 	},
 	"2c4985e96c199268f7f639534cb5e8e31d6b19d43286bf77416413db60ffde26": {
 		functionName: "fetchSessionUser_createServerFn_handler",
-		importer: () => import("../__root-C8MRYR-9.mjs")
+		importer: () => import("../__root-BNTGPJk4.mjs")
+	},
+	"47e1c58a7c69a72073f6a4c1665b164412ed5188bc563dcd7174af389e27a62b": {
+		functionName: "listPathRankings_createServerFn_handler",
+		importer: () => import("./path-rank-C2yHoKZZ.mjs")
 	},
 	"7f13ca3221c915546d2c3f6c69777871fe5524b592d5b390977f3f910c2c0cd7": {
 		functionName: "listLeaderboard_createServerFn_handler",
-		importer: () => import("./leaderboard-L-sLuo8Q.mjs")
+		importer: () => import("./leaderboard-DTSc78Q4.mjs")
 	},
 	"8479a0af739791056e0d783c49b096045786f141be5a4ec432c7769139efa764": {
 		functionName: "lookupDictionaryAi_createServerFn_handler",
@@ -149,11 +153,15 @@ var manifest = {
 	},
 	"a1512acee8aa22255707cb6ae3731f85420b1655752c1d93f9c79d1f1fde978f": {
 		functionName: "submitStudyResult_createServerFn_handler",
-		importer: () => import("./leaderboard-L-sLuo8Q.mjs")
+		importer: () => import("./leaderboard-DTSc78Q4.mjs")
+	},
+	"ea01e3626d50871b0e27b68fe2793e1efa4c516b9a72c31078cd03fd5eb6d5e8": {
+		functionName: "recordPathProgress_createServerFn_handler",
+		importer: () => import("./path-rank-C2yHoKZZ.mjs")
 	},
 	"f8d2b2c22fd76be8d886b8bf74b87148f5359c0f43c106318a3a3a6fab3a7cab": {
 		functionName: "updateDisplayName_createServerFn_handler",
-		importer: () => import("./leaderboard-L-sLuo8Q.mjs")
+		importer: () => import("./leaderboard-DTSc78Q4.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1423,7 +1431,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-CdBadYz-.mjs").then((n) => n.t),
+		import("./router-ClwOe2dp.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { DynamicLink } from "@/components/dynamic-link";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
@@ -13,6 +14,7 @@ import { LESSONS } from "@/data/lessons";
 import { useProgress, learnedCount } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
+import { primaryLessonHref } from "@/lib/akari/lesson-links";
 
 export const Route = createFileRoute("/_app/")({ component: HomePage });
 
@@ -111,11 +113,18 @@ function HomePage() {
             <p className="text-xs uppercase tracking-[0.14em] text-subtle">Bài tiếp theo</p>
             <h2 className="mt-2 font-display text-2xl">{nextLesson.title}</h2>
             <p className="mt-1 text-sm text-muted">{nextLesson.summary}</p>
-            <Button asChild className="mt-auto">
-              <Link to="/path/$id" params={{ id: nextLesson.id }}>
-                Học tiếp <ArrowRight />
-              </Link>
-            </Button>
+            <div className="mt-auto flex flex-wrap gap-2 pt-4">
+              <Button asChild>
+                <DynamicLink to={primaryLessonHref(nextLesson)}>
+                  Vào bài học <ArrowRight />
+                </DynamicLink>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link to="/path/$id" params={{ id: nextLesson.id }}>
+                  Đọc bài
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

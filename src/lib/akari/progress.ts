@@ -125,6 +125,9 @@ export const useProgress = create<ProgressState>((set, get) => ({
       return { completedLessonIds: next };
     });
     await get().logStudy(3, 5);
+    void import("./sync-path").then(({ syncPathProgress }) =>
+      syncPathProgress([...get().completedLessonIds]),
+    );
   },
   refreshSets: async () => {
     const [favs, mine] = await Promise.all([allFavorites(), allMyWords()]);

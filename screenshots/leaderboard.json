@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/leaderboard",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Akari",
+      "hasCanvas": false,
+      "bodyTextLen": 1069,
+      "bodyTextHash": "7558ada28b70c2bc6f7dd276eceebe1e3cc96ee63cff20e9bcac956bea3a60ba",
+      "bodyTextPrefix": "明 Akari Học tiếng Nhật Tìm kiếm ⌘K CHÍNH Trang chủ Lộ trình Bài ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/leaderboard.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Akari",
+      "hasCanvas": false,
+      "bodyTextLen": 845,
+      "bodyTextHash": "63b2b051107858155ee6f0fd96a33fdd6b464717127e0e78d9ec99ba9f07ed63",
+      "bodyTextPrefix": "明 Akari 競争 Bảng thi đua XP từ quiz, bài hôm nay và chuỗi ngày. X",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/leaderboard-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/leaderboard.json"
+}
