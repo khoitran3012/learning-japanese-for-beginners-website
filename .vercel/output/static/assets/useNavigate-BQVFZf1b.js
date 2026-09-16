@@ -1,0 +1,1 @@
+import{i as e,t}from"./react-SIfiwpqq.js";import{n}from"./useStore-COp0KdlC.js";var r=e(t(),1);function i(e){let t=n();return r.useCallback(n=>t.navigate({...n,from:n.from??e?.from}),[e?.from,t])}export{i as t};

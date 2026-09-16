@@ -32,7 +32,7 @@ function Page() {
 
   return (
     <div>
-      <PageHeader kicker="統計" title="Thống kê" description="Mọi số liệu lưu trên máy bạn — không gửi đi đâu." />
+      <PageHeader kicker="統計" title="Thống kê" description="Số liệu trên máy này. Đăng nhập để so sánh XP trên bảng thi đua." />
       <div className="mb-4 grid gap-3 sm:grid-cols-4">
         <Card><CardContent className="py-5"><p className="text-xs text-muted">Chuỗi</p><p className="text-2xl font-semibold tabular-nums">{streak} ngày</p></CardContent></Card>
         <Card><CardContent className="py-5"><p className="text-xs text-muted">Hôm nay</p><p className="text-2xl font-semibold tabular-nums">{Math.round(today?.minutes ?? 0)} phút</p></CardContent></Card>

@@ -1,0 +1,42 @@
+{
+  "entries": [
+    {
+      "kanji": "学校",
+      "kana": "がっこう",
+      "romaji": "gakkou",
+      "meanings": ["trường học"],
+      "part_of_speech": ["danh từ"],
+      "jlpt": ["N5"],
+      "common": true,
+      "frequency": 1,
+      "tags": ["trường", "cơ bản"],
+      "examples": [
+        {
+          "jp": "学校は駅の近くです。",
+          "kana": "がっこうはえきのちかくです。",
+          "romaji": "Gakkou wa eki no chikaku desu.",
+          "vi": "Trường ở gần nhà ga."
+        }
+      ]
+    },
+    {
+      "kanji": "食べる",
+      "kana": "たべる",
+      "romaji": "taberu",
+      "meanings": ["ăn"],
+      "part_of_speech": ["động từ nhóm 2"],
+      "jlpt": ["N5"],
+      "common": true,
+      "frequency": 1,
+      "tags": ["động từ", "cơ bản"],
+      "examples": [
+        {
+          "jp": "昼ごはんに魚を食べます。",
+          "kana": "ひるごはんにさかなをたべます。",
+          "romaji": "Hirugohan ni sakana o tabemasu.",
+          "vi": "Bữa trưa tôi ăn cá."
+        }
+      ]
+    }
+  ]
+}

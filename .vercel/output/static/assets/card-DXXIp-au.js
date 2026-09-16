@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-0vZSBttN.js";import{t}from"./utils-CZ2wIwD9.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{className:t(`rounded-xl border border-border bg-surface text-fg shadow-[var(--shadow-soft)]`,e),...r})}function i({className:e,...r}){return(0,n.jsx)(`div`,{className:t(`p-5`,e),...r})}export{i as n,r as t};

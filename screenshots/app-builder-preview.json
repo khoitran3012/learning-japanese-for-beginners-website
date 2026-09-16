@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Akari",
+      "hasCanvas": false,
+      "bodyTextLen": 682,
+      "bodyTextHash": "4e7ab8c94992d3abc86a44f6b60d2ac9cce58850256e1994647d482e6129a6d8",
+      "bodyTextPrefix": "明 Akari Học tiếng Nhật Tìm kiếm ⌘K CHÍNH Trang chủ Lộ trình Bài ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Akari",
+      "hasCanvas": false,
+      "bodyTextLen": 458,
+      "bodyTextHash": "9b397ad58f9cbee4851d80e379caaee785ed4eadd702268116a13994da9f2c5d",
+      "bodyTextPrefix": "明 Akari 明かり Akari Học tiếng Nhật từ số 0 — Hiragana đến N4. Đăng",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

@@ -5,6 +5,7 @@ import {
   BookOpen,
   BookText,
   CircleHelp,
+  Gamepad2,
   GraduationCap,
   Headphones,
   Home,
@@ -16,7 +17,9 @@ import {
   RotateCcw,
   Search,
   Settings,
+  Sparkles,
   Star,
+  Trophy,
   Type,
 } from "lucide-react";
 
@@ -30,6 +33,7 @@ export interface NavItem {
 export const NAV: NavItem[] = [
   { to: "/", label: "Trang chủ", icon: Home, group: "Chính" },
   { to: "/path", label: "Lộ trình", icon: Map, group: "Chính" },
+  { to: "/daily", label: "Bài hôm nay", icon: Sparkles, group: "Chính" },
   { to: "/alphabet", label: "Bảng chữ cái", icon: Languages, group: "Chữ" },
   { to: "/hiragana", label: "Hiragana", icon: Type, group: "Chữ" },
   { to: "/katakana", label: "Katakana", icon: Type, group: "Chữ" },
@@ -42,7 +46,9 @@ export const NAV: NavItem[] = [
   { to: "/listen", label: "Luyện nghe", icon: Headphones, group: "Luyện" },
   { to: "/read", label: "Luyện đọc", icon: BookText, group: "Luyện" },
   { to: "/quiz", label: "Quiz", icon: CircleHelp, group: "Luyện" },
+  { to: "/play", label: "Giải trí", icon: Gamepad2, group: "Luyện" },
   { to: "/review", label: "Ôn tập", icon: RotateCcw, group: "Luyện" },
+  { to: "/leaderboard", label: "Thi đua", icon: Trophy, group: "Tôi" },
   { to: "/stats", label: "Thống kê", icon: BarChart3, group: "Tôi" },
   { to: "/favorites", label: "Yêu thích", icon: Star, group: "Tôi" },
   { to: "/my-words", label: "Từ của tôi", icon: BookMarked, group: "Tôi" },
@@ -51,8 +57,8 @@ export const NAV: NavItem[] = [
 
 export const MOBILE_TAB = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/path", label: "Lộ trình", icon: Map },
+  { to: "/daily", label: "Hôm nay", icon: Sparkles },
   { to: "/dictionary", label: "Từ điển", icon: Search },
-  { to: "/review", label: "Ôn", icon: RotateCcw },
+  { to: "/play", label: "Chơi", icon: Gamepad2 },
   { to: "/settings", label: "Thêm", icon: Settings },
 ] as const;

@@ -8,6 +8,9 @@ import { LISTENING } from "@/data/listening";
 import { useProgress } from "@/lib/akari/progress";
 import { addQuizResult } from "@/lib/akari/storage";
 import { uid } from "@/lib/utils";
+import { useSettings } from "@/lib/akari/settings";
+import { syncQuizToLeaderboard } from "@/lib/akari/sync-score";
+import { useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_app/listen")({ component: Page });
 
@@ -16,25 +19,47 @@ function Page() {
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const log = useProgress((s) => s.logStudy);
+  const streak = useProgress((s) => s.streak);
+  const showRomaji = useSettings((s) => s.showRomaji);
+  const user = useCurrentUser();
   const item = LISTENING[i];
 
   if (!item) {
     return (
       <div>
         <PageHeader title="Luyện nghe" />
-        <p>Hoàn thành {score}/{LISTENING.length}.</p>
+        <p>
+          Hoàn thành {score}/{LISTENING.length}.
+        </p>
+        <Button className="mt-4" onClick={() => { setI(0); setScore(0); setPicked(null); }}>
+          Làm lại
+        </Button>
       </div>
     );
   }
 
   return (
     <div>
-      <PageHeader kicker="聴" title="Luyện nghe" description="Nghe giọng Nhật trên thiết bị, rồi chọn đáp án. Không cần mạng nếu trình duyệt đã có giọng ja-JP." />
+      <PageHeader
+        kicker="聴"
+        title="Luyện nghe"
+        description="Nghe trước, chọn đáp án. Romaji / hiragana hiện sau khi trả lời — để tai luyện thật."
+      />
       <Card className="mx-auto max-w-lg">
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted">{item.title} · {item.level}</p>
+          <p className="text-sm text-muted">
+            {item.title} · {item.level} · {i + 1}/{LISTENING.length}
+          </p>
           <SpeakButton text={item.promptJp} label="Nghe câu" />
-          <p className="text-sm">{item.promptVi}</p>
+          {picked !== null ? (
+            <div className="rounded-[10px] bg-bg-elevated p-3 text-sm">
+              <p className="font-jp text-lg">{item.promptJp}</p>
+              {showRomaji ? <p className="text-accent">{item.promptRomaji}</p> : null}
+              <p className="text-muted">{item.promptVi}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-subtle">Bấm nghe, rồi chọn câu trả lời phù hợp. Bản dịch hiện sau.</p>
+          )}
           <div className="grid gap-2">
             {item.options.map((o, idx) => {
               const show = picked !== null;
@@ -51,7 +76,7 @@ function Page() {
                   }}
                 >
                   <span className="font-jp">{o.jp}</span>
-                  <span className="ml-2 text-muted">{o.vi}</span>
+                  {show ? <span className="ml-2 text-muted">{o.vi}</span> : null}
                 </Button>
               );
             })}
@@ -59,16 +84,24 @@ function Page() {
           {picked !== null ? (
             <Button
               onClick={async () => {
+                const nextScore = score;
                 if (i + 1 >= LISTENING.length) {
                   await addQuizResult({
                     id: uid("quiz"),
                     at: Date.now(),
                     kind: "listen",
-                    score: score + (picked === item.answerIndex ? 0 : 0),
+                    score: nextScore,
                     total: LISTENING.length,
                     durationMs: 0,
                   });
                   await log(LISTENING.length, 4);
+                  await syncQuizToLeaderboard({
+                    score: nextScore,
+                    total: LISTENING.length,
+                    minutes: 4,
+                    streak,
+                    displayName: user?.displayName,
+                  });
                 }
                 setPicked(null);
                 setI((x) => x + 1);

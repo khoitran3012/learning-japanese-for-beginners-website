@@ -5,9 +5,11 @@ import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthSlot } from "@/components/auth-slot";
 import { MOBILE_TAB, NAV } from "@/lib/akari/nav";
 import { initSettingsDom, useSettings } from "@/lib/akari/settings";
 import { useProgress } from "@/lib/akari/progress";
+import { applyLocalAiFromSettings } from "@/lib/ai/provider";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/search-dialog";
 import "@/lib/api/api-client";
@@ -68,6 +70,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const load = useProgress((s) => s.load);
   const applyDom = useSettings((s) => s.applyDom);
   const theme = useSettings((s) => s.theme);
+  const aiMode = useSettings((s) => s.aiMode);
+  const localAiUrl = useSettings((s) => s.localAiUrl);
+  const localAiModel = useSettings((s) => s.localAiModel);
+  const localAiKind = useSettings((s) => s.localAiKind);
+  const localAiSystem = useSettings((s) => s.localAiSystem);
+  const localAiTemperature = useSettings((s) => s.localAiTemperature);
+  const localAiMaxTokens = useSettings((s) => s.localAiMaxTokens);
 
   useEffect(() => {
     initSettingsDom();
@@ -75,6 +84,18 @@ export function AppShell({ children }: { children: ReactNode }) {
     void load();
     void import("@/lib/dictionary/catalog").then((m) => m.fullDictionary());
   }, [applyDom, load]);
+
+  useEffect(() => {
+    applyLocalAiFromSettings({
+      aiMode,
+      localAiUrl,
+      localAiModel,
+      localAiKind,
+      localAiSystem,
+      localAiTemperature,
+      localAiMaxTokens,
+    });
+  }, [aiMode, localAiUrl, localAiModel, localAiKind, localAiSystem, localAiTemperature, localAiMaxTokens]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -92,7 +113,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="min-h-dvh bg-bg text-fg">
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 overflow-y-auto border-r border-border bg-bg-elevated/80 px-3 py-5 backdrop-blur-sm lg:flex lg:flex-col">
           <Link to="/" className="mb-4 flex items-center gap-2.5 px-2">
-            <span className="flex size-9 items-center justify-center rounded-[10px] bg-primary font-display text-lg text-primary-fg">
+            <span className="flex size-9 items-center justify-center rounded-[10px] bg-primary font-jp text-lg text-primary-fg">
               明
             </span>
             <span>
@@ -110,6 +131,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <kbd className="rounded border border-border px-1.5 text-[10px]">⌘K</kbd>
           </button>
           <NavLinks />
+          <div className="mt-auto border-t border-border px-1 pt-4">
+            <AuthSlot />
+          </div>
         </aside>
 
         <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-border bg-bg/90 px-3 backdrop-blur-sm lg:hidden">
@@ -117,20 +141,22 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Menu />
           </Button>
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex size-8 items-center justify-center rounded-md bg-primary font-display text-primary-fg">
+            <span className="flex size-8 items-center justify-center rounded-md bg-primary font-jp text-primary-fg">
               明
             </span>
             Akari
           </Link>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="ml-auto"
-            aria-label="Tìm kiếm"
-            onClick={() => setSearch(true)}
-          >
-            <Search />
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Tìm kiếm"
+              onClick={() => setSearch(true)}
+            >
+              <Search />
+            </Button>
+            <AuthSlot compact />
+          </div>
         </header>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -140,6 +166,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </SheetHeader>
             <div className="px-2 pb-8">
               <NavLinks onNavigate={() => setOpen(false)} />
+              <div className="mt-6 px-1">
+                <AuthSlot />
+              </div>
             </div>
           </SheetContent>
         </Sheet>

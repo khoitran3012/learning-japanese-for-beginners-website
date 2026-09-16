@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
+import { PagePager } from "@/components/page-pager";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
@@ -10,12 +11,15 @@ import { useSettings } from "@/lib/akari/settings";
 import type { VocabCategory } from "@/lib/akari/types";
 import { cn } from "@/lib/utils";
 
+const PAGE_SIZE = 50;
+
 export const Route = createFileRoute("/_app/vocabulary/")({ component: Page });
 
 function Page() {
   const [q, setQ] = useState("");
   const [lv, setLv] = useState<"all" | "N5" | "N4">("all");
   const [cat, setCat] = useState<VocabCategory | "all">("all");
+  const [page, setPage] = useState(1);
   const srs = useProgress((s) => s.srs);
   const showRomaji = useSettings((s) => s.showRomaji);
   const all = useMemo(() => [...VOCAB_N5, ...VOCAB_N4], []);
@@ -32,16 +36,31 @@ function Page() {
       v.meaning_vi.toLowerCase().includes(s)
     );
   });
+  const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const slice = list.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const from = list.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const to = Math.min(safePage * PAGE_SIZE, list.length);
 
   return (
     <div>
-      <PageHeader kicker="単語" title="Từ vựng" description="Lọc N5/N4, chủ đề, tìm romaji hoặc tiếng Việt." />
+      <PageHeader kicker="単語" title="Từ vựng" description="Lọc N5/N4, chủ đề — 50 từ mỗi trang." />
       <div className="mb-4 grid gap-2 md:grid-cols-3">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm từ, kana, romaji, nghĩa..." />
+        <Input
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setPage(1);
+          }}
+          placeholder="Tìm từ, kana, romaji, nghĩa..."
+        />
         <select
           className="h-11 rounded-[10px] border border-border bg-bg-elevated px-3 text-sm"
           value={lv}
-          onChange={(e) => setLv(e.target.value as typeof lv)}
+          onChange={(e) => {
+            setLv(e.target.value as typeof lv);
+            setPage(1);
+          }}
         >
           <option value="all">Mọi cấp</option>
           <option value="N5">N5</option>
@@ -50,7 +69,10 @@ function Page() {
         <select
           className="h-11 rounded-[10px] border border-border bg-bg-elevated px-3 text-sm"
           value={cat}
-          onChange={(e) => setCat(e.target.value as typeof cat)}
+          onChange={(e) => {
+            setCat(e.target.value as typeof cat);
+            setPage(1);
+          }}
         >
           <option value="all">Mọi chủ đề</option>
           {cats.map((c) => (
@@ -58,14 +80,16 @@ function Page() {
           ))}
         </select>
       </div>
-      <p className="mb-3 text-sm text-muted">{list.length} từ</p>
+      <p className="mb-3 text-sm tabular-nums text-muted">
+        {from}–{to} / {list.length} · {PAGE_SIZE} từ/trang
+      </p>
       <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
-        {list.map((v) => (
+        {slice.map((v) => (
           <li key={v.id}>
             <Link
               to="/vocabulary/$id"
               params={{ id: v.id }}
-              className={cn("flex items-center gap-3 px-4 py-3 hover:bg-bg-elevated", srs[v.id]?.correct && "bg-success/5")}
+              className={cn("flex min-h-12 items-center gap-3 px-4 py-3 hover:bg-bg-elevated", srs[v.id]?.correct && "bg-success/5")}
             >
               <span className="w-28 font-jp text-lg">{v.word}</span>
               <span className="hidden w-28 text-sm text-accent sm:block">{showRomaji ? v.romaji : v.kana}</span>
@@ -75,6 +99,7 @@ function Page() {
           </li>
         ))}
       </ul>
+      <PagePager className="mt-4" page={safePage} pageCount={pageCount} onPage={setPage} />
     </div>
   );
 }

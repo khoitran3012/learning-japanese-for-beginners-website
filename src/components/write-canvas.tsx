@@ -21,23 +21,31 @@ export function WriteCanvas({ character, strokeCount }: { character: string; str
     };
   }
 
+  function colors() {
+    const root = getComputedStyle(document.documentElement);
+    return {
+      ink: root.getPropertyValue("--color-ink").trim() || "#1c1917",
+      pen: root.getPropertyValue("--color-primary").trim() || "#2f4158",
+    };
+  }
+
   function redraw() {
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const { ink, pen } = colors();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = getComputedStyle(canvas).getPropertyValue("--guide") || "transparent";
-    ctx.font = "280px 'Noto Serif JP', serif";
+    ctx.font = "280px 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = "#1c1917";
+    ctx.globalAlpha = 0.16;
+    ctx.fillStyle = ink;
     ctx.fillText(character, canvas.width / 2, canvas.height / 2 + 20);
     ctx.globalAlpha = 1;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.strokeStyle = "#2f4158";
+    ctx.strokeStyle = pen;
     ctx.lineWidth = 14;
     for (const s of strokes.current) {
       if (!s.length) continue;
@@ -90,7 +98,7 @@ export function WriteCanvas({ character, strokeCount }: { character: string; str
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between text-sm text-muted">
-        <span>Viết thử {strokeCount ? `· ${strokeCount} nét mẫu` : ""}</span>
+        <span>Viết thử {strokeCount ? `· ${strokeCount} nét mẫu (kiểu giáo khoa)` : ""}</span>
         <span className="tabular-nums">{count} nét đã viết</span>
       </div>
       <canvas

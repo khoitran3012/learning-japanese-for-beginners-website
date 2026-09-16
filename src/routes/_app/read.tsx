@@ -13,16 +13,31 @@ export const Route = createFileRoute("/_app/read")({ component: Page });
 function Page() {
   const [sel, setSel] = useState(READINGS[0]!.id);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [showKana, setShowKana] = useState(false);
+  const [showVi, setShowVi] = useState(false);
   const item = READINGS.find((r) => r.id === sel)!;
   const showRomaji = useSettings((s) => s.showRomaji);
   const log = useProgress((s) => s.logStudy);
 
   return (
     <div>
-      <PageHeader kicker="読" title="Luyện đọc" description="Đoạn ngắn tự viết, không lấy từ giáo trình thương mại." />
+      <PageHeader
+        kicker="読"
+        title="Luyện đọc"
+        description="Đọc đoạn trước, đoán nghĩa, rồi mới mở bản dịch. Đoạn tự viết, không lấy từ giáo trình thương mại."
+      />
       <div className="mb-4 flex flex-wrap gap-2">
         {READINGS.map((r) => (
-          <Button key={r.id} variant={sel === r.id ? "default" : "secondary"} onClick={() => { setSel(r.id); setAnswers({}); }}>
+          <Button
+            key={r.id}
+            variant={sel === r.id ? "default" : "secondary"}
+            onClick={() => {
+              setSel(r.id);
+              setAnswers({});
+              setShowKana(false);
+              setShowVi(false);
+            }}
+          >
             {r.level} · {r.title}
           </Button>
         ))}
@@ -33,9 +48,23 @@ function Page() {
             <p className="font-jp text-xl leading-relaxed">{item.jp}</p>
             <SpeakButton text={item.jp} />
           </div>
-          {showRomaji ? <p className="mt-3 text-sm text-accent">{item.romaji}</p> : null}
-          <p className="mt-2 text-sm text-muted">{item.kana}</p>
-          <p className="mt-2 text-sm">{item.vi}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant={showKana ? "default" : "secondary"} onClick={() => setShowKana((v) => !v)}>
+              {showKana ? "Ẩn furigana" : "Hiện hiragana"}
+            </Button>
+            <Button size="sm" variant={showVi ? "default" : "secondary"} onClick={() => setShowVi((v) => !v)}>
+              {showVi ? "Ẩn nghĩa" : "Hiện nghĩa"}
+            </Button>
+          </div>
+          {showKana ? (
+            <div className="mt-3 rounded-[10px] bg-bg-elevated p-3 text-sm">
+              <p className="font-jp">{item.kana}</p>
+              {showRomaji ? <p className="mt-1 text-accent">{item.romaji}</p> : null}
+            </div>
+          ) : (
+            <p className="mt-3 text-xs text-subtle">Đọc không nhìn phiên âm trước — bấm hiện hiragana khi bí.</p>
+          )}
+          {showVi ? <p className="mt-2 text-sm">{item.vi}</p> : null}
         </CardContent>
       </Card>
       <div className="mt-4 space-y-4">

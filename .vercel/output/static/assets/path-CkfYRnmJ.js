@@ -1,0 +1,1 @@
+import{t as e}from"./route-outlet-CifeeRW6.js";var t=e;export{t as component};

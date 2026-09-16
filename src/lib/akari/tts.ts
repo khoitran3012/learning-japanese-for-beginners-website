@@ -1,7 +1,6 @@
 /**
  * TTS abstraction. Default: Web Speech API (ja-JP).
- * Optional providers (Azure / Google / Polly / ElevenLabs / Ollama) can
- * implement TtsProvider without changing call sites.
+ * Kanji glyphs are a poor TTS input — always prefer hiragana/kana readings.
  */
 
 export interface TtsProvider {
@@ -10,6 +9,19 @@ export interface TtsProvider {
   stop(): void;
   isAvailable(): boolean;
   statusMessage(): string | null;
+}
+
+/** Isolated mora are too short for many voices — give them a little context. */
+export function ttsSafeJapanese(text: string) {
+  const t = text.trim();
+  if (!t) return t;
+  if (/[\u4e00-\u9fff]/.test(t) && !/[\u3040-\u30ff]/.test(t)) {
+    // Bare kanji without kana — engines often guess wrong. Keep as-is but the
+    // caller should pass hiragana. We still wrap so the engine commits.
+    return `${t}。`;
+  }
+  if ([...t].length <= 2) return `${t}。${t}`;
+  return t;
 }
 
 class WebSpeechTts implements TtsProvider {
@@ -47,7 +59,7 @@ class WebSpeechTts implements TtsProvider {
         return;
       }
       this.stop();
-      const u = new SpeechSynthesisUtterance(text);
+      const u = new SpeechSynthesisUtterance(ttsSafeJapanese(text));
       u.lang = options.lang ?? "ja-JP";
       u.rate = options.rate ?? 0.9;
       const voice = this.japaneseVoice();

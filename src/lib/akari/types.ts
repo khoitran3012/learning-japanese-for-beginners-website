@@ -208,6 +208,13 @@ export interface AppSettings {
   freeMode: boolean;
   onlineDictionary: boolean;
   reducedMotion: boolean;
+  aiMode: "off" | "local" | "cloud";
+  localAiUrl: string;
+  localAiModel: string;
+  localAiKind: "ollama" | "openai";
+  localAiSystem: string;
+  localAiTemperature: number;
+  localAiMaxTokens: number;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -221,4 +228,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
   freeMode: false,
   onlineDictionary: false,
   reducedMotion: false,
+  aiMode: "off",
+  localAiUrl: "http://localhost:11434",
+  localAiModel: "llama3.2",
+  localAiKind: "ollama",
+  localAiSystem: "Bạn là gia sư tiếng Nhật. Giải thích bằng tiếng Việt, ngắn gọn, có ví dụ hiragana + romaji.",
+  localAiTemperature: 0.4,
+  localAiMaxTokens: 400,
 };

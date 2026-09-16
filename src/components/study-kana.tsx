@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { SpeakButton } from "@/components/speak-button";
 import { WriteCanvas } from "@/components/write-canvas";
+import { StrokeOrder } from "@/components/stroke-order";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,7 +61,8 @@ export function StudyKana({
       </Card>
 
       <Card>
-        <CardContent>
+        <CardContent className="space-y-5">
+          <StrokeOrder character={current.char} strokeCount={current.strokeCount} />
           <WriteCanvas character={current.char} strokeCount={current.strokeCount} />
         </CardContent>
       </Card>

@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAlphabetRouteImport } from './routes/_app/alphabet'
+import { Route as AppDailyRouteImport } from './routes/_app/daily'
 import { Route as AppDictionaryRouteImport } from './routes/_app/dictionary'
 import { Route as AppFavoritesRouteImport } from './routes/_app/favorites'
 import { Route as AppFlashcardsRouteImport } from './routes/_app/flashcards'
@@ -19,9 +21,11 @@ import { Route as AppGrammarRouteImport } from './routes/_app/grammar'
 import { Route as AppHiraganaRouteImport } from './routes/_app/hiragana'
 import { Route as AppKanjiRouteImport } from './routes/_app/kanji'
 import { Route as AppKatakanaRouteImport } from './routes/_app/katakana'
+import { Route as AppLeaderboardRouteImport } from './routes/_app/leaderboard'
 import { Route as AppListenRouteImport } from './routes/_app/listen'
 import { Route as AppMyWordsRouteImport } from './routes/_app/my-words'
 import { Route as AppPathRouteImport } from './routes/_app/path'
+import { Route as AppPlayRouteImport } from './routes/_app/play'
 import { Route as AppQuizRouteImport } from './routes/_app/quiz'
 import { Route as AppReadRouteImport } from './routes/_app/read'
 import { Route as AppReviewRouteImport } from './routes/_app/review'
@@ -44,9 +48,15 @@ import { Route as AppPathIdRouteImport } from './routes/_app/path.$id'
 import { Route as AppToolsImportDictionaryRouteImport } from './routes/_app/tools.import-dictionary'
 import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary.index'
 import { Route as AppVocabularyIdRouteImport } from './routes/_app/vocabulary.$id'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -57,6 +67,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppAlphabetRoute = AppAlphabetRouteImport.update({
   id: '/alphabet',
   path: '/alphabet',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDailyRoute = AppDailyRouteImport.update({
+  id: '/daily',
+  path: '/daily',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDictionaryRoute = AppDictionaryRouteImport.update({
@@ -94,6 +109,11 @@ const AppKatakanaRoute = AppKatakanaRouteImport.update({
   path: '/katakana',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppListenRoute = AppListenRouteImport.update({
   id: '/listen',
   path: '/listen',
@@ -107,6 +127,11 @@ const AppMyWordsRoute = AppMyWordsRouteImport.update({
 const AppPathRoute = AppPathRouteImport.update({
   id: '/path',
   path: '/path',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlayRoute = AppPlayRouteImport.update({
+  id: '/play',
+  path: '/play',
   getParentRoute: () => AppRoute,
 } as any)
 const AppQuizRoute = AppQuizRouteImport.update({
@@ -220,10 +245,17 @@ const AppVocabularyIdRoute = AppVocabularyIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppVocabularyRoute,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/login': typeof LoginRoute
   '/alphabet': typeof AppAlphabetRoute
+  '/daily': typeof AppDailyRoute
   '/dictionary': typeof AppDictionaryRouteWithChildren
   '/favorites': typeof AppFavoritesRoute
   '/flashcards': typeof AppFlashcardsRoute
@@ -231,9 +263,11 @@ export interface FileRoutesByFullPath {
   '/hiragana': typeof AppHiraganaRouteWithChildren
   '/kanji': typeof AppKanjiRouteWithChildren
   '/katakana': typeof AppKatakanaRouteWithChildren
+  '/leaderboard': typeof AppLeaderboardRoute
   '/listen': typeof AppListenRoute
   '/my-words': typeof AppMyWordsRoute
   '/path': typeof AppPathRouteWithChildren
+  '/play': typeof AppPlayRoute
   '/quiz': typeof AppQuizRoute
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
@@ -249,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/path/$id': typeof AppPathIdRoute
   '/tools/import-dictionary': typeof AppToolsImportDictionaryRoute
   '/vocabulary/$id': typeof AppVocabularyIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dictionary/': typeof AppDictionaryIndexRoute
   '/grammar/': typeof AppGrammarIndexRoute
   '/hiragana/': typeof AppHiraganaIndexRoute
@@ -258,11 +293,15 @@ export interface FileRoutesByFullPath {
   '/vocabulary/': typeof AppVocabularyIndexRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
   '/alphabet': typeof AppAlphabetRoute
+  '/daily': typeof AppDailyRoute
   '/favorites': typeof AppFavoritesRoute
   '/flashcards': typeof AppFlashcardsRoute
+  '/leaderboard': typeof AppLeaderboardRoute
   '/listen': typeof AppListenRoute
   '/my-words': typeof AppMyWordsRoute
+  '/play': typeof AppPlayRoute
   '/quiz': typeof AppQuizRoute
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
@@ -278,6 +317,7 @@ export interface FileRoutesByTo {
   '/path/$id': typeof AppPathIdRoute
   '/tools/import-dictionary': typeof AppToolsImportDictionaryRoute
   '/vocabulary/$id': typeof AppVocabularyIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dictionary': typeof AppDictionaryIndexRoute
   '/grammar': typeof AppGrammarIndexRoute
   '/hiragana': typeof AppHiraganaIndexRoute
@@ -289,7 +329,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
   '/_app/alphabet': typeof AppAlphabetRoute
+  '/_app/daily': typeof AppDailyRoute
   '/_app/dictionary': typeof AppDictionaryRouteWithChildren
   '/_app/favorites': typeof AppFavoritesRoute
   '/_app/flashcards': typeof AppFlashcardsRoute
@@ -297,9 +339,11 @@ export interface FileRoutesById {
   '/_app/hiragana': typeof AppHiraganaRouteWithChildren
   '/_app/kanji': typeof AppKanjiRouteWithChildren
   '/_app/katakana': typeof AppKatakanaRouteWithChildren
+  '/_app/leaderboard': typeof AppLeaderboardRoute
   '/_app/listen': typeof AppListenRoute
   '/_app/my-words': typeof AppMyWordsRoute
   '/_app/path': typeof AppPathRouteWithChildren
+  '/_app/play': typeof AppPlayRoute
   '/_app/quiz': typeof AppQuizRoute
   '/_app/read': typeof AppReadRoute
   '/_app/review': typeof AppReviewRoute
@@ -316,6 +360,7 @@ export interface FileRoutesById {
   '/_app/path/$id': typeof AppPathIdRoute
   '/_app/tools/import-dictionary': typeof AppToolsImportDictionaryRoute
   '/_app/vocabulary/$id': typeof AppVocabularyIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/dictionary/': typeof AppDictionaryIndexRoute
   '/_app/grammar/': typeof AppGrammarIndexRoute
   '/_app/hiragana/': typeof AppHiraganaIndexRoute
@@ -328,7 +373,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/alphabet'
+    | '/daily'
     | '/dictionary'
     | '/favorites'
     | '/flashcards'
@@ -336,9 +383,11 @@ export interface FileRouteTypes {
     | '/hiragana'
     | '/kanji'
     | '/katakana'
+    | '/leaderboard'
     | '/listen'
     | '/my-words'
     | '/path'
+    | '/play'
     | '/quiz'
     | '/read'
     | '/review'
@@ -354,6 +403,7 @@ export interface FileRouteTypes {
     | '/path/$id'
     | '/tools/import-dictionary'
     | '/vocabulary/$id'
+    | '/api/auth/$'
     | '/dictionary/'
     | '/grammar/'
     | '/hiragana/'
@@ -363,11 +413,15 @@ export interface FileRouteTypes {
     | '/vocabulary/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/alphabet'
+    | '/daily'
     | '/favorites'
     | '/flashcards'
+    | '/leaderboard'
     | '/listen'
     | '/my-words'
+    | '/play'
     | '/quiz'
     | '/read'
     | '/review'
@@ -383,6 +437,7 @@ export interface FileRouteTypes {
     | '/path/$id'
     | '/tools/import-dictionary'
     | '/vocabulary/$id'
+    | '/api/auth/$'
     | '/dictionary'
     | '/grammar'
     | '/hiragana'
@@ -393,7 +448,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/login'
     | '/_app/alphabet'
+    | '/_app/daily'
     | '/_app/dictionary'
     | '/_app/favorites'
     | '/_app/flashcards'
@@ -401,9 +458,11 @@ export interface FileRouteTypes {
     | '/_app/hiragana'
     | '/_app/kanji'
     | '/_app/katakana'
+    | '/_app/leaderboard'
     | '/_app/listen'
     | '/_app/my-words'
     | '/_app/path'
+    | '/_app/play'
     | '/_app/quiz'
     | '/_app/read'
     | '/_app/review'
@@ -420,6 +479,7 @@ export interface FileRouteTypes {
     | '/_app/path/$id'
     | '/_app/tools/import-dictionary'
     | '/_app/vocabulary/$id'
+    | '/api/auth/$'
     | '/_app/dictionary/'
     | '/_app/grammar/'
     | '/_app/hiragana/'
@@ -431,6 +491,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -440,6 +502,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -454,6 +523,13 @@ declare module '@tanstack/react-router' {
       path: '/alphabet'
       fullPath: '/alphabet'
       preLoaderRoute: typeof AppAlphabetRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/daily': {
+      id: '/_app/daily'
+      path: '/daily'
+      fullPath: '/daily'
+      preLoaderRoute: typeof AppDailyRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dictionary': {
@@ -505,6 +581,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppKatakanaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/leaderboard': {
+      id: '/_app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AppLeaderboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/listen': {
       id: '/_app/listen'
       path: '/listen'
@@ -524,6 +607,13 @@ declare module '@tanstack/react-router' {
       path: '/path'
       fullPath: '/path'
       preLoaderRoute: typeof AppPathRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/play': {
+      id: '/_app/play'
+      path: '/play'
+      fullPath: '/play'
+      preLoaderRoute: typeof AppPlayRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/quiz': {
@@ -680,6 +770,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVocabularyIdRouteImport
       parentRoute: typeof AppVocabularyRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -782,6 +879,7 @@ const AppVocabularyRouteWithChildren = AppVocabularyRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAlphabetRoute: typeof AppAlphabetRoute
+  AppDailyRoute: typeof AppDailyRoute
   AppDictionaryRoute: typeof AppDictionaryRouteWithChildren
   AppFavoritesRoute: typeof AppFavoritesRoute
   AppFlashcardsRoute: typeof AppFlashcardsRoute
@@ -789,9 +887,11 @@ interface AppRouteChildren {
   AppHiraganaRoute: typeof AppHiraganaRouteWithChildren
   AppKanjiRoute: typeof AppKanjiRouteWithChildren
   AppKatakanaRoute: typeof AppKatakanaRouteWithChildren
+  AppLeaderboardRoute: typeof AppLeaderboardRoute
   AppListenRoute: typeof AppListenRoute
   AppMyWordsRoute: typeof AppMyWordsRoute
   AppPathRoute: typeof AppPathRouteWithChildren
+  AppPlayRoute: typeof AppPlayRoute
   AppQuizRoute: typeof AppQuizRoute
   AppReadRoute: typeof AppReadRoute
   AppReviewRoute: typeof AppReviewRoute
@@ -805,6 +905,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlphabetRoute: AppAlphabetRoute,
+  AppDailyRoute: AppDailyRoute,
   AppDictionaryRoute: AppDictionaryRouteWithChildren,
   AppFavoritesRoute: AppFavoritesRoute,
   AppFlashcardsRoute: AppFlashcardsRoute,
@@ -812,9 +913,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppHiraganaRoute: AppHiraganaRouteWithChildren,
   AppKanjiRoute: AppKanjiRouteWithChildren,
   AppKatakanaRoute: AppKatakanaRouteWithChildren,
+  AppLeaderboardRoute: AppLeaderboardRoute,
   AppListenRoute: AppListenRoute,
   AppMyWordsRoute: AppMyWordsRoute,
   AppPathRoute: AppPathRouteWithChildren,
+  AppPlayRoute: AppPlayRoute,
   AppQuizRoute: AppQuizRoute,
   AppReadRoute: AppReadRoute,
   AppReviewRoute: AppReviewRoute,
@@ -830,6 +933,8 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

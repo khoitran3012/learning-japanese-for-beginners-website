@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useSettings } from "@/lib/akari/settings";
+import { applyLocalAiFromSettings, getAI } from "@/lib/ai/provider";
 import { exportAll, importAll, validateBackup, wipeUserData } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { useLocalFirst } from "@/lib/api/api-client";
@@ -48,6 +51,13 @@ function Page() {
       freeMode: settings.freeMode,
       onlineDictionary: settings.onlineDictionary,
       reducedMotion: settings.reducedMotion,
+      aiMode: settings.aiMode,
+      localAiUrl: settings.localAiUrl,
+      localAiModel: settings.localAiModel,
+      localAiKind: settings.localAiKind,
+      localAiSystem: settings.localAiSystem,
+      localAiTemperature: settings.localAiTemperature,
+      localAiMaxTokens: settings.localAiMaxTokens,
     });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -83,7 +93,7 @@ function Page() {
 
   return (
     <div>
-      <PageHeader kicker="設定" title="Cài đặt" description="Giao diện, ôn tập và sao lưu — tất cả lưu trên máy này." />
+      <PageHeader kicker="設定" title="Cài đặt" description="Giao diện, ôn tập, AI local và sao lưu." />
 
       <div className="space-y-4">
         <Card>
@@ -188,6 +198,119 @@ function Page() {
                 onCheckedChange={(v) => settings.set({ freeMode: v })}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-4">
+            <h2 className="font-medium">AI gia sư</h2>
+            <p className="text-sm text-muted">
+              Tùy chọn. Học không cần AI. Local chạy trên máy bạn (Ollama hoặc LM Studio). Đám mây chỉ gọi khi bạn bấm hỏi.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["off", "Tắt"],
+                ["local", "AI local"],
+                ["cloud", "Đám mây"],
+              ] as const).map(([id, label]) => (
+                <Button
+                  key={id}
+                  size="sm"
+                  variant={settings.aiMode === id ? "default" : "secondary"}
+                  onClick={() => {
+                    settings.set({ aiMode: id });
+                    applyLocalAiFromSettings({ ...settings, aiMode: id });
+                  }}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+            {settings.aiMode === "local" ? (
+              <div className="space-y-3 rounded-[10px] border border-border bg-bg-elevated p-3">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={settings.localAiKind === "ollama" ? "default" : "secondary"}
+                    onClick={() => settings.set({ localAiKind: "ollama", localAiUrl: "http://localhost:11434" })}
+                  >
+                    Ollama
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={settings.localAiKind === "openai" ? "default" : "secondary"}
+                    onClick={() => settings.set({ localAiKind: "openai", localAiUrl: "http://localhost:1234" })}
+                  >
+                    LM Studio
+                  </Button>
+                </div>
+                <div>
+                  <Label htmlFor="ai-url">URL máy chủ</Label>
+                  <Input
+                    id="ai-url"
+                    className="mt-1"
+                    value={settings.localAiUrl}
+                    onChange={(e) => settings.set({ localAiUrl: e.target.value })}
+                    placeholder="http://localhost:11434"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ai-model">Model</Label>
+                  <Input
+                    id="ai-model"
+                    className="mt-1"
+                    value={settings.localAiModel}
+                    onChange={(e) => settings.set({ localAiModel: e.target.value })}
+                    placeholder="llama3.2"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-2 block">Nhiệt độ: {(settings.localAiTemperature ?? 0.4).toFixed(1)}</Label>
+                  <Slider
+                    min={0}
+                    max={1.2}
+                    step={0.1}
+                    value={[settings.localAiTemperature ?? 0.4]}
+                    onValueChange={([v]) => settings.set({ localAiTemperature: v ?? 0.4 })}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-2 block">Độ dài trả lời: {settings.localAiMaxTokens ?? 400} token</Label>
+                  <Slider
+                    min={120}
+                    max={800}
+                    step={40}
+                    value={[settings.localAiMaxTokens ?? 400]}
+                    onValueChange={([v]) => settings.set({ localAiMaxTokens: v ?? 400 })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ai-sys">Hướng dẫn hệ thống</Label>
+                  <Textarea
+                    id="ai-sys"
+                    className="mt-1"
+                    rows={3}
+                    value={settings.localAiSystem}
+                    onChange={(e) => settings.set({ localAiSystem: e.target.value })}
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={async () => {
+                    applyLocalAiFromSettings(settings);
+                    const ok = await getAI().available();
+                    toast(ok ? "Kết nối AI local được" : "Không thấy AI local — kiểm tra URL, model đang chạy, và CORS");
+                  }}
+                >
+                  Kiểm tra kết nối
+                </Button>
+                <p className="text-xs text-subtle">
+                  Ollama: <code className="font-mono">OLLAMA_ORIGINS=*</code> rồi <code className="font-mono">ollama serve</code>.
+                  LM Studio: bật server local (OpenAI compatible) cổng 1234. Trình duyệt chặn máy chủ không CORS.
+                </p>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 

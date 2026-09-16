@@ -44,6 +44,13 @@ export const useSettings = create<SettingsState>()(
         freeMode: s.freeMode,
         onlineDictionary: s.onlineDictionary,
         reducedMotion: s.reducedMotion,
+        aiMode: s.aiMode,
+        localAiUrl: s.localAiUrl,
+        localAiModel: s.localAiModel,
+        localAiKind: s.localAiKind,
+        localAiSystem: s.localAiSystem,
+        localAiTemperature: s.localAiTemperature,
+        localAiMaxTokens: s.localAiMaxTokens,
       }),
       onRehydrateStorage: () => (state) => {
         state?.applyDom();

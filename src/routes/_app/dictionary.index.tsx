@@ -3,6 +3,7 @@ import { Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
+import { PagePager } from "@/components/page-pager";
 import { DictEntryView } from "@/components/dict-entry-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,17 +16,20 @@ import { useSettings } from "@/lib/akari/settings";
 import { cn } from "@/lib/utils";
 import type { DictionaryEntry, JlptLevel } from "@/lib/akari/types";
 
-type SearchParams = { q?: string };
+const PAGE_SIZE = 50;
+
+type SearchParams = { q?: string; p?: number };
 
 export const Route = createFileRoute("/_app/dictionary/")({
   validateSearch: (s: Record<string, unknown>): SearchParams => ({
     q: typeof s.q === "string" ? s.q : undefined,
+    p: typeof s.p === "number" && s.p > 0 ? Math.floor(s.p) : typeof s.p === "string" && Number(s.p) > 0 ? Math.floor(Number(s.p)) : undefined,
   }),
   component: Page,
 });
 
 function Page() {
-  const { q: qParam = "" } = Route.useSearch();
+  const { q: qParam = "", p: pParam = 1 } = Route.useSearch();
   const navigate = useNavigate();
   const [q, setQ] = useState(qParam);
   const [jlpt, setJlpt] = useState<"all" | JlptLevel>("all");
@@ -36,6 +40,7 @@ function Page() {
   const online = useSettings((s) => s.onlineDictionary);
   const inputRef = useRef<HTMLInputElement>(null);
   const typing = useRef(false);
+  const page = Math.max(1, pParam);
 
   useEffect(() => {
     void searchHistory().then((h) => setRecent(h.map((x) => x.query)));
@@ -52,20 +57,38 @@ function Page() {
       typing.current = false;
       const value = q.trim();
       if (value === (qParam ?? "").trim()) return;
-      void navigate({ to: "/dictionary", search: value ? { q: value } : {}, replace: true });
+      void navigate({
+        to: "/dictionary",
+        search: { ...(value ? { q: value } : {}), p: 1 },
+        replace: true,
+      });
     }, 400);
     return () => window.clearTimeout(handle);
   }, [q, qParam, navigate]);
 
-  const browsing = !q.trim();
-  const results = useMemo(() => {
+  const allResults = useMemo(() => {
     return searchDictionary(dict, {
       q: q.trim(),
       jlpt: jlpt === "all" ? undefined : [jlpt],
       pos: pos === "all" ? undefined : [pos],
-      limit: browsing ? 24 : 40,
+      limit: 20000,
     });
-  }, [dict, q, jlpt, pos, browsing]);
+  }, [dict, q, jlpt, pos]);
+
+  const pageCount = Math.max(1, Math.ceil(allResults.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const results = allResults.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const from = allResults.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const to = Math.min(safePage * PAGE_SIZE, allResults.length);
+
+  function goPage(next: number) {
+    const p = Math.min(pageCount, Math.max(1, next));
+    const value = q.trim();
+    void navigate({
+      to: "/dictionary",
+      search: { ...(value ? { q: value } : {}), ...(p > 1 ? { p } : {}) },
+    });
+  }
 
   function record(value: string) {
     const next = value.trim();
@@ -77,7 +100,7 @@ function Page() {
     typing.current = false;
     const value = next.trim();
     setQ(next);
-    void navigate({ to: "/dictionary", search: value ? { q: value } : {} });
+    void navigate({ to: "/dictionary", search: value ? { q: value, p: 1 } : { p: 1 } });
     record(value);
     inputRef.current?.blur();
   }
@@ -87,7 +110,7 @@ function Page() {
       <PageHeader
         kicker="辞書"
         title="Từ điển Nhật – Việt"
-        description={`${dict.length} mục trên máy — tra kanji, kana, romaji, dạng ます, hoặc tiếng Việt (có/không dấu).`}
+        description={`${dict.length} mục trên máy — duyệt 50 từ mỗi trang, hoặc tra kanji, kana, romaji, dạng ます, tiếng Việt.`}
       />
 
       <form
@@ -114,39 +137,49 @@ function Page() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {(["all", "N5", "N4", "N3"] as const).map((lv) => (
-          <Button key={lv} size="sm" variant={jlpt === lv ? "default" : "secondary"} onClick={() => setJlpt(lv)}>
+          <Button
+            key={lv}
+            size="sm"
+            variant={jlpt === lv ? "default" : "secondary"}
+            onClick={() => {
+              setJlpt(lv);
+              goPage(1);
+            }}
+          >
             {lv === "all" ? "Mọi cấp" : lv}
           </Button>
         ))}
         <span className="mx-1 w-px self-stretch bg-border" />
-        <Button size="sm" variant={pos === "all" ? "default" : "secondary"} onClick={() => setPos("all")}>
+        <Button
+          size="sm"
+          variant={pos === "all" ? "default" : "secondary"}
+          onClick={() => {
+            setPos("all");
+            goPage(1);
+          }}
+        >
           Mọi loại
         </Button>
         {POS_FILTERS.map((p) => (
-          <Button key={p} size="sm" variant={pos === p ? "default" : "secondary"} onClick={() => setPos(p)}>
+          <Button
+            key={p}
+            size="sm"
+            variant={pos === p ? "default" : "secondary"}
+            onClick={() => {
+              setPos(p);
+              goPage(1);
+            }}
+          >
             {p}
           </Button>
         ))}
       </div>
 
-      {q.trim() ? (
-        results.length === 0 ? (
-          <AiLookupPanel
-            query={q.trim()}
-            auto={online}
-            onSaved={() => record(q.trim())}
-          />
-        ) : (
-          <>
-            <p className="mb-2 text-sm text-muted">
-              {results.length} kết quả · {dict.length} mục trong máy
-            </p>
-            <ResultList results={results} showRomaji={showRomaji} onPick={(word) => record(word)} />
-          </>
-        )
+      {q.trim() && allResults.length === 0 ? (
+        <AiLookupPanel query={q.trim()} auto={online} onSaved={() => record(q.trim())} />
       ) : (
-        <div className="space-y-6">
-          {recent.length > 0 ? (
+        <div className="space-y-4">
+          {!q.trim() && recent.length > 0 ? (
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-sm text-muted">Vừa tra</h2>
@@ -170,13 +203,16 @@ function Page() {
               </div>
             </div>
           ) : null}
-          <div>
-            <h2 className="mb-2 text-sm text-muted">
-              {jlpt !== "all" || pos !== "all" ? "Theo bộ lọc" : "Từ phổ biến"}
-              <span className="ml-2 font-normal text-subtle">{results.length}</span>
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <h2 className="text-sm text-muted">
+              {q.trim() ? "Kết quả" : jlpt !== "all" || pos !== "all" ? "Theo bộ lọc" : "Tất cả từ"}
             </h2>
-            <ResultList results={results} showRomaji={showRomaji} />
+            <p className="text-sm tabular-nums text-subtle">
+              {from}–{to} / {allResults.length} · {PAGE_SIZE} từ/trang
+            </p>
           </div>
+          <ResultList results={results} showRomaji={showRomaji} onPick={(word) => record(word)} />
+          <PagePager page={safePage} pageCount={pageCount} onPage={goPage} />
         </div>
       )}
     </div>
@@ -285,8 +321,9 @@ function ResultList({
             className={cn("flex min-h-12 items-center gap-3 px-4 py-3 hover:bg-bg-elevated")}
           >
             <span className="w-28 shrink-0 font-jp text-lg">{e.kanji}</span>
-            <span className="hidden w-28 shrink-0 text-sm text-accent sm:block">
-              {showRomaji ? e.romaji : e.kana}
+            <span className="hidden min-w-0 shrink-0 text-sm text-accent sm:block sm:w-36">
+              {e.kana}
+              {showRomaji ? <span className="ml-1 text-subtle">{e.romaji}</span> : null}
             </span>
             <span className="min-w-0 flex-1 truncate text-sm">{e.meanings[0]}</span>
             <Badge variant="muted">{e.jlpt[0]}</Badge>

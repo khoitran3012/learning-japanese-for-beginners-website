@@ -126,7 +126,7 @@ export function filterDictionary(dict: DictionaryEntry[], query: SearchQuery) {
   filtered.sort(
     (a, b) => Number(b.common) - Number(a.common) || a.frequency - b.frequency || a.kana.localeCompare(b.kana, "ja"),
   );
-  return filtered.slice(0, query.limit ?? 80);
+  return filtered.slice(0, query.limit ?? 20000);
 }
 
 function scoreEntry(e: DictionaryEntry, raw: string) {
@@ -212,7 +212,7 @@ export function searchLocal(dict: DictionaryEntry[], query: SearchQuery) {
     .filter((x) => x.score >= 0.42)
     .sort((a, b) => b.score - a.score || Number(b.e.common) - Number(a.e.common) || a.e.frequency - b.e.frequency);
 
-  return scored.slice(0, query.limit ?? 40).map((x) => x.e);
+  return scored.slice(0, query.limit ?? 200).map((x) => x.e);
 }
 
 export function suggest(dict: DictionaryEntry[], q: string, limit = 8) {

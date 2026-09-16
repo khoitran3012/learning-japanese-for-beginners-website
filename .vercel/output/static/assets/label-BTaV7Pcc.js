@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-0vZSBttN.js";import{t}from"./utils-CZ2wIwD9.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`label`,{className:t(`text-sm font-medium text-fg`,e),...r})}export{r as t};

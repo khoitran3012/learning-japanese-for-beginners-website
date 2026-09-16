@@ -60,7 +60,7 @@ function HomePage() {
       <PageHeader
         kicker="明かり"
         title="Akari"
-        description="Học tiếng Nhật từ số 0 — Hiragana đến N4, trên máy của bạn, không cần tài khoản."
+        description="Học tiếng Nhật từ số 0 — Hiragana đến N4. Đăng nhập nếu muốn thi đua; không bắt buộc."
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -121,6 +121,15 @@ function HomePage() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <Button asChild>
+          <Link to="/daily">Bài tập hôm nay</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link to="/play">Giải trí</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link to="/leaderboard">Bảng thi đua</Link>
+        </Button>
         <Button asChild variant="secondary">
           <Link to="/review">Ôn tập hôm nay</Link>
         </Button>

@@ -2,11 +2,45 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("/fonts/BeVietnamPro-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Be Vietnam Pro";
+  src: url("/fonts/BeVietnamPro-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans JP";
+  src: url("/fonts/NotoSansJP-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans JP";
+  src: url("/fonts/NotoSansJP-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: "Be Vietnam Pro", "Noto Sans JP", "Hiragino Sans", "Yu Gothic",
-    ui-sans-serif, system-ui, sans-serif;
-  --font-jp: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
-  --font-display: "Noto Serif JP", "Noto Sans JP", "Hiragino Mincho ProN", serif;
+  --font-sans: "Be Vietnam Pro", "Noto Sans JP", "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans", "Yu Gothic", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    "Yu Gothic", "Meiryo", sans-serif;
+  --font-display: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    "Yu Gothic", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --color-bg: #f4efe6;
@@ -114,16 +148,31 @@
 
   .font-jp {
     font-family: var(--font-jp);
+    font-synthesis: none;
   }
 
   .font-display {
     font-family: var(--font-display);
+    font-synthesis: none;
   }
 
   .text-kana {
-    font-family: var(--font-display);
+    font-family: var(--font-jp);
+    font-weight: 400;
     font-feature-settings: "palt";
+    font-synthesis: none;
     line-height: 1;
+  }
+
+  @keyframes stroke-draw {
+    from { stroke-dasharray: 1; stroke-dashoffset: 1; }
+    to { stroke-dasharray: 1; stroke-dashoffset: 0; }
+  }
+
+  .stroke-order-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    animation: stroke-draw 0.65s var(--ease-smooth-out) both;
   }
 
   html.font-sm { font-size: 15px; }
