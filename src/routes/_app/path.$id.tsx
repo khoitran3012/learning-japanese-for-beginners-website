@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DynamicLink } from "@/components/dynamic-link";
+import { SpeakButton } from "@/components/speak-button";
 import { LESSONS } from "@/data/lessons";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
@@ -56,10 +57,13 @@ function Page() {
               <h2 className="font-medium">{s.heading}</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted">{s.body}</p>
               {s.jp ? (
-                <p className="mt-3 font-jp text-2xl">
-                  {s.jp}
-                  {showRomaji && s.romaji ? <span className="ml-3 text-base text-accent">{s.romaji}</span> : null}
-                </p>
+                <div className="mt-3 flex items-start justify-between gap-3">
+                  <p className="font-jp text-2xl text-fg">
+                    {s.jp}
+                    {showRomaji && s.romaji ? <span className="ml-3 text-base text-fg">{s.romaji}</span> : null}
+                  </p>
+                  <SpeakButton text={s.jp} label="Nghe" />
+                </div>
               ) : null}
             </CardContent>
           </Card>

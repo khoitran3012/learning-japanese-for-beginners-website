@@ -1,7 +1,7 @@
 import { Pause, Play, RotateCcw, StepForward } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { strokePathsFor } from "@/lib/akari/strokes";
+import { strokeGlyphsFor } from "@/lib/akari/strokes";
 import { cn } from "@/lib/utils";
 
 export function StrokeOrder({
@@ -13,7 +13,7 @@ export function StrokeOrder({
   strokeCount?: number;
   className?: string;
 }) {
-  const paths = useMemo(() => strokePathsFor(character), [character]);
+  const glyphs = useMemo(() => strokeGlyphsFor(character), [character]);
   const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -24,16 +24,16 @@ export function StrokeOrder({
   }, [character]);
 
   useEffect(() => {
-    if (!playing || paths.length === 0) return;
-    if (shown >= paths.length) {
+    if (!playing || glyphs.length === 0) return;
+    if (shown >= glyphs.length) {
       setPlaying(false);
       return;
     }
     const t = window.setTimeout(() => setShown((n) => n + 1), shown === 0 ? 250 : 720);
     return () => window.clearTimeout(t);
-  }, [playing, shown, paths.length]);
+  }, [playing, shown, glyphs.length]);
 
-  if (!paths.length) {
+  if (!glyphs.length) {
     return (
       <div className={cn("rounded-xl border border-border bg-bg-elevated p-4 text-sm text-muted", className)}>
         Chưa có dữ liệu nét cho {character}
@@ -46,9 +46,9 @@ export function StrokeOrder({
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between text-sm text-muted">
-        <span>Quy cách nét giáo khoa · {paths.length} nét đều (không thư pháp)</span>
+        <span>Quy cách nét giáo khoa · {glyphs.length} nét đều (không thư pháp)</span>
         <span className="tabular-nums">
-          {Math.min(shown, paths.length)}/{paths.length}
+          {Math.min(shown, glyphs.length)}/{glyphs.length}
         </span>
       </div>
       <div className="relative overflow-hidden rounded-xl border border-border bg-surface">
@@ -64,13 +64,14 @@ export function StrokeOrder({
           <line x1="0" y1="54.5" x2="109" y2="54.5" stroke="currentColor" strokeOpacity="0.12" />
           <line x1="0" y1="0" x2="109" y2="109" stroke="currentColor" strokeOpacity="0.06" />
           <line x1="109" y1="0" x2="0" y2="109" stroke="currentColor" strokeOpacity="0.06" />
-          {paths.map((d, i) => (
+          {glyphs.map((g, i) => (
             <path
               key={`${character}-${i}`}
-              d={d}
+              d={g.d}
+              transform={g.transform}
               fill="none"
               stroke="currentColor"
-              strokeWidth="4.6"
+              strokeWidth={4.6 / g.scale}
               strokeLinecap="round"
               strokeLinejoin="round"
               pathLength={1}
@@ -86,7 +87,7 @@ export function StrokeOrder({
           size="sm"
           variant="secondary"
           onClick={() => {
-            if (shown >= paths.length) {
+            if (shown >= glyphs.length) {
               setShown(0);
               setPlaying(true);
             } else {
@@ -95,7 +96,7 @@ export function StrokeOrder({
           }}
         >
           {playing ? <Pause /> : <Play />}
-          {playing ? "Tạm dừng" : shown >= paths.length ? "Phát lại" : "Phát"}
+          {playing ? "Tạm dừng" : shown >= glyphs.length ? "Phát lại" : "Phát"}
         </Button>
         <Button
           type="button"
@@ -103,7 +104,7 @@ export function StrokeOrder({
           variant="ghost"
           onClick={() => {
             setPlaying(false);
-            setShown((n) => Math.min(paths.length, n + 1));
+            setShown((n) => Math.min(glyphs.length, n + 1));
           }}
         >
           <StepForward /> Nét tiếp

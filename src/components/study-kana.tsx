@@ -51,10 +51,13 @@ export function StudyKana({
         <CardContent className="space-y-3">
           <h2 className="text-sm font-medium text-muted">Ví dụ</h2>
           {current.examples.map((ex) => (
-            <div key={ex.jp} className="rounded-lg bg-bg-elevated p-3">
-              <p className="font-jp text-xl">{ex.jp}</p>
-              {showRomaji ? <p className="text-sm text-accent">{ex.romaji}</p> : null}
-              <p className="text-sm text-muted">{ex.vi}</p>
+            <div key={ex.jp} className="flex items-start justify-between gap-3 rounded-lg bg-bg-elevated p-3">
+              <div className="min-w-0">
+                <p className="font-jp text-xl text-fg">{ex.jp}</p>
+                {showRomaji ? <p className="text-sm text-fg">{ex.romaji}</p> : null}
+                <p className="text-sm text-fg">{ex.vi}</p>
+              </div>
+              <SpeakButton text={ex.jp} label="Nghe" />
             </div>
           ))}
         </CardContent>

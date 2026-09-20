@@ -38,12 +38,23 @@ export function FlashcardDeck({
   const [typed, setTyped] = useState("");
   const [check, setCheck] = useState<"idle" | "correct" | "wrong">("idle");
   const inputRef = useRef<HTMLInputElement>(null);
+  const pendingRef = useRef<number | null>(null);
+  const busyRef = useRef(false);
   const mark = useProgress((s) => s.mark);
   const autoPlay = useSettings((s) => s.autoPlayAudio);
   const ttsRate = useSettings((s) => s.ttsRate);
   const card = !done && deck.length ? deck[i] : undefined;
 
+  function clearPending() {
+    if (pendingRef.current != null) {
+      window.clearTimeout(pendingRef.current);
+      pendingRef.current = null;
+    }
+  }
+
   useEffect(() => {
+    clearPending();
+    busyRef.current = false;
     setDeck(shuffle(cards));
     setI(0);
     setFlip(false);
@@ -56,6 +67,8 @@ export function FlashcardDeck({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionKey]);
 
+  useEffect(() => () => clearPending(), []);
+
   useEffect(() => {
     if (!card || !autoPlay) return;
     const text = card.speak ?? card.front;
@@ -63,8 +76,8 @@ export function FlashcardDeck({
   }, [card, autoPlay, ttsRate]);
 
   useEffect(() => {
-    if (card && !flip && check === "idle") inputRef.current?.focus();
-  }, [card, flip, check, i]);
+    if (card && check === "idle") inputRef.current?.focus();
+  }, [card, check, i]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -72,7 +85,8 @@ export function FlashcardDeck({
       if (!card) return;
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
-        setFlip((f) => !f);
+        if (check === "wrong") void rate("forgot");
+        else if (check === "idle") setFlip((f) => !f);
       } else if (e.key === "1") void rate("forgot");
       else if (e.key === "2") void rate("hard");
       else if (e.key === "3") void rate("good");
@@ -81,7 +95,7 @@ export function FlashcardDeck({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [card, i, deck.length]);
+  }, [card, i, deck.length, check]);
 
   function advance(nextDeck: FlashCard[], from: number) {
     if (nextDeck.length === 0) {
@@ -100,19 +114,34 @@ export function FlashcardDeck({
   }
 
   async function rate(label: "forgot" | "hard" | "good" | "easy") {
-    if (!card) return;
-    await mark(card.id, card.type, label);
+    if (!card || busyRef.current) return;
+    busyRef.current = true;
+    clearPending();
+    const snapshot = card;
+    const idx = i;
+    const next = [...deck];
+    next.splice(idx, 1);
+    if (label === "forgot") next.splice(Math.min(next.length, idx + 2), 0, snapshot);
+    else if (label === "hard") next.splice(Math.min(next.length, idx + 4), 0, snapshot);
     setRated((n) => n + 1);
     if (label === "good" || label === "easy") setSaved((n) => n + 1);
-    const next = [...deck];
-    next.splice(i, 1);
-    if (label === "forgot") next.splice(Math.min(next.length, i + 2), 0, card);
-    else if (label === "hard") next.splice(Math.min(next.length, i + 4), 0, card);
-    advance(next, i);
+    advance(next, idx);
+    try {
+      await mark(snapshot.id, snapshot.type, label);
+    } catch {
+      /* keep going even if local save is slow */
+    } finally {
+      busyRef.current = false;
+    }
   }
 
   function onTypeCheck() {
-    if (!card || check !== "idle") return;
+    if (!card) return;
+    if (check === "wrong") {
+      void rate("forgot");
+      return;
+    }
+    if (check !== "idle") return;
     const expected = card.answers?.filter(Boolean) ?? [];
     if (!expected.length) {
       setFlip(true);
@@ -122,12 +151,15 @@ export function FlashcardDeck({
     if (ok) {
       setCheck("correct");
       setFlip(true);
-      window.setTimeout(() => {
+      pendingRef.current = window.setTimeout(() => {
         void rate("good");
-      }, 700);
+      }, 800);
     } else {
       setCheck("wrong");
       setFlip(true);
+      pendingRef.current = window.setTimeout(() => {
+        void rate("forgot");
+      }, 1600);
     }
   }
 
@@ -140,6 +172,7 @@ export function FlashcardDeck({
         <Button
           className="mt-5"
           onClick={() => {
+            clearPending();
             setDeck(shuffle(cards));
             setI(0);
             setDone(false);
@@ -168,7 +201,10 @@ export function FlashcardDeck({
     <div className="mx-auto max-w-md">
       <button
         type="button"
-        onClick={() => setFlip((f) => !f)}
+        onClick={() => {
+          if (check !== "idle") return;
+          setFlip((f) => !f);
+        }}
         className={cn(
           "relative min-h-64 w-full rounded-xl border bg-surface p-8 text-center shadow-[var(--shadow-soft)]",
           check === "correct" ? "border-success" : check === "wrong" ? "border-danger" : "border-border",
@@ -177,12 +213,12 @@ export function FlashcardDeck({
       >
         {flip ? (
           <div>
-            <p className="whitespace-pre-line text-lg">{card.back}</p>
-            {card.extra ? <p className="mt-3 font-jp text-muted">{card.extra}</p> : null}
+            <p className="whitespace-pre-line text-lg text-fg">{card.back}</p>
+            {card.extra ? <p className="mt-3 font-jp text-fg">{card.extra}</p> : null}
             {check === "correct" ? (
               <p className="mt-4 text-sm text-success">Đúng — đã lưu là nhớ</p>
             ) : check === "wrong" ? (
-              <p className="mt-4 text-sm text-danger">Chưa khớp. Đọc đáp án rồi đánh giá.</p>
+              <p className="mt-4 text-sm text-danger">Chưa khớp. Thẻ sẽ quay lại sau vài lá.</p>
             ) : null}
           </div>
         ) : (
@@ -192,8 +228,9 @@ export function FlashcardDeck({
           </>
         )}
       </button>
-      <div className="mt-3 flex justify-center">
+      <div className="mt-3 flex flex-wrap justify-center gap-2">
         <SpeakButton text={card.speak ?? card.front} />
+        {card.extra ? <SpeakButton text={card.extra} label="Nghe ví dụ" /> : null}
       </div>
       {canType ? (
         <form
@@ -212,12 +249,16 @@ export function FlashcardDeck({
             autoCapitalize="off"
             autoCorrect="off"
             spellCheck={false}
-            disabled={check === "correct"}
+            disabled={check !== "idle"}
           />
-          <Button type="submit" variant="secondary" disabled={check === "correct"}>
-            Kiểm tra
+          <Button type="submit" variant={check === "wrong" ? "default" : "secondary"} disabled={check === "correct"}>
+            {check === "wrong" ? "Tiếp" : "Kiểm tra"}
           </Button>
         </form>
+      ) : check === "wrong" ? (
+        <Button className="mt-4 w-full" onClick={() => void rate("forgot")}>
+          Tiếp
+        </Button>
       ) : null}
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Button variant="danger" onClick={() => void rate("forgot")}>
@@ -235,7 +276,7 @@ export function FlashcardDeck({
       </div>
       <p className="mt-3 text-center text-xs text-muted tabular-nums">
         Còn {deck.length} thẻ · đã lưu {saved}
-        <span className="block text-subtle">Nhớ / Dễ / gõ đúng thì tiến độ lưu ngay trên máy.</span>
+        <span className="block text-subtle">Gõ sai sẽ hiện đáp án rồi tự sang thẻ tiếp (ôn lại sau).</span>
       </p>
     </div>
   );

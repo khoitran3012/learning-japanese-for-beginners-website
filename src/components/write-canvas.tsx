@@ -7,6 +7,8 @@ interface Point {
   y: number;
 }
 
+const FONT = "'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif";
+
 export function WriteCanvas({ character, strokeCount }: { character: string; strokeCount?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
@@ -26,7 +28,18 @@ export function WriteCanvas({ character, strokeCount }: { character: string; str
     return {
       ink: root.getPropertyValue("--color-ink").trim() || "#1c1917",
       pen: root.getPropertyValue("--color-primary").trim() || "#2f4158",
+      grid: root.getPropertyValue("--color-border").trim() || "#ddd4c8",
     };
+  }
+
+  function fitFont(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxSize: number) {
+    let size = maxSize;
+    ctx.font = `${size}px ${FONT}`;
+    while (size > 56 && ctx.measureText(text).width > maxWidth) {
+      size -= 6;
+      ctx.font = `${size}px ${FONT}`;
+    }
+    return size;
   }
 
   function redraw() {
@@ -34,19 +47,30 @@ export function WriteCanvas({ character, strokeCount }: { character: string; str
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const { ink, pen } = colors();
+    const { ink, pen, grid } = colors();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = "280px 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif";
+    ctx.strokeStyle = grid;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.globalAlpha = 0.16;
+    ctx.globalAlpha = 0.2;
     ctx.fillStyle = ink;
-    ctx.fillText(character, canvas.width / 2, canvas.height / 2 + 20);
+    const units = Math.max(1, [...character].length);
+    const maxSize = units <= 1 ? 280 : units === 2 ? 168 : Math.max(64, 360 / units);
+    fitFont(ctx, character, canvas.width * 0.86, maxSize);
+    ctx.fillText(character, canvas.width / 2, canvas.height / 2);
     ctx.globalAlpha = 1;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.strokeStyle = pen;
-    ctx.lineWidth = 14;
+    ctx.lineWidth = units >= 2 ? 11 : 14;
     for (const s of strokes.current) {
       if (!s.length) continue;
       ctx.beginPath();
