@@ -69,7 +69,7 @@ export function OnlineUsersList({ compact = false }: { compact?: boolean }) {
   const shown = compact ? users.slice(0, 5) : users;
   return (
     <div>
-      <p className={cn("mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-subtle", compact && "px-3")}>
+      <p className={cn("mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted", compact && "px-3")}>
         <span className="size-1.5 rounded-full bg-success" aria-hidden />
         {users.length} đang học
       </p>

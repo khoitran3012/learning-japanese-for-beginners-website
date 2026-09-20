@@ -129,7 +129,7 @@ export function WriteCanvas({ character, strokeCount }: { character: string; str
         ref={ref}
         width={420}
         height={420}
-        className="w-full touch-none rounded-lg border border-border bg-bg-elevated"
+        className="w-full touch-none rounded-lg border border-border bg-surface"
         style={{ aspectRatio: "1 / 1", touchAction: "none" }}
         aria-label={`Vùng viết chữ ${character}`}
       />

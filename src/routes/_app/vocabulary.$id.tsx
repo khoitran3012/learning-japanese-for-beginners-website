@@ -43,7 +43,7 @@ function Page() {
           <p className="mt-1 text-sm text-subtle">
             {v.part_of_speech.join(", ")} · {v.category}
           </p>
-          <SpeakButton className="mt-4 mx-auto" text={v.word} />
+          <SpeakButton className="mt-4 mx-auto" text={v.word} kana={v.kana} />
         </CardContent>
       </Card>
 
@@ -92,7 +92,7 @@ function Page() {
               <p className="text-xs text-subtle">Câu {i + 1}</p>
               <div className="mt-1 flex items-start justify-between gap-3">
                 <p className="font-jp text-lg">{ex.jp}</p>
-                <SpeakButton text={ex.jp} label="Nghe câu" />
+                <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe câu" />
               </div>
               {ex.kana ? <p className="text-sm text-muted">{ex.kana}</p> : null}
               {showRomaji && ex.romaji ? <p className="text-sm text-accent">{ex.romaji}</p> : null}

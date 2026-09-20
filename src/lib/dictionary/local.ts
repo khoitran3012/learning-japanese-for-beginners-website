@@ -1,10 +1,20 @@
 import { allVocabExamples } from "@/lib/akari/examples";
-import type { DictionaryEntry, KanjiEntry, VocabEntry } from "@/lib/akari/types";
+import type { DictionaryEntry, KanjiEntry, PartOfSpeech, VocabEntry } from "@/lib/akari/types";
 import type { SearchQuery } from "@/lib/api/data-provider";
 import { hasJapanese, normalizeRomaji, romajiVariants, stripKanaLength } from "@/lib/akari/romaji";
 import { verbAliases, queryStems } from "./conjugate";
 import { fuzzyScore } from "./fuzzy";
 import { foldCompact, foldKana, foldVi, uniqueStrings } from "./text";
+
+const GENERIC_POS = new Set(["danh từ"]);
+
+/** Keep specific POS (adj/verb/…) and drop a leftover default “danh từ”. */
+export function preferPos(tags: string[]): PartOfSpeech[] {
+  const uniq = uniqueStrings(tags);
+  const specific = uniq.filter((p) => !GENERIC_POS.has(p));
+  const picked = specific.length ? specific : uniq.length ? uniq : ["danh từ"];
+  return picked as PartOfSpeech[];
+}
 
 export function vocabToDict(v: VocabEntry): DictionaryEntry {
   const aliases = uniqueStrings([
@@ -17,7 +27,7 @@ export function vocabToDict(v: VocabEntry): DictionaryEntry {
     kana: v.kana,
     romaji: v.romaji,
     meanings: v.meanings ?? [v.meaning_vi],
-    part_of_speech: v.part_of_speech,
+    part_of_speech: preferPos(v.part_of_speech),
     jlpt: [v.level],
     common: v.common ?? v.difficulty <= 2,
     frequency: v.difficulty,
@@ -42,7 +52,7 @@ export function mergeEntries(a: DictionaryEntry, b: DictionaryEntry): Dictionary
   return {
     ...a,
     meanings: uniqueStrings([...a.meanings, ...b.meanings]),
-    part_of_speech: uniqueStrings([...a.part_of_speech, ...b.part_of_speech]) as DictionaryEntry["part_of_speech"],
+    part_of_speech: preferPos([...a.part_of_speech, ...b.part_of_speech]),
     jlpt: uniqueStrings([...a.jlpt, ...b.jlpt]) as DictionaryEntry["jlpt"],
     tags: uniqueStrings([...a.tags, ...b.tags]),
     related: uniqueStrings([...(a.related ?? []), ...(b.related ?? [])]),
@@ -75,7 +85,7 @@ export function buildDictionary(
   const byHead = new Map<string, string>();
 
   const add = (entry: DictionaryEntry) => {
-    const next = withSearchAliases(entry);
+    const next = withSearchAliases({ ...entry, part_of_speech: preferPos(entry.part_of_speech) });
     const head = headKey(next);
     const existingId = byHead.get(head);
     if (existingId) {
@@ -101,7 +111,12 @@ export function buildDictionary(
 
 function posMatch(entryPos: string[], filters: string[]) {
   return entryPos.some((p) =>
-    filters.some((f) => p === f || p.startsWith(f) || p.includes(f) || f.includes(p)),
+    filters.some((f) => {
+      if (f === "động từ") return p === "động từ" || p.startsWith("động từ ");
+      if (f === "tính từ") return p.startsWith("tính từ");
+      if (f === "danh từ") return p === "danh từ" || p.startsWith("danh từ ");
+      return p === f || p.startsWith(`${f} `);
+    }),
   );
 }
 

@@ -58,7 +58,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
             </div>
           ) : null}
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <SpeakButton text={entry.kanji} />
+            <SpeakButton text={entry.kanji} kana={entry.kana} />
             <Button type="button" variant="secondary" size="sm" onClick={() => void copyHead()}>
               <Copy /> Sao chép
             </Button>
@@ -74,7 +74,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
               <div key={ex.jp} className="border-t border-border pt-3 first:border-0 first:pt-0">
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-jp text-lg">{ex.jp}</p>
-                  <SpeakButton text={ex.jp} label="Nghe câu" />
+                  <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe câu" />
                 </div>
                 {ex.kana ? <p className="text-sm text-muted">{ex.kana}</p> : null}
                 {showRomaji && ex.romaji ? <p className="text-sm text-accent">{ex.romaji}</p> : null}

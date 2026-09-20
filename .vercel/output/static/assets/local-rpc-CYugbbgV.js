@@ -1,0 +1,1 @@
+import{f as e,l as t}from"./index-s9n35eFv.js";var n=t({method:`POST`}).handler(e(`bb9e2c010310d8175a15df97f0940b9010672dd4e5c106219417511064d02c5a`)),r=t({method:`POST`}).handler(e(`feb02f3dbef43251966405dec073b6809ef0ab4d813e3ffa5ed3273786d166b3`));export{n,r as t};

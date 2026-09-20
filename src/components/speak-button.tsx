@@ -7,15 +7,19 @@ import { cn } from "@/lib/utils";
 
 export function SpeakButton({
   text,
+  kana,
   className,
   label = "Nghe",
 }: {
+  /** Display/source text. TTS prefers `kana` when given — kanji alone is often misread. */
   text: string;
+  kana?: string;
   className?: string;
   label?: string;
 }) {
   const rate = useSettings((s) => s.ttsRate);
   const [msg, setMsg] = useState<string | null>(null);
+  const spoken = (kana && kana.trim()) || text;
 
   return (
     <div className={cn("inline-flex flex-col items-start gap-1", className)}>
@@ -25,7 +29,7 @@ export function SpeakButton({
         size="sm"
         aria-label={label}
         onClick={async () => {
-          const res = await speakJapanese(text, rate);
+          const res = await speakJapanese(spoken, rate);
           const status = getTts().statusMessage();
           setMsg(res.ok ? status : res.message);
         }}

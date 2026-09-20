@@ -153,7 +153,7 @@ function Page() {
                 {hasCode ? " Bạn đã có mã — tạo mới sẽ hủy mã cũ." : " Bạn chưa có mã, hãy tạo ngay."}
               </p>
               {freshCode ? (
-                <p className="rounded-[10px] border border-border bg-bg-elevated px-3 py-3 text-center font-mono text-lg tracking-wide">
+                <p className="rounded-[10px] border border-border bg-choice px-3 py-3 text-center font-mono text-lg tracking-wide">
                   {freshCode}
                 </p>
               ) : null}

@@ -96,10 +96,10 @@ function MemoryGame() {
                 onClick={() => flip(c.id, c.pair)}
                 className={`flex min-h-[4.5rem] items-center justify-center rounded-[10px] border text-xl ${
                   matched.has(c.pair)
-                    ? "border-success bg-success/10 font-jp"
+                    ? "border-forest bg-mist font-jp text-fg"
                     : face
-                      ? "border-primary bg-surface font-jp"
-                      : "border-border bg-bg-elevated text-subtle"
+                      ? "border-primary bg-surface font-jp text-fg"
+                      : "border-border bg-choice text-muted"
                 }`}
               >
                 {face ? c.label : "?"}
@@ -222,7 +222,7 @@ function MatchGame() {
                 onClick={() => setLeftPick(v.id)}
               >
                 {v.word}
-                <span className="ml-2 text-xs font-sans text-muted">{v.kana}</span>
+                <span className="ml-2 text-xs font-sans opacity-80">{v.kana}</span>
               </Button>
             ))}
           </div>

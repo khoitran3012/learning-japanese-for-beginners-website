@@ -15,7 +15,7 @@ export function SheetContent({
 }: ComponentProps<typeof DialogPrimitive.Content> & { side?: "left" | "right" | "bottom" }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim/55" />
       <DialogPrimitive.Content
         className={cn(
           "fixed z-50 bg-surface text-fg shadow-[var(--shadow-soft)]",
@@ -27,7 +27,7 @@ export function SheetContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-3 top-3 rounded-sm p-1 text-muted hover:bg-bg-elevated">
+        <DialogPrimitive.Close className="absolute right-3 top-3 rounded-sm p-1 text-muted hover:bg-choice">
           <X className="size-4" />
           <span className="sr-only">Đóng</span>
         </DialogPrimitive.Close>

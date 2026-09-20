@@ -136,7 +136,7 @@ function Page() {
       </form>
 
       <div className="mb-4 flex flex-wrap gap-2">
-        {(["all", "N5", "N4", "N3"] as const).map((lv) => (
+        {(["all", "N5", "N4", "N3", "N2", "N1"] as const).map((lv) => (
           <Button
             key={lv}
             size="sm"
@@ -326,6 +326,9 @@ function ResultList({
               {showRomaji ? <span className="ml-1 text-subtle">{e.romaji}</span> : null}
             </span>
             <span className="min-w-0 flex-1 truncate text-sm">{e.meanings[0]}</span>
+            <span className="hidden max-w-28 shrink-0 truncate text-xs text-subtle sm:inline">
+              {e.part_of_speech[0]}
+            </span>
             <Badge variant="muted">{e.jlpt[0]}</Badge>
           </Link>
         </li>

@@ -27,7 +27,7 @@ export function KanaChart({ kind, chars }: { kind: KanaKind; chars: KanaChar[] }
         return (
           <section key={g.id}>
             <div className="mb-3 flex items-center gap-2">
-              <h2 className="text-sm font-medium uppercase tracking-[0.14em] text-subtle">{g.label}</h2>
+              <h2 className="text-sm font-medium uppercase tracking-[0.14em] text-muted">{g.label}</h2>
               <Badge variant="muted">{list.length}</Badge>
             </div>
             <div className="grid grid-cols-5 gap-2 sm:grid-cols-5 md:grid-cols-10">

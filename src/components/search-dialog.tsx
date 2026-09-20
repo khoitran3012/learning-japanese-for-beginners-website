@@ -99,13 +99,13 @@ export function SearchDialog({
             <li key={`${r.to}-${i}`}>
               <button
                 type="button"
-                className="flex min-h-12 w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-bg-elevated"
+                className="flex min-h-12 w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-choice"
                 onClick={() => {
                   onOpenChange(false);
                   void router.navigate({ to: r.to as never });
                 }}
               >
-                <span className="w-20 shrink-0 text-[11px] uppercase tracking-wide text-subtle">
+                <span className="w-20 shrink-0 text-[11px] uppercase tracking-wide text-muted">
                   {r.type}
                 </span>
                 <span className="font-jp text-base">{r.title}</span>

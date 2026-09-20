@@ -12,7 +12,7 @@ export function AlertDialogContent({
 }: ComponentProps<typeof AlertDialogPrimitive.Content>) {
   return (
     <AlertDialogPrimitive.Portal>
-      <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40" />
+      <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim/55" />
       <AlertDialogPrimitive.Content
         className={cn(
           "fixed left-1/2 top-1/2 z-50 w-[min(440px,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-5 text-fg shadow-[var(--shadow-soft)]",

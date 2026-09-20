@@ -2,6 +2,7 @@ import { Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ChoiceRow, choiceState } from "@/components/ui/choice-row";
 import { Input } from "@/components/ui/input";
 import { SpeakButton } from "@/components/speak-button";
 import { answersMatch } from "@/lib/akari/answer-check";
@@ -76,18 +77,18 @@ export function QuizCard({
         </p>
         {listenOnly ? (
           <div className="flex flex-col items-center gap-3 py-4">
-            <span className="flex size-16 items-center justify-center rounded-full bg-bg-elevated text-accent">
+            <span className="flex size-16 items-center justify-center rounded-full bg-choice text-accent">
               <Volume2 className="size-8" />
             </span>
-            <p className="text-center text-base font-medium">{q.prompt}</p>
+            <p className="text-center text-base font-medium text-fg">{q.prompt}</p>
             <SpeakButton text={q.speak!} label="Nghe lại" />
           </div>
         ) : (
           <>
             {q.promptJp ? (
-              <p className="font-jp text-5xl leading-none">{q.promptJp}</p>
+              <p className="font-jp text-5xl leading-none text-fg">{q.promptJp}</p>
             ) : null}
-            <p className={cn(q.promptJp ? "text-sm text-muted" : "text-lg font-medium")}>{q.prompt}</p>
+            <p className={cn(q.promptJp ? "text-sm text-muted" : "text-lg font-medium text-fg")}>{q.prompt}</p>
             {q.speak ? <SpeakButton text={q.speak} /> : null}
           </>
         )}
@@ -112,18 +113,23 @@ export function QuizCard({
             <Button type="submit">OK</Button>
           </form>
         ) : null}
-        {typedOk === true ? <p className="text-sm text-success">Đúng — khớp với phần gõ.</p> : null}
-        {typedOk === false ? <p className="text-sm text-danger">Chưa khớp. Đáp án đúng được tô xanh.</p> : null}
+        {typedOk === true ? <p className="text-sm font-medium text-forest">Đúng — khớp với phần gõ.</p> : null}
+        {typedOk === false ? <p className="text-sm font-medium text-seal">Chưa khớp. Đáp án đúng được tô xanh.</p> : null}
         <div className="grid gap-2">
           {q.options.map((o, idx) => (
-            <Button
+            <ChoiceRow
               key={o + idx}
-              variant={picked === null ? "secondary" : idx === q.answer ? "success" : picked === idx ? "danger" : "secondary"}
-              className="h-auto justify-start py-3 font-jp"
+              state={choiceState({
+                revealed,
+                isAnswer: idx === q.answer,
+                picked: picked === idx,
+              })}
+              disabled={revealed}
+              className="font-jp"
               onClick={() => choose(idx)}
             >
               {String.fromCharCode(65 + idx)}. {o}
-            </Button>
+            </ChoiceRow>
           ))}
         </div>
         {revealed ? (

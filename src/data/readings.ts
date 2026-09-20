@@ -6,7 +6,7 @@ export const READINGS: Array<{
   kana: string;
   romaji: string;
   vi: string;
-  questions: { q: string; options: string[]; answer: number; explain: string }[];
+  questions: { q: string; options: { jp: string; romaji: string }[]; answer: number; explain: string }[];
 }> = [
   {
     id: "rd-n5-01",
@@ -19,13 +19,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "ゆみさんは何時に起きますか。",
-        options: ["六時", "七時", "八時", "九時"],
+        options: [{ jp: "六時", romaji: "rokuji" }, { jp: "七時", romaji: "shichiji" }, { jp: "八時", romaji: "hachiji" }, { jp: "九時", romaji: "kuji" }],
         answer: 1,
         explain: "Câu đầu: 毎朝七時に起きます.",
       },
       {
         q: "学校で何を勉強しますか。",
-        options: ["英語", "数学", "日本語", "歴史"],
+        options: [{ jp: "英語", romaji: "eigo" }, { jp: "数学", romaji: "suugaku" }, { jp: "日本語", romaji: "nihongo" }, { jp: "歴史", romaji: "rekishi" }],
         answer: 2,
         explain: "教室で日本語を勉強します.",
       },
@@ -42,13 +42,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "けんさんは何を買いますか。",
-        options: ["パン", "赤いりんご", "牛乳", "魚"],
+        options: [{ jp: "パン", romaji: "pan" }, { jp: "赤いりんご", romaji: "akai ringo" }, { jp: "牛乳", romaji: "gyuunyuu" }, { jp: "魚", romaji: "sakana" }],
         answer: 1,
         explain: "赤いりんごを五つ買います.",
       },
       {
         q: "りんごは高いですか。",
-        options: ["はい、高いです", "いいえ、安いです", "分かりません", "五つです"],
+        options: [{ jp: "はい、高いです", romaji: "Hai, takai desu" }, { jp: "いいえ、安いです", romaji: "Iie, yasui desu" }, { jp: "分かりません", romaji: "wakarimasen" }, { jp: "五つです", romaji: "itsutsu desu" }],
         answer: 1,
         explain: "りんごが安いです.",
       },
@@ -65,13 +65,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "わたしは何を持っていますか。",
-        options: ["赤い傘", "黄色い傘", "黒い鞄", "白い花"],
+        options: [{ jp: "赤い傘", romaji: "akai kasa" }, { jp: "黄色い傘", romaji: "kiiroi kasa" }, { jp: "黒い鞄", romaji: "kuroi kaban" }, { jp: "白い花", romaji: "shiroi hana" }],
         answer: 1,
         explain: "黄色い傘を持って駅まで歩きます.",
       },
       {
         q: "家に帰ると、誰がお茶を入れてくれましたか。",
-        options: ["父", "先生", "母", "友達"],
+        options: [{ jp: "父", romaji: "chichi" }, { jp: "先生", romaji: "sensei" }, { jp: "母", romaji: "haha" }, { jp: "友達", romaji: "tomodachi" }],
         answer: 2,
         explain: "母がお茶を入れてくれました.",
       },
@@ -88,13 +88,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "なぜ電車に間に合いませんでしたか。",
-        options: ["会議があったから", "雪でバスが遅れたから", "資料がなかったから", "会社が休みだったから"],
+        options: [{ jp: "会議があったから", romaji: "kaigi ga atta kara" }, { jp: "雪でバスが遅れたから", romaji: "yuki de basu ga okureta kara" }, { jp: "資料がなかったから", romaji: "shiryou ga nakatta kara" }, { jp: "会社が休みだったから", romaji: "kaisha ga yasumi datta kara" }],
         answer: 1,
         explain: "けさ雪でバスが遅れました。それが原因です。",
       },
       {
         q: "資料はいつ準備しましたか。",
-        options: ["今朝", "会議の後", "昨夜", "来週"],
+        options: [{ jp: "今朝", romaji: "kesa" }, { jp: "会議の後", romaji: "kaigi no ato" }, { jp: "昨夜", romaji: "sakuya" }, { jp: "来週", romaji: "raishuu" }],
         answer: 2,
         explain: "資料は昨夜準備しておきました。",
       },
@@ -111,13 +111,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "発表はいつですか。",
-        options: ["昨日", "今夜", "来週", "来年"],
+        options: [{ jp: "昨日", romaji: "kinou" }, { jp: "今夜", romaji: "konya" }, { jp: "来週", romaji: "raishuu" }, { jp: "来年", romaji: "rainen" }],
         answer: 2,
         explain: "来週、研究の発表があります。",
       },
       {
         q: "失敗しないために、何をしましたか。",
-        options: ["旅行した", "先生に相談した", "会社を休んだ", "切符を買った"],
+        options: [{ jp: "旅行した", romaji: "ryokou shita" }, { jp: "先生に相談した", romaji: "sensei ni soudan shita" }, { jp: "会社を休んだ", romaji: "kaisha o yasunda" }, { jp: "切符を買った", romaji: "kippu o katta" }],
         answer: 1,
         explain: "先生に相談しておきました。",
       },
@@ -134,20 +134,20 @@ export const READINGS: Array<{
     questions: [
       {
         q: "祭りの情報はどのような形で伝わっていますか。",
-        options: ["自分が昨日見た", "聞いた話（そうだ）", "天気予報だけ", "手紙"],
+        options: [{ jp: "自分が昨日見た", romaji: "jibun ga kinou mita" }, { jp: "聞いた話（そうだ）", romaji: "kiita hanashi (sou da)" }, { jp: "天気予報だけ", romaji: "tenki yohou dake" }, { jp: "手紙", romaji: "tegami" }],
         answer: 1,
         explain: "あるそうです — mẫu truyền tin.",
       },
       {
         q: "雨の場合、家族はどうしますか。",
-        options: ["家にいる", "駅前まで行く", "飛行機で帰る", "会議に出る"],
+        options: [{ jp: "家にいる", romaji: "ie ni iru" }, { jp: "駅前まで行く", romaji: "ekimae made iku" }, { jp: "飛行機で帰る", romaji: "hikouki de kaeru" }, { jp: "会議に出る", romaji: "kaigi ni deru" }],
         answer: 1,
         explain: "雨が降っても、駅前まで行くつもりです。",
       },
     ],
   },
   {
-    id: "rd-n5-03",
+    id: "rd-n5-06",
     title: "Chủ nhật ở công viên",
     level: "N5",
     jp: "日曜日、私は公園へ行きます。子どもがボールで遊びます。犬もたくさんいます。午後、友達とコーヒーを飲みます。",
@@ -157,13 +157,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "公園で子どもは何をしますか。",
-        options: ["本を読む", "ボールで遊ぶ", "電車に乗る", "試験を受ける"],
+        options: [{ jp: "本を読む", romaji: "hon o yomu" }, { jp: "ボールで遊ぶ", romaji: "booru de asobu" }, { jp: "電車に乗る", romaji: "densha ni noru" }, { jp: "試験を受ける", romaji: "shiken o ukeru" }],
         answer: 1,
         explain: "子どもがボールで遊びます。",
       },
       {
         q: "午後、誰とコーヒーを飲みますか。",
-        options: ["先生", "母", "友達", "駅員"],
+        options: [{ jp: "先生", romaji: "sensei" }, { jp: "母", romaji: "haha" }, { jp: "友達", romaji: "tomodachi" }, { jp: "駅員", romaji: "ekiin" }],
         answer: 2,
         explain: "友達とコーヒーを飲みます。",
       },
@@ -180,13 +180,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "今、何をしていますか。",
-        options: ["働いている", "日本語を勉強している", "料理している", "寝ている"],
+        options: [{ jp: "働いている", romaji: "hataraite iru" }, { jp: "日本語を勉強している", romaji: "nihongo o benkyou shite iru" }, { jp: "料理している", romaji: "ryouri shite iru" }, { jp: "寝ている", romaji: "nete iru" }],
         answer: 1,
         explain: "日本語を毎日勉強しています。",
       },
       {
         q: "東京へいつ行きたいですか。",
-        options: ["昨日", "来月", "来年", "今朝"],
+        options: [{ jp: "昨日", romaji: "kinou" }, { jp: "来月", romaji: "raigetsu" }, { jp: "来年", romaji: "rainen" }, { jp: "今朝", romaji: "kesa" }],
         answer: 1,
         explain: "来月、東京へ行きたいです。",
       },
@@ -203,20 +203,20 @@ export const READINGS: Array<{
     questions: [
       {
         q: "なぜ今から準備していますか。",
-        options: ["旅行したいから", "N3に合格しなければならないから", "映画を見るから", "犬を買うから"],
+        options: [{ jp: "旅行したいから", romaji: "ryokou shitai kara" }, { jp: "N3に合格しなければならないから", romaji: "N3 ni goukaku shinakereba naranai kara" }, { jp: "映画を見るから", romaji: "eiga o miru kara" }, { jp: "犬を買うから", romaji: "inu o kau kara" }],
         answer: 1,
         explain: "N3に合格しなければならないので。",
       },
       {
         q: "落ちたらどうしますか。",
-        options: ["やめる", "もう一度受けてみる", "国へ帰るだけ", "先生になる"],
+        options: [{ jp: "やめる", romaji: "yameru" }, { jp: "もう一度受けてみる", romaji: "mou ichido ukete miru" }, { jp: "国へ帰るだけ", romaji: "kuni e kaeru dake" }, { jp: "先生になる", romaji: "sensei ni naru" }],
         answer: 1,
         explain: "落ちても、もう一度受けてみるつもりです。",
       },
     ],
   },
   {
-    id: "rd-n5-04",
+    id: "rd-n5-07",
     title: "Điện thoại của Mai",
     level: "N5",
     jp: "まいさんは新しい携帯電話を買いました。とても小さいです。まいさんは毎日お母さんに電話をかけます。夜はゲームをしません。",
@@ -226,13 +226,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "まいさんは何を買いましたか。",
-        options: ["本", "新しい携帯電話", "傘", "時計"],
+        options: [{ jp: "本", romaji: "hon" }, { jp: "新しい携帯電話", romaji: "atarashii keitai denwa" }, { jp: "傘", romaji: "kasa" }, { jp: "時計", romaji: "tokei" }],
         answer: 1,
         explain: "新しい携帯電話を買いました.",
       },
       {
         q: "夜は何をしますか。",
-        options: ["ゲームをします", "ゲームをしません", "学校へ行きます", "魚を食べます"],
+        options: [{ jp: "ゲームをします", romaji: "geemu o shimasu" }, { jp: "ゲームをしません", romaji: "geemu o shimasen" }, { jp: "学校へ行きます", romaji: "gakkou e ikimasu" }, { jp: "魚を食べます", romaji: "sakana o tabemasu" }],
         answer: 1,
         explain: "夜はゲームをしません.",
       },
@@ -240,7 +240,7 @@ export const READINGS: Array<{
   },
   {
     id: "rd-n5-05",
-    title: "Chủ nhật ở công viên",
+    title: "Takashi ở công viên",
     level: "N5",
     jp: "日曜日、たかしさんは公園へ行きます。犬が三匹います。子どもがボールで遊びます。たかしさんは写真を十枚撮りました。",
     kana: "にちようび、たかしさんはこうえんへいきます。いぬがさんびきいます。こどもがボールであそびます。たかしさんはしゃしんをじゅうまいとりました。",
@@ -249,13 +249,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "犬は何匹いますか。",
-        options: ["一匹", "二匹", "三匹", "十匹"],
+        options: [{ jp: "一匹", romaji: "ippiki" }, { jp: "二匹", romaji: "nihiki" }, { jp: "三匹", romaji: "sanbiki" }, { jp: "十匹", romaji: "juppiki" }],
         answer: 2,
         explain: "犬が三匹います.",
       },
       {
         q: "たかしさんは何を撮りましたか。",
-        options: ["映画", "写真", "手紙", "地図"],
+        options: [{ jp: "映画", romaji: "eiga" }, { jp: "写真", romaji: "shashin" }, { jp: "手紙", romaji: "tegami" }, { jp: "地図", romaji: "chizu" }],
         answer: 1,
         explain: "写真を十枚撮りました.",
       },
@@ -272,13 +272,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "何を忘れてしまいましたか。",
-        options: ["傘", "鍵", "宿題", "切符"],
+        options: [{ jp: "傘", romaji: "kasa" }, { jp: "鍵", romaji: "kagi" }, { jp: "宿題", romaji: "shukudai" }, { jp: "切符", romaji: "kippu" }],
         answer: 1,
         explain: "鍵を忘れてしまいました.",
       },
       {
         q: "明日どうしますか。",
-        options: ["旅行します", "早めに帰るようにします", "犬を買います", "映画を見ます"],
+        options: [{ jp: "旅行します", romaji: "ryokou shimasu" }, { jp: "早めに帰るようにします", romaji: "hayame ni kaeru you ni shimasu" }, { jp: "犬を買います", romaji: "inu o kaimasu" }, { jp: "映画を見ます", romaji: "eiga o mimasu" }],
         answer: 1,
         explain: "早めに帰るようにします.",
       },
@@ -295,13 +295,13 @@ export const READINGS: Array<{
     questions: [
       {
         q: "なぜ病院へ行ったほうがいいと思いますか。",
-        options: ["頭が痛いから", "暇だから", "友達が待つから", "写真を撮るから"],
+        options: [{ jp: "頭が痛いから", romaji: "atama ga itai kara" }, { jp: "暇だから", romaji: "hima da kara" }, { jp: "友達が待つから", romaji: "tomodachi ga matsu kara" }, { jp: "写真を撮るから", romaji: "shashin o toru kara" }],
         answer: 0,
         explain: "頭が痛いので.",
       },
       {
         q: "熱があっても何をしますか。",
-        options: ["寝ます", "試験を受けてみます", "泳ぎます", "料理します"],
+        options: [{ jp: "寝ます", romaji: "nemasu" }, { jp: "試験を受けてみます", romaji: "shiken o ukete mimasu" }, { jp: "泳ぎます", romaji: "oyogimasu" }, { jp: "料理します", romaji: "ryouri shimasu" }],
         answer: 1,
         explain: "明日の試験は受けてみます.",
       },

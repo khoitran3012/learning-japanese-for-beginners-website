@@ -7,6 +7,7 @@ import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { DICTIONARY_EXTRA } from "@/data/dictionary-extra";
 import { DICTIONARY_CORE } from "@/data/dictionary-core";
+import { JLPT_DICTIONARY } from "@/data/dictionary-jlpt";
 import { kanaById } from "@/data/kana";
 import { buildDictionary, searchLocal } from "./local";
 import { hasKanji } from "@/lib/akari/romaji";
@@ -36,7 +37,7 @@ export function builtinDictionary(): DictionaryEntry[] {
     builtin = buildDictionary(
       [...VOCAB_N5, ...VOCAB_N4],
       [...KANJI_N5, ...KANJI_N4],
-      [...DICTIONARY_EXTRA, ...DICTIONARY_CORE],
+      [...DICTIONARY_EXTRA, ...DICTIONARY_CORE, ...JLPT_DICTIONARY],
     );
   }
   return builtin;
@@ -58,7 +59,7 @@ export function mergeDictionary(extra: DictionaryEntry[] = []): DictionaryEntry[
   return buildDictionary(
     [...VOCAB_N5, ...VOCAB_N4],
     [...KANJI_N5, ...KANJI_N4],
-    [...DICTIONARY_EXTRA, ...DICTIONARY_CORE, ...extra],
+    [...DICTIONARY_EXTRA, ...DICTIONARY_CORE, ...JLPT_DICTIONARY, ...extra],
   );
 }
 
@@ -148,7 +149,7 @@ export function resolveStudyItem(id: string): ResolvedItem | null {
       sub: vocab.meaning_vi,
       to: `/vocabulary/${vocab.id}`,
       type: "Từ vựng",
-      speak: vocab.word,
+      speak: vocab.kana,
     };
   }
   const kj = allKanji().find((k) => k.id === id);
@@ -180,7 +181,7 @@ export function resolveStudyItem(id: string): ResolvedItem | null {
       sub: d.meanings[0] ?? d.kana,
       to: `/dictionary/${d.id}`,
       type: "Từ điển",
-      speak: d.kanji,
+      speak: d.kana || d.kanji,
     };
   }
   return {
@@ -219,5 +220,6 @@ export const POS_FILTERS = [
   "tính từ -na",
   "trạng từ",
   "trợ từ",
+  "đại từ",
   "biểu hiện",
 ] as const;

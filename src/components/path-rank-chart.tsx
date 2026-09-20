@@ -252,7 +252,7 @@ export function GhibliChartFrame({
   return (
     <section className="ghibli-panel overflow-hidden rounded-xl border border-border shadow-[var(--shadow-soft)]">
       <div className="ghibli-panel-wash p-5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">{kicker}</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{kicker}</p>
         <h2 className="mt-1 font-display text-xl font-semibold">{title}</h2>
         <p className="mt-1 max-w-xl text-sm text-muted">{description}</p>
         <div className="mt-4 rounded-[14px] border border-border bg-surface/85 p-3 backdrop-blur-[2px]">

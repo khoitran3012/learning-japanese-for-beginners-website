@@ -31,7 +31,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex flex-col gap-5" aria-label="Điều hướng chính">
       {groups.map(([group, items]) => (
         <div key={group}>
-          <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.14em] text-subtle">
+          <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
             {group}
           </p>
           <ul className="space-y-0.5">
@@ -125,7 +125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => setSearch(true)}
-            className="mb-5 flex h-10 w-full items-center gap-2 rounded-[10px] border border-border bg-surface px-3 text-sm text-muted"
+            className="mb-5 flex h-10 w-full items-center gap-2 rounded-[10px] border border-border bg-choice px-3 text-sm text-muted"
           >
             <Search className="size-4" />
             <span className="flex-1 text-left">Tìm kiếm</span>

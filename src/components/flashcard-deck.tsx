@@ -224,7 +224,7 @@ export function FlashcardDeck({
         ) : (
           <>
             <p className="text-kana text-6xl">{card.front}</p>
-            <p className="mt-6 text-sm text-subtle">Bấm để lật · hoặc gõ đáp án bên dưới</p>
+            <p className="mt-6 text-sm text-muted">Bấm để lật · hoặc gõ đáp án bên dưới</p>
           </>
         )}
       </button>
@@ -276,7 +276,7 @@ export function FlashcardDeck({
       </div>
       <p className="mt-3 text-center text-xs text-muted tabular-nums">
         Còn {deck.length} thẻ · đã lưu {saved}
-        <span className="block text-subtle">Gõ sai sẽ hiện đáp án rồi tự sang thẻ tiếp (ôn lại sau).</span>
+        <span className="block text-muted">Gõ sai sẽ hiện đáp án rồi tự sang thẻ tiếp (ôn lại sau).</span>
       </p>
     </div>
   );

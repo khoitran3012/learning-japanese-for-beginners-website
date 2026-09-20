@@ -110,7 +110,7 @@ function HomePage() {
         </Card>
         <Card className="lg:col-span-2">
           <CardContent className="flex h-full flex-col">
-            <p className="text-xs uppercase tracking-[0.14em] text-subtle">Bài tiếp theo</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-muted">Bài tiếp theo</p>
             <h2 className="mt-2 font-display text-2xl">{nextLesson.title}</h2>
             <p className="mt-1 text-sm text-muted">{nextLesson.summary}</p>
             <div className="mt-auto flex flex-wrap gap-2 pt-4">
