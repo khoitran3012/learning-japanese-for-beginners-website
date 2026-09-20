@@ -1,3 +1,4 @@
+import { allVocabExamples } from "@/lib/akari/examples";
 import type { DictionaryEntry, KanjiEntry, VocabEntry } from "@/lib/akari/types";
 import type { SearchQuery } from "@/lib/api/data-provider";
 import { hasJapanese, normalizeRomaji, romajiVariants, stripKanaLength } from "@/lib/akari/romaji";
@@ -21,14 +22,7 @@ export function vocabToDict(v: VocabEntry): DictionaryEntry {
     common: v.common ?? v.difficulty <= 2,
     frequency: v.difficulty,
     pitch_accent: null,
-    examples: [
-      {
-        jp: v.example_sentence,
-        kana: v.example_kana,
-        romaji: v.example_romaji,
-        vi: v.example_meaning_vi,
-      },
-    ],
+    examples: allVocabExamples(v),
     tags: v.tags,
     vocabId: v.id,
     kanjiChars: [...v.word].filter((c) => /[\u4e00-\u9fff]/.test(c)),

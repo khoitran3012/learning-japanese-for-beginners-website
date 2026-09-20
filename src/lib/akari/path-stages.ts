@@ -36,3 +36,13 @@ export function isPathStage(value: string): value is PathStageId {
 export function stageLabel(id: string) {
   return PATH_STAGES.find((s) => s.id === id)?.label ?? id;
 }
+
+export function countCompletedByStage(completed: Iterable<string>) {
+  const counts: Record<string, number> = {};
+  for (const id of completed) {
+    const stage = LESSON_STAGE[id];
+    if (!stage) continue;
+    counts[stage] = (counts[stage] ?? 0) + 1;
+  }
+  return counts;
+}

@@ -150,6 +150,9 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    // Self-host on khoitran3012.ddns.net (or any LAN/DDNS name). Vite 6+
+    // otherwise blocks the Host header and the page never reaches auth.
+    allowedHosts: true,
   },
   preview: {
     host: "127.0.0.1",

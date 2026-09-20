@@ -103,28 +103,145 @@ const LOCAL_DEV_ORIGINS: string[] = [
   "http://127.0.0.1:8080",
   "http://[::1]:8080",
 ];
+
+/** No-IP / self-host domain this app is published on. */
+const SELF_HOST_HOSTS: string[] = ["khoitran3012.ddns.net", "*.ddns.net"];
+
+function loopbackHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+}
+
+function originsForHost(host: string): string[] {
+  const out: string[] = [];
+  const ports = ["", ":8080", ":80", ":443", ":3000", ":5173"];
+  for (const proto of ["http", "https"] as const) {
+    for (const port of ports) {
+      out.push(`${proto}://${host}${port}`);
+    }
+  }
+  return out;
+}
+
+function extraPublicOrigins(): string[] {
+  const out = new Set<string>();
+  const add = (raw: string | undefined) => {
+    const value = raw?.trim();
+    if (!value) return;
+    for (const part of value.split(",")) {
+      const piece = part.trim();
+      if (!piece) continue;
+      try {
+        const url = new URL(piece.includes("://") ? piece : `http://${piece}`);
+        out.add(url.origin);
+        for (const origin of originsForHost(url.hostname)) out.add(origin);
+      } catch {
+        /* ignore malformed */
+      }
+    }
+  };
+  add(explicitBaseURL);
+  add(env("AKARI_PUBLIC_ORIGIN"));
+  add(env("BETTER_AUTH_TRUSTED_ORIGINS"));
+  for (const host of ["khoitran3012.ddns.net"]) {
+    for (const origin of originsForHost(host)) out.add(origin);
+  }
+  return [...out];
+}
+
+const extraOrigins = extraPublicOrigins();
+
 const baseURL = explicitBaseURL ?? {
   // Include loopback hosts so dynamic baseURL resolves for local email/password
-  // (not only the preview wildcard).
-  allowedHosts: [...previewAllowedHosts, "localhost", "127.0.0.1", "[::1]"],
+  // (not only the preview wildcard). Also accept the self-host DDNS name.
+  allowedHosts: [
+    ...previewAllowedHosts,
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    ...SELF_HOST_HOSTS,
+  ],
   // `auto` → trust both http:// and https:// expansions of allowedHosts
-  // (preview is https; local dev is http).
+  // (preview is https; local / DDNS self-host is often http).
   protocol: "auto" as const,
   fallback: "http://localhost:8080",
 };
 
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
-const trustedOrigins: string[] = explicitBaseURL
-  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS]
+const staticTrustedOrigins: string[] = explicitBaseURL
+  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS, ...extraOrigins]
   : [
       // Host wildcards (matched against Origin's host)
       ...previewAllowedHosts,
+      ...SELF_HOST_HOSTS,
       // Full-origin wildcards (matched against Origin)
       ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
       ...LOCAL_DEV_ORIGINS,
+      ...extraOrigins,
     ];
 
+function isSelfHostOrigin(origin: string): boolean {
+  try {
+    const host = new URL(origin).hostname;
+    return (
+      host === "khoitran3012.ddns.net" ||
+      host.endsWith(".ddns.net") ||
+      host.endsWith(".grok-sandbox.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Same-origin: Origin/Referer host matches this request's Host (any public DDNS/LAN name). */
+function originMatchesRequestHost(origin: string, request: Request): boolean {
+  try {
+    const parsed = new URL(origin);
+    const rawHost =
+      request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
+    const reqHost = rawHost.split(",")[0]?.trim().toLowerCase();
+    if (!reqHost) return false;
+    const reqHostname = reqHost.split(":")[0];
+    return parsed.host.toLowerCase() === reqHost || parsed.hostname.toLowerCase() === reqHostname;
+  } catch {
+    return false;
+  }
+}
+
+const trustedOrigins = async (request?: Request): Promise<string[]> => {
+  const list = [...staticTrustedOrigins];
+  if (request) {
+    const header = request.headers.get("origin") || request.headers.get("referer") || "";
+    if (header && header !== "null") {
+      try {
+        const origin = header.startsWith("http") ? new URL(header).origin : header;
+        if (isSelfHostOrigin(origin) || originMatchesRequestHost(origin, request)) {
+          list.push(origin);
+        }
+      } catch {
+        /* ignore malformed */
+      }
+    }
+  }
+  return [...new Set(list.filter(Boolean))];
+};
+
+// HTTP on a public hostname cannot store `__Host-` / Secure cookies. Self-host
+// on khoitran3012.ddns.net is usually http:// — flip to regular cookies there.
+// Preview (`*.grok-sandbox.com`) and HTTPS deploys keep the `__Host-` prefix.
+function useInsecureCookies(): boolean {
+  if (env("AKARI_INSECURE_COOKIES") === "1" || env("AKARI_SELF_HOST") === "1") return true;
+  const publicUrl = env("BETTER_AUTH_URL") || env("AKARI_PUBLIC_ORIGIN");
+  if (!publicUrl) return false;
+  try {
+    const url = new URL(publicUrl);
+    return url.protocol === "http:" && !loopbackHost(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+const insecureCookies = useInsecureCookies();
 const databaseUrl = env("DATABASE_URL");
 
 // Static broker OAuth endpoints (skip OIDC discovery on every sign-in / callback).
@@ -146,7 +263,9 @@ const database = databaseUrl
   : { dialect: pgliteDialect(() => getPglite()), type: "postgres" as const };
 
 /** Session token cookie name — also read by the live-preview popup completion page. */
-export const SESSION_TOKEN_COOKIE = "__Host-grok-auth.session_token";
+export const SESSION_TOKEN_COOKIE = insecureCookies
+  ? "akari-auth.session_token"
+  : "__Host-grok-auth.session_token";
 
 // Built separately so the `betterAuth({...})` call stays easy to edit without
 // breaking brackets (models often trip on the conditional plugin spread).
@@ -220,16 +339,31 @@ export const auth = betterAuth({
   // Domain), so we drop its auto prefix (`useSecureCookies: false`) and set
   // Secure + the names ourselves. (Browsers allow Secure cookies on
   // `http://localhost`, so local dev still works.)
-  advanced: {
-    useSecureCookies: false,
-    defaultCookieAttributes: { secure: true, sameSite: "lax", path: "/" },
-    cookies: {
-      session_token: { name: SESSION_TOKEN_COOKIE },
-      session_data: { name: "__Host-grok-auth.session_data" },
-      account_data: { name: "__Host-grok-auth.account_data" },
-      dont_remember: { name: "__Host-grok-auth.dont_remember" },
-    },
-  },
+  //
+  // HTTP self-host (khoitran3012.ddns.net without TLS) cannot store `__Host-`
+  // cookies — the browser silently drops them and login looks broken. In that
+  // mode we use a regular name and skip the Secure flag.
+  advanced: insecureCookies
+    ? {
+        useSecureCookies: false,
+        defaultCookieAttributes: { secure: false, sameSite: "lax" as const, path: "/" },
+        cookies: {
+          session_token: { name: SESSION_TOKEN_COOKIE },
+          session_data: { name: "akari-auth.session_data" },
+          account_data: { name: "akari-auth.account_data" },
+          dont_remember: { name: "akari-auth.dont_remember" },
+        },
+      }
+    : {
+        useSecureCookies: false,
+        defaultCookieAttributes: { secure: true, sameSite: "lax" as const, path: "/" },
+        cookies: {
+          session_token: { name: SESSION_TOKEN_COOKIE },
+          session_data: { name: "__Host-grok-auth.session_data" },
+          account_data: { name: "__Host-grok-auth.account_data" },
+          dont_remember: { name: "__Host-grok-auth.dont_remember" },
+        },
+      },
 
   plugins: [
     gateIdentitySessions(),

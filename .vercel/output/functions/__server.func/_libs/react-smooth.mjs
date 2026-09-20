@@ -1,5 +1,5 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { E as require_react } from "./@radix-ui/react-alert-dialog+[...].mjs";
+import { D as require_react } from "./@radix-ui/react-alert-dialog+[...].mjs";
 import { t as require_prop_types } from "./prop-types.mjs";
 import { t as deepEqual } from "./fast-equals.mjs";
 //#region node_modules/react-smooth/es6/setRafTimeout.js

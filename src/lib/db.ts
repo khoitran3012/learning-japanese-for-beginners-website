@@ -111,13 +111,25 @@ async function createPgliteSql(): Promise<Sql> {
   // data survives source edits (it resets on dev-server restart).
   globalRef.__pgliteInstance__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
-    const pg = new PGlite({
-      parsers: {
-        [OID_INT8]: Number,
-        [OID_DATE]: identity,
-        [OID_INTERVAL]: identity,
-      },
-    });
+    // Self-host: persist Postgres (PGLite) to disk so accounts survive restart.
+    // Preview / unset: in-memory (wiped when the process exits).
+    const dataDir =
+      (typeof process !== "undefined" && process.env.AKARI_PGLITE_DIR?.trim()) || undefined;
+    const pg = dataDir
+      ? new PGlite(dataDir, {
+          parsers: {
+            [OID_INT8]: Number,
+            [OID_DATE]: identity,
+            [OID_INTERVAL]: identity,
+          },
+        })
+      : new PGlite({
+          parsers: {
+            [OID_INT8]: Number,
+            [OID_DATE]: identity,
+            [OID_INTERVAL]: identity,
+          },
+        });
     await pg.waitReady;
     await pg.exec(
       "create table if not exists _migrations (name text primary key, applied_at timestamptz not null default now())",

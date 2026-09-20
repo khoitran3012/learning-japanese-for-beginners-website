@@ -10,9 +10,11 @@ import {
   GhibliRadarChart,
   GhibliRankBars,
   gardenFromLessons,
+  mergeLocalRankings,
   stageRows,
 } from "@/components/path-rank-chart";
 import { getMyStats, listLeaderboard, updateDisplayName, type LeaderRow } from "@/lib/akari/leaderboard";
+import { useOnlineUsers } from "@/components/online-users";
 import { listPathRankings, type PathRankings } from "@/lib/akari/path-rank";
 import { LESSON_STAGE, PATH_STAGES, STAGE_TOTALS, stageLabel } from "@/lib/akari/path-stages";
 import { useProgress } from "@/lib/akari/progress";
@@ -32,12 +34,21 @@ function Page() {
   const [name, setName] = useState("");
   const [pathRanks, setPathRanks] = useState<PathRankings | null>(null);
   const [stage, setStage] = useState<string>("overall");
+  const [pathError, setPathError] = useState<string | null>(null);
+  const online = useOnlineUsers();
+  const onlineIds = useMemo(() => new Set(online.map((u) => u.userId)), [online]);
 
   useEffect(() => {
     void listLeaderboard().then(setRows).catch(() => setRows([]));
     void listPathRankings()
-      .then(setPathRanks)
-      .catch(() => setPathRanks(null));
+      .then((data) => {
+        setPathRanks(data);
+        setPathError(null);
+      })
+      .catch(() => {
+        setPathRanks(null);
+        setPathError("Không đọc được bảng xếp hạng lộ trình.");
+      });
   }, []);
 
   useEffect(() => {
@@ -69,18 +80,24 @@ function Page() {
     isYou: Boolean(me && r.userId === me.id),
   }));
 
+  const youName = name.trim() || me?.displayName || "Bạn";
+  const youId = me?.id ?? "local-self";
+  const merged = useMemo(
+    () => mergeLocalRankings(pathRanks, completed, me?.id ?? null, youName),
+    [pathRanks, completed, me, youName],
+  );
+
   const garden = useMemo(
-    () => gardenFromLessons(completed, LESSON_STAGE, pathRanks, me?.id ?? null),
-    [completed, pathRanks, me],
+    () => gardenFromLessons(completed, LESSON_STAGE, merged, youId),
+    [completed, merged, youId],
   );
 
   const categoryRows = useMemo(() => {
-    const list = stageRows(pathRanks, stage).map((r) => ({
+    return stageRows(merged, stage).map((r) => ({
       ...r,
-      isYou: Boolean(me && r.userId === me.id),
+      isYou: r.userId === youId || Boolean(r.isYou),
     }));
-    return list;
-  }, [pathRanks, stage, me]);
+  }, [merged, stage, youId]);
 
   const myCategory = categoryRows.find((r) => r.isYou);
   const categoryTotal = stage === "overall" ? Object.values(STAGE_TOTALS).reduce((a, n) => a + n, 0) : STAGE_TOTALS[stage] ?? 0;
@@ -92,6 +109,35 @@ function Page() {
         title="Bảng thi đua"
         description="XP từ quiz, bài hôm nay và chuỗi ngày. Xếp hạng lộ trình theo từng hạng mục — xem như đồi Ghibli."
       />
+
+      {pathError ? (
+        <p className="mb-4 rounded-[10px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
+          {pathError}
+        </p>
+      ) : null}
+
+      {online.length > 0 ? (
+        <Card className="mb-4">
+          <CardContent className="py-4">
+            <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-subtle">
+              <span className="size-1.5 rounded-full bg-success" aria-hidden />
+              {online.length} đang học
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {online.map((u) => (
+                <span
+                  key={u.userId}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 py-1 text-sm"
+                >
+                  <span className="size-1.5 rounded-full bg-success" aria-hidden />
+                  {u.displayName}
+                  {me && u.userId === me.id ? <span className="text-xs text-accent">bạn</span> : null}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {!isPending && !user ? (
         <Card className="mb-4">
@@ -176,7 +222,7 @@ function Page() {
               : "Hoàn thành bài trên Lộ trình để hiện mặt trên đồi. Đăng nhập để so với học viên khác."
           }
         >
-          <GhibliRankBars rows={categoryRows} meId={me?.id ?? null} />
+          <GhibliRankBars rows={categoryRows} meId={youId} />
         </GhibliChartFrame>
 
         <div className="grid gap-4 lg:grid-cols-2">
@@ -222,6 +268,12 @@ function Page() {
                     <td className="px-4 py-3 font-medium">
                       {r.displayName}
                       {r.isYou ? <span className="ml-2 text-xs text-accent">bạn</span> : null}
+                      {onlineIds.has(r.userId) ? (
+                        <span className="ml-2 inline-flex items-center gap-1 text-xs text-success">
+                          <span className="size-1.5 rounded-full bg-success" aria-hidden />
+                          online
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 tabular-nums">
                       {r.completed}/{r.total || categoryTotal}
@@ -268,6 +320,12 @@ function Page() {
                     <td className="px-4 py-3 font-medium">
                       {r.displayName}
                       {r.isYou ? <span className="ml-2 text-xs text-accent">bạn</span> : null}
+                      {onlineIds.has(r.userId) ? (
+                        <span className="ml-2 inline-flex items-center gap-1 text-xs text-success">
+                          <span className="size-1.5 rounded-full bg-success" aria-hidden />
+                          online
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 tabular-nums">{r.xp}</td>
                     <td className="px-4 py-3 tabular-nums">{r.quizzes}</td>

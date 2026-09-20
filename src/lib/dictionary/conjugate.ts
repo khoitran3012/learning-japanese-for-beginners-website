@@ -144,3 +144,68 @@ export function queryStems(raw: string): string[] {
   }
   return [...out];
 }
+
+export type VerbFormRow = { label: string; kana: string; note: string };
+
+/** Labeled polite / te / nai forms for the vocab "cách dùng" panel. */
+export function verbUsageForms(kanji: string, kana: string, pos: string[]): VerbFormRow[] {
+  const isVerb = pos.some((p) => p.includes("động từ"));
+  if (!isVerb) return [];
+  const group3 = pos.some((p) => p.includes("nhóm 3")) || kanji === "する" || kanji === "来る";
+  const group2 =
+    pos.some((p) => p.includes("nhóm 2")) ||
+    (!group3 && kanji.endsWith("る") && /[いきぎじぢちびぴえけげせぜてでねべぺ]$/.test(stem(kana)));
+
+  let masu = "";
+  let te = "";
+  let nai = "";
+  let ta = "";
+
+  if (group3) {
+    if (kana === "する" || kanji === "する") {
+      masu = "します";
+      te = "して";
+      nai = "しない";
+      ta = "した";
+    } else if (kana === "くる" || kanji === "来る") {
+      masu = "きます";
+      te = "きて";
+      nai = "こない";
+      ta = "きた";
+    } else if (kana.endsWith("する")) {
+      const pre = kana.slice(0, -2);
+      masu = `${pre}します`;
+      te = `${pre}して`;
+      nai = `${pre}しない`;
+      ta = `${pre}した`;
+    }
+  } else if (group2 && kana.endsWith("る")) {
+    const s = stem(kana);
+    masu = `${s}ます`;
+    te = `${s}て`;
+    nai = `${s}ない`;
+    ta = `${s}た`;
+  } else {
+    const end = lastKana(kana);
+    const i = GODAN_I[end];
+    const a = GODAN_A[end];
+    let teTail = GODAN_TE[end];
+    if ((kanji === "行く" || kana === "いく") && end === "く") teTail = "って";
+    if (i && a && teTail) {
+      const s = stem(kana);
+      masu = `${s}${i}ます`;
+      te = `${s}${teTail}`;
+      nai = `${s}${a}ない`;
+      ta = te.replace(/て$/, "た").replace(/で$/, "だ");
+    }
+  }
+
+  if (!masu) return [];
+  return [
+    { label: "Từ điển", kana, note: "dạng gốc, tra từ điển" },
+    { label: "ます", kana: masu, note: "lịch sự, hiện tại / tương lai" },
+    { label: "て", kana: te, note: "nối câu, nhờ vả, đang làm" },
+    { label: "た", kana: ta, note: "quá khứ ngắn" },
+    { label: "ない", kana: nai, note: "phủ định ngắn" },
+  ];
+}

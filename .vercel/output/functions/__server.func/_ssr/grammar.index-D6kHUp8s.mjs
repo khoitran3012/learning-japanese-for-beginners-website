@@ -1,5 +1,5 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { E as require_react, T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { D as require_react, E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { v as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as GRAMMAR_N5, t as GRAMMAR_N4 } from "./grammar-n4-Dv0a1spF.mjs";
 import { t as Button } from "./button-D6esF8zp.mjs";

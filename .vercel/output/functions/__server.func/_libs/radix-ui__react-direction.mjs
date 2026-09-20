@@ -1,5 +1,5 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { E as require_react, T as require_jsx_runtime } from "./@radix-ui/react-alert-dialog+[...].mjs";
+import { D as require_react, E as require_jsx_runtime } from "./@radix-ui/react-alert-dialog+[...].mjs";
 //#region node_modules/@radix-ui/react-direction/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 require_jsx_runtime();

@@ -116,6 +116,20 @@ export const useProgress = create<ProgressState>((set, get) => ({
     }
     const day = await bumpDayStats({ items, minutes }, today);
     set({ lastStudyDate: today, streak, today: day });
+    const snap = get();
+    void import("@/lib/garden/sync").then(({ scheduleGardenSync }) =>
+      scheduleGardenSync({
+        srs: snap.srs,
+        completedLessonIds: snap.completedLessonIds,
+        streak: snap.streak,
+        lastStudyDate: snap.lastStudyDate,
+      }),
+    );
+    void import("@/lib/garden/events").then(({ gardenEvents }) =>
+      gardenEvents.emit("wordLearned", {
+        count: Object.values(snap.srs).filter((x) => x.correct + x.incorrect > 0).length,
+      }),
+    );
   },
   completeLesson: async (id) => {
     await persistLesson(id);
@@ -127,6 +141,9 @@ export const useProgress = create<ProgressState>((set, get) => ({
     await get().logStudy(3, 5);
     void import("./sync-path").then(({ syncPathProgress }) =>
       syncPathProgress([...get().completedLessonIds]),
+    );
+    void import("@/lib/garden/events").then(({ gardenEvents }) =>
+      gardenEvents.emit("lessonCompleted", { lessonId: id }),
     );
   },
   refreshSets: async () => {

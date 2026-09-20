@@ -1,0 +1,18 @@
+# Optional Postgres for self-host.
+# 1) docker compose -f docker-compose.akari.yml up -d
+# 2) In akari-host.json set:
+#    "databaseUrl": "postgres://akari:akari@127.0.0.1:5432/akari"
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: akari
+      POSTGRES_PASSWORD: akari
+      POSTGRES_DB: akari
+    ports:
+      - "5432:5432"
+    volumes:
+      - akari-pg:/var/lib/postgresql/data
+
+volumes:
+  akari-pg:

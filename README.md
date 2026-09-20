@@ -89,21 +89,53 @@ Sao lưu trong **Cài đặt**.
 
 ## Chạy trên máy (Windows)
 
-Cần [Node.js LTS](https://nodejs.org) (có kèm npm).
+Double-click `start-akari.bat`. File tự:
 
-1. Giải nén / mở thư mục project
-2. Double-click `start-akari.bat` (hoặc trong PowerShell: `.\start-akari.bat`)
-3. Lần đầu sẽ tự `npm install` (vài phút). Khi hiện sẵn sàng, mở [http://localhost:8080](http://localhost:8080)
+1. Tìm **Node.js** và **npm** (PATH, nvm-windows, `Program Files\nodejs`, Scoop, Volta, Chocolatey, fnm)
+2. Bỏ qua giả Node của Microsoft Store
+3. `npm install` lần đầu nếu chưa có thư viện
+4. Khởi chạy Akari
 
-Lệnh tay:
+Nếu cửa sổ báo `'set' is not recognized` / `package.json not found`: dùng đúng file `start-akari.bat` mới trong thư mục project (không copy nội dung vào Notepad rồi lưu Unicode).
 
-```bat
-cd /d F:\learning-japanese-for-beginners-website
-npm install
-npm run dev
+Chưa có Node? Cài bản LTS tại [nodejs.org](https://nodejs.org) (file `.msi`, giữ mục Add to PATH), rồi bấm lại `start-akari.bat` — không cần restart máy.
+
+
+Khi hiện sẵn sàng, mở địa chỉ trong `akari-host.json` (mặc định http://khoitran3012.ddns.net:8080 hoặc http://localhost:8080).
+
+
+## Host trên khoitran3012.ddns.net (sửa lỗi đăng nhập)
+
+App tự chấp nhận origin cùng domain và đổi cookie sang dạng HTTP (không cần `__Host-` / Secure) khi bạn mở bằng `http://khoitran3012.ddns.net`.
+
+Vẫn nên chạy `start-akari.bat` để:
+
+1. Khớp `publicOrigin` trong `akari-host.json` với địa chỉ bạn mở (kèm cổng `:8080` nếu có)
+2. Lưu tài khoản bằng SQL (file `data/pglite` hoặc Postgres trong `databaseUrl`)
+
+Trên domain riêng, dùng **email + mật khẩu**. Google / X chỉ trên bản Grok. Cho phép cookie trên trình duyệt.
+
+Có HTTPS thì đổi `publicOrigin` sang `https://...`.
+
+## Database SQL
+
+Mặc định khi self-host: **PostgreSQL nhúng (PGLite)** lưu tại `data/pglite` — tài khoản và bảng xếp hạng còn sau khi tắt máy.
+
+Muốn Postgres riêng:
+
+1. Cài PostgreSQL, tạo database `akari`, hoặc `docker compose -f docker-compose.akari.yml up -d`
+2. Trong `akari-host.json`:
+
+```json
+{
+  "publicOrigin": "http://khoitran3012.ddns.net:8080",
+  "databaseUrl": "postgres://akari:akari@127.0.0.1:5432/akari"
+}
 ```
 
-Lỗi `spawn vite ENOENT` = chưa cài thư viện, hoặc Windows không tìm thấy Vite. File `start-akari.bat` mới sẽ `npm install` giúp bạn; `npm run dev` chạy Vite qua Node nên không còn phụ thuộc `vite.cmd`.
+3. Chạy lại `start-akari.bat` — schema (`migrations/*.sql`) tự apply.
+
+Không tạo file `.env`. Mọi cấu hình host nằm trong `akari-host.json`.
 
 ## Phát âm
 

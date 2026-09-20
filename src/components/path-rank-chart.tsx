@@ -15,8 +15,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { PATH_STAGES, STAGE_TOTALS } from "@/lib/akari/path-stages";
-import type { PathOverallRow, PathRankRow, PathRankings } from "@/lib/akari/path-rank";
+import { PATH_STAGES, STAGE_TOTALS, countCompletedByStage } from "@/lib/akari/path-stages";
+import { emptyRankings, type PathOverallRow, type PathRankRow, type PathRankings } from "@/lib/akari/path-rank";
 
 export type GardenPoint = {
   stage: string;
@@ -261,6 +261,72 @@ export function GhibliChartFrame({
       </div>
     </section>
   );
+}
+
+export function mergeLocalRankings(
+  rankings: PathRankings | null,
+  completed: Set<string>,
+  meId: string | null,
+  displayName: string,
+): PathRankings {
+  const base: PathRankings = rankings
+    ? {
+        byStage: Object.fromEntries(Object.entries(rankings.byStage).map(([k, v]) => [k, v.map((r) => ({ ...r }))])),
+        overall: rankings.overall.map((r) => ({ ...r })),
+        stageTotals: { ...rankings.stageTotals },
+      }
+    : emptyRankings();
+
+  const counts = countCompletedByStage(completed);
+  const userId = meId ?? "local-self";
+  const lessonTotal = Object.values(STAGE_TOTALS).reduce((a, n) => a + n, 0);
+  let overallDone = 0;
+
+  for (const s of PATH_STAGES) {
+    const done = counts[s.id] ?? 0;
+    overallDone += done;
+    const list = base.byStage[s.id] ?? [];
+    const existing = list.find((r) => r.userId === userId);
+    if (existing) {
+      existing.completed = Math.max(existing.completed, done);
+      existing.displayName = displayName;
+      existing.isYou = true;
+    } else if (done > 0) {
+      list.push({
+        userId,
+        displayName,
+        stage: s.id,
+        completed: done,
+        total: STAGE_TOTALS[s.id] ?? 0,
+        rank: 0,
+        isYou: true,
+      });
+    }
+    base.byStage[s.id] = list
+      .sort((a, b) => b.completed - a.completed || a.displayName.localeCompare(b.displayName, "vi"))
+      .map((r, i) => ({ ...r, rank: i + 1, isYou: r.userId === userId }));
+  }
+
+  const existingOverall = base.overall.find((r) => r.userId === userId);
+  if (existingOverall) {
+    existingOverall.completed = Math.max(existingOverall.completed, overallDone);
+    existingOverall.displayName = displayName;
+    existingOverall.isYou = true;
+  } else if (overallDone > 0) {
+    base.overall.push({
+      userId,
+      displayName,
+      completed: overallDone,
+      total: lessonTotal,
+      rank: 0,
+      isYou: true,
+    });
+  }
+  base.overall = base.overall
+    .sort((a, b) => b.completed - a.completed || a.displayName.localeCompare(b.displayName, "vi"))
+    .map((r, i) => ({ ...r, rank: i + 1, isYou: r.userId === userId }));
+
+  return base;
 }
 
 export function stageRows(

@@ -1,4 +1,4 @@
-import { T as require_jsx_runtime, b as Slot } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { E as require_jsx_runtime, x as Slot } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { t as cn } from "./utils-D10sm1uC.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/button-D6esF8zp.js

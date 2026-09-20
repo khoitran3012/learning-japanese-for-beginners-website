@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthSlot } from "@/components/auth-slot";
+import { OnlineUsersList, PresenceHeartbeat } from "@/components/online-users";
 import { MOBILE_TAB, NAV } from "@/lib/akari/nav";
 import { initSettingsDom, useSettings } from "@/lib/akari/settings";
 import { useProgress } from "@/lib/akari/progress";
@@ -131,6 +132,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <kbd className="rounded border border-border px-1.5 text-[10px]">⌘K</kbd>
           </button>
           <NavLinks />
+          <div className="mt-6">
+            <OnlineUsersList compact />
+          </div>
           <div className="mt-auto border-t border-border px-1 pt-4">
             <AuthSlot />
           </div>
@@ -166,6 +170,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </SheetHeader>
             <div className="px-2 pb-8">
               <NavLinks onNavigate={() => setOpen(false)} />
+              <div className="mt-6 px-1">
+                <OnlineUsersList />
+              </div>
               <div className="mt-6 px-1">
                 <AuthSlot />
               </div>
@@ -203,6 +210,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <SearchDialog open={search} onOpenChange={setSearch} />
+        <PresenceHeartbeat />
         <Toaster theme={theme === "dark" ? "dark" : theme === "light" ? "light" : "system"} position="bottom-center" />
       </div>
     </TooltipProvider>

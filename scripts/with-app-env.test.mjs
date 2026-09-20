@@ -11,12 +11,10 @@ import {
   parseAppEnv,
   projectRoot,
   readAppEnv,
-  resolveSpawn,
 } from "./with-app-env.mjs";
 
 const execFileAsync = promisify(execFile);
 const WRAPPER = join(projectRoot(), "scripts/with-app-env.mjs");
-const PRINT_OK = "process.stdout.write('ok');";
 const PRINT_FLAG = "process.stdout.write(String(process.env.VITE_AUTH_ENABLED));";
 
 function makeWorkspace(appEnvJson) {
@@ -61,8 +59,8 @@ test("an explicit process-env override wins over the file", () => {
   assert.equal(merged.PATH, "/usr/bin");
 });
 
-test("non-VITE keys in app-env.json do not leak into the wrapper env", () => {
-  assert.deepEqual(readAppEnv(projectRoot()), {});
+test("the template ships auth off", () => {
+  assert.deepEqual(readAppEnv(projectRoot()), { VITE_AUTH_ENABLED: "false" });
 });
 
 test("vite loadEnv resolves the wrapped value", () => {
@@ -75,14 +73,14 @@ test("vite loadEnv resolves the wrapped value", () => {
   assert.equal(merged.VITE_AUTH_ENABLED, "false");
 });
 
-test("the wrapped command runs", async () => {
+test("the wrapped command runs with the app env applied", async () => {
   const { stdout } = await execFileAsync(process.execPath, [
     WRAPPER,
     process.execPath,
     "-e",
-    PRINT_OK,
+    PRINT_FLAG,
   ]);
-  assert.equal(stdout, "ok");
+  assert.equal(stdout, "false");
 });
 
 test("the wrapped command sees an explicit override, not the file value", async () => {
@@ -124,21 +122,7 @@ test("the CLI still runs when invoked through a symlinked path", async () => {
     join(link, "with-app-env.mjs"),
     process.execPath,
     "-e",
-    PRINT_OK,
+    PRINT_FLAG,
   ]);
-  assert.equal(stdout, "ok");
-});
-
-test("vite is spawned through node, not a PATH binary", () => {
-  const resolved = resolveSpawn("vite", ["dev", "--host", "0.0.0.0"]);
-  assert.equal(resolved.command, process.execPath);
-  assert.equal(resolved.shell, false);
-  assert.match(resolved.args[0], /vite[\\/]bin[\\/]vite\.js$/);
-  assert.deepEqual(resolved.args.slice(1), ["dev", "--host", "0.0.0.0"]);
-});
-
-test("missing vite prints a clear install hint", () => {
-  const root = mkdtempSync(join(tmpdir(), "app-env-novite-"));
-  const resolved = resolveSpawn("vite", ["dev"], root);
-  assert.match(resolved.error ?? "", /npm install/);
+  assert.equal(stdout, "false");
 });

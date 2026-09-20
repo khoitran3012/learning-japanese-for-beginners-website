@@ -104,28 +104,32 @@ export function isMainModule(moduleUrl) {
   }
 }
 
-/**
- * Resolve how to spawn the wrapped command.
- *
- * `spawn("vite")` is ENOENT on Windows: npm's shim is `vite.cmd`, which
- * CreateProcess cannot run without a shell. Always run Vite through Node
- * (`node node_modules/vite/bin/vite.js`) so Linux, macOS, and Windows match.
- */
-export function resolveSpawn(command, args, root = projectRoot()) {
-  if (command === process.execPath || /[\\/]/.test(command)) {
-    return { command, args, shell: false };
-  }
-  if (command === "vite") {
-    const viteJs = join(root, "node_modules", "vite", "bin", "vite.js");
-    if (!existsSync(viteJs)) {
-      return {
-        error:
-          "[with-app-env] vite is not installed. Run `npm install` in this folder, then try again.",
-      };
+function spawnCommand(command, args, env) {
+  // Node 20+ on Windows throws spawn EINVAL for .cmd/.bat without a shell
+  // (CVE-2024-27980). Prefer the package's JS bin, else enable a shell.
+  if (process.platform === "win32") {
+    const localJs = join(projectRoot(), "node_modules", command, "bin", `${command}.js`);
+    if (existsSync(localJs)) {
+      return spawn(process.execPath, [localJs, ...args], {
+        stdio: "inherit",
+        env,
+        windowsHide: true,
+      });
     }
-    return { command: process.execPath, args: [viteJs, ...args], shell: false };
+    const isJsOrExe =
+      command.endsWith(".exe") ||
+      command.endsWith(".js") ||
+      command.endsWith(".mjs") ||
+      command.includes("\\") ||
+      command.includes("/");
+    return spawn(command, args, {
+      stdio: "inherit",
+      env,
+      windowsHide: true,
+      shell: !isJsOrExe,
+    });
   }
-  return { command, args, shell: process.platform === "win32" };
+  return spawn(command, args, { stdio: "inherit", env });
 }
 
 function main(argv) {
@@ -134,17 +138,8 @@ function main(argv) {
     console.error("usage: node scripts/with-app-env.mjs <command> [args…]");
     process.exit(2);
   }
-  const resolved = resolveSpawn(command, args);
-  if (resolved.error) {
-    console.error(resolved.error);
-    process.exit(127);
-  }
   const env = mergeAppEnv(readAppEnv(projectRoot()), process.env);
-  const child = spawn(resolved.command, resolved.args, {
-    stdio: "inherit",
-    env,
-    shell: resolved.shell,
-  });
+  const child = spawnCommand(command, args, env);
   // The dev server is long-running and is stopped by signalling this wrapper.
   for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
     process.on(signal, () => child.kill(signal));

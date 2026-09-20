@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizCard } from "@/components/quiz-card";
-import { makeQuiz, type QuizKind, type QuizQuestion } from "@/lib/akari/quiz-engine";
+import { nextQuestion, type QuizKind, type QuizQuestion } from "@/lib/akari/quiz-engine";
 import { addQuizResult } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { uid } from "@/lib/utils";
@@ -21,6 +21,9 @@ const KINDS: { id: QuizKind; label: string }[] = [
   { id: "kata-romaji", label: "ア → a" },
   { id: "vocab-meaning", label: "Từ → nghĩa" },
   { id: "meaning-vocab", label: "Nghĩa → từ" },
+  { id: "vocab-kana", label: "Từ → kana" },
+  { id: "type-romaji", label: "Gõ romaji" },
+  { id: "cloze", label: "Điền câu" },
   { id: "listen", label: "Nghe chữ" },
   { id: "listen-vocab", label: "Nghe từ" },
   { id: "kanji", label: "Kanji nghĩa" },
@@ -31,50 +34,84 @@ const KINDS: { id: QuizKind; label: string }[] = [
 ];
 
 function srsOf(q: QuizQuestion): { id: string; type: SrsItem["itemType"] } {
-  const id = q.id.replace(/^q-(r-|l-|mv-|v-|kr-|lk-|lv-|p-\d+-)?/, "");
-  if (q.kind === "kanji" || q.kind === "kanji-read" || q.kind === "listen-kanji") return { id, type: "kanji" };
-  if (q.kind === "vocab-meaning" || q.kind === "meaning-vocab" || q.kind === "listen-vocab") return { id, type: "vocab" };
-  if (q.kind === "grammar" || q.kind === "particle") return { id, type: "grammar" };
-  return { id, type: "kana" };
+  if (q.kind === "kanji" || q.kind === "kanji-read" || q.kind === "listen-kanji") return { id: q.sourceId, type: "kanji" };
+  if (
+    q.kind === "vocab-meaning" ||
+    q.kind === "meaning-vocab" ||
+    q.kind === "listen-vocab" ||
+    q.kind === "vocab-kana" ||
+    q.kind === "cloze"
+  ) {
+    return { id: q.sourceId, type: "vocab" };
+  }
+  if (q.kind === "grammar" || q.kind === "particle") return { id: q.sourceId, type: "grammar" };
+  return { id: q.sourceId, type: "kana" };
 }
 
 function Page() {
   const [kind, setKind] = useState<QuizKind>("mix");
-  const [qs, setQs] = useState<QuizQuestion[]>([]);
-  const [i, setI] = useState(0);
+  const [q, setQ] = useState<QuizQuestion | null>(null);
+  const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
+  const usedRef = useRef(new Set<string>());
+  const scoreRef = useRef(0);
+  const countRef = useRef(0);
+  const savedRef = useRef({ score: 0, count: 0 });
   const log = useProgress((s) => s.logStudy);
   const mark = useProgress((s) => s.mark);
   const streak = useProgress((s) => s.streak);
   const user = useCurrentUser();
-  const q = qs[i];
+
+  function spawn(nextKind = kind) {
+    const next = nextQuestion(nextKind, usedRef.current);
+    setQ(next);
+    return next;
+  }
 
   useEffect(() => {
-    setQs(makeQuiz(kind, 12));
-    setI(0);
+    usedRef.current = new Set();
+    scoreRef.current = 0;
+    countRef.current = 0;
+    savedRef.current = { score: 0, count: 0 };
     setScore(0);
+    setIndex(0);
     setDone(false);
+    spawn(kind);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
-  async function finish(nextScore: number) {
-    setDone(true);
+  async function persistDelta(minutes: number) {
+    const dCount = countRef.current - savedRef.current.count;
+    const dScore = scoreRef.current - savedRef.current.score;
+    if (dCount <= 0) return;
+    savedRef.current = { score: scoreRef.current, count: countRef.current };
     await addQuizResult({
       id: uid("quiz"),
       at: Date.now(),
       kind,
-      score: nextScore,
-      total: qs.length,
+      score: dScore,
+      total: dCount,
       durationMs: 0,
     });
-    await log(qs.length, 4);
+    await log(dCount, minutes);
     await syncQuizToLeaderboard({
-      score: nextScore,
-      total: qs.length,
-      minutes: 4,
+      score: dScore,
+      total: dCount,
+      minutes,
       streak,
       displayName: user?.displayName,
     });
+  }
+
+  async function finish() {
+    await persistDelta(Math.max(1, Math.round((countRef.current - savedRef.current.count) * 0.3)));
+    setDone(true);
+  }
+
+  async function checkpointIfNeeded() {
+    if (countRef.current === 0 || countRef.current % 10 !== 0) return;
+    await persistDelta(3);
   }
 
   return (
@@ -82,7 +119,7 @@ function Page() {
       <PageHeader
         kicker="試験"
         title="Quiz"
-        description="Chữ, từ, kanji (hiragana + romaji), nghe, trợ từ và ngữ pháp. Đăng nhập để điểm lên bảng thi đua."
+        description="Câu hỏi mới liên tục, không lặp ngay. Gõ đáp án hoặc chọn. Kết thúc khi bạn muốn — điểm tự lưu mỗi 10 câu."
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {KINDS.map((k) => (
@@ -94,41 +131,63 @@ function Page() {
       {done ? (
         <Card className="mx-auto max-w-md">
           <CardContent className="py-10 text-center">
-            <p className="text-sm text-muted">Kết quả</p>
+            <p className="text-sm text-muted">Kết quả phiên này</p>
             <p className="text-4xl font-semibold tabular-nums">
-              {score}/{qs.length}
+              {score}/{countRef.current || 0}
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              {countRef.current
+                ? `${Math.round((score / Math.max(1, countRef.current)) * 100)}% đúng`
+                : "Chưa trả lời câu nào"}
             </p>
             <Button
               className="mt-4"
               onClick={() => {
-                setQs(makeQuiz(kind, 12));
-                setDone(false);
-                setI(0);
+                usedRef.current = new Set();
+                scoreRef.current = 0;
+                countRef.current = 0;
+                savedRef.current = { score: 0, count: 0 };
                 setScore(0);
+                setIndex(0);
+                setDone(false);
+                spawn(kind);
               }}
             >
-              Làm lại
+              Luyện tiếp
             </Button>
           </CardContent>
         </Card>
       ) : q ? (
-        <QuizCard
-          key={q.id}
-          q={q}
-          index={i}
-          total={qs.length}
-          score={score}
-          fillKind={kind === "hira-romaji"}
-          onAnswer={(ok) => {
-            setScore((s) => s + (ok ? 1 : 0));
-            const srs = srsOf(q);
-            void mark(srs.id, srs.type, ok ? "good" : "forgot");
-          }}
-          onNext={() => {
-            if (i + 1 >= qs.length) void finish(score);
-            else setI((x) => x + 1);
-          }}
-        />
+        <div className="space-y-3">
+          <QuizCard
+            key={q.id}
+            q={q}
+            index={index}
+            total={0}
+            score={score}
+            fillKind={Boolean(q.typedAnswers?.length)}
+            onAnswer={(ok) => {
+              countRef.current += 1;
+              if (ok) {
+                scoreRef.current += 1;
+                setScore(scoreRef.current);
+              }
+              const srs = srsOf(q);
+              void mark(srs.id, srs.type, ok ? "good" : "forgot");
+              void checkpointIfNeeded();
+            }}
+            onNext={() => {
+              setIndex((x) => x + 1);
+              spawn(kind);
+            }}
+            nextLabel="Câu tiếp"
+          />
+          <div className="mx-auto flex max-w-lg justify-center">
+            <Button variant="ghost" onClick={() => void finish()}>
+              Kết thúc phiên
+            </Button>
+          </div>
+        </div>
       ) : null}
     </div>
   );

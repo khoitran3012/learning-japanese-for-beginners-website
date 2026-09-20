@@ -18,6 +18,7 @@ import {
   Search,
   Settings,
   Sparkles,
+  Sprout,
   Star,
   Trophy,
   Type,
@@ -34,6 +35,7 @@ export const NAV: NavItem[] = [
   { to: "/", label: "Trang chủ", icon: Home, group: "Chính" },
   { to: "/path", label: "Lộ trình", icon: Map, group: "Chính" },
   { to: "/daily", label: "Bài hôm nay", icon: Sparkles, group: "Chính" },
+  { to: "/garden", label: "Khu vườn", icon: Sprout, group: "Chính" },
   { to: "/alphabet", label: "Bảng chữ cái", icon: Languages, group: "Chữ" },
   { to: "/hiragana", label: "Hiragana", icon: Type, group: "Chữ" },
   { to: "/katakana", label: "Katakana", icon: Type, group: "Chữ" },
@@ -59,6 +61,6 @@ export const MOBILE_TAB = [
   { to: "/", label: "Home", icon: Home },
   { to: "/daily", label: "Hôm nay", icon: Sparkles },
   { to: "/dictionary", label: "Từ điển", icon: Search },
-  { to: "/play", label: "Chơi", icon: Gamepad2 },
+  { to: "/garden", label: "Vườn", icon: Sprout },
   { to: "/settings", label: "Thêm", icon: Settings },
 ] as const;

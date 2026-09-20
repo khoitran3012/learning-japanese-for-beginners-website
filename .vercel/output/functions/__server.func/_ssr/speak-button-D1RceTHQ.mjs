@@ -1,9 +1,9 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { E as require_react, T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { D as require_react, E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { t as cn } from "./utils-D10sm1uC.mjs";
 import { t as Button } from "./button-D6esF8zp.mjs";
+import { r as Volume2 } from "../_libs/lucide-react.mjs";
 import { n as useSettings } from "./settings-BVK2Ns8d.mjs";
-import { n as Volume2 } from "../_libs/lucide-react.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/speak-button-D1RceTHQ.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();

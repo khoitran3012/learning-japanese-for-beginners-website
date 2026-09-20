@@ -28,7 +28,7 @@ export type PathRankings = {
   stageTotals: Record<string, number>;
 };
 
-function emptyRankings(): PathRankings {
+export function emptyRankings(): PathRankings {
   const byStage: Record<string, PathRankRow[]> = {};
   for (const s of PATH_STAGES) byStage[s.id] = [];
   return { byStage, overall: [], stageTotals: { ...STAGE_TOTALS } };
@@ -42,14 +42,8 @@ export const listPathRankings = createServerFn({ method: "GET" }).handler(async 
     stage: string;
     completed: number;
   }>`
-    select
-      p.user_id,
-      coalesce(nullif(s.display_name, ''), 'Học viên') as display_name,
-      p.stage,
-      count(*)::int as completed
-    from path_progress p
-    left join study_stats s on s.user_id = p.user_id
-    group by p.user_id, coalesce(nullif(s.display_name, ''), 'Học viên'), p.stage
+    select user_id, display_name, stage, completed
+    from path_rank_by_stage
   `;
 
   const result = emptyRankings();
@@ -62,13 +56,13 @@ export const listPathRankings = createServerFn({ method: "GET" }).handler(async 
       userId: row.user_id,
       displayName: row.display_name,
       stage: row.stage,
-      completed: row.completed,
+      completed: Number(row.completed) || 0,
       total,
       rank: 0,
     });
     const acc = totals.get(row.user_id) ?? { displayName: row.display_name, completed: 0 };
     acc.displayName = row.display_name;
-    acc.completed += row.completed;
+    acc.completed += Number(row.completed) || 0;
     totals.set(row.user_id, acc);
   }
 
@@ -124,14 +118,13 @@ export const recordPathProgress = createServerFn({ method: "POST" })
       on conflict (user_id) do nothing
     `;
 
-    for (const lessonId of data.lessonIds) {
-      const stage = LESSON_STAGE[lessonId];
-      if (!stage) continue;
-      await sql`
-        insert into path_progress (user_id, lesson_id, stage, completed_at)
-        values (${context.userId}, ${lessonId}, ${stage}, now())
-        on conflict (user_id, lesson_id) do nothing
-      `;
-    }
+    const stages = data.lessonIds.map((id) => LESSON_STAGE[id]!);
+    await sql.query(
+      `insert into path_progress (user_id, lesson_id, stage)
+       select $1, x.lid, x.stg
+       from unnest($2::text[], $3::text[]) as x(lid, stg)
+       on conflict (user_id, lesson_id) do nothing`,
+      [context.userId, data.lessonIds, stages],
+    );
     return { saved: data.lessonIds.length };
   });

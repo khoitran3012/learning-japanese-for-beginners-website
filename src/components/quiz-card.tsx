@@ -1,10 +1,10 @@
 import { Volume2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SpeakButton } from "@/components/speak-button";
-import { normalizeRomaji } from "@/lib/akari/romaji";
+import { answersMatch } from "@/lib/akari/answer-check";
 import { speakJapanese } from "@/lib/akari/tts";
 import { useSettings } from "@/lib/akari/settings";
 import type { QuizQuestion } from "@/lib/akari/quiz-engine";
@@ -18,6 +18,7 @@ export function QuizCard({
   fillKind,
   onAnswer,
   onNext,
+  nextLabel,
 }: {
   q: QuizQuestion;
   index: number;
@@ -26,17 +27,26 @@ export function QuizCard({
   fillKind?: boolean;
   onAnswer: (ok: boolean, picked: number) => void;
   onNext: () => void;
+  nextLabel?: string;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
   const [fill, setFill] = useState("");
+  const [typedOk, setTypedOk] = useState<boolean | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const autoPlay = useSettings((s) => s.autoPlayAudio);
   const rate = useSettings((s) => s.ttsRate);
   const listenOnly = Boolean(q.speak) && !q.promptJp;
   const revealed = picked !== null;
+  const canType = Boolean(fillKind || (q.typedAnswers && q.typedAnswers.length));
+  const endless = total <= 0;
 
   useEffect(() => {
     if (autoPlay && q.speak) void speakJapanese(q.speak, rate);
   }, [autoPlay, q.speak, rate]);
+
+  useEffect(() => {
+    if (canType) inputRef.current?.focus();
+  }, [canType, q.id]);
 
   function choose(idx: number) {
     if (picked !== null) return;
@@ -44,11 +54,25 @@ export function QuizCard({
     onAnswer(idx === q.answer, idx);
   }
 
+  function submitTyped() {
+    if (picked !== null) return;
+    const expected = q.typedAnswers ?? q.options;
+    const ok = answersMatch(fill, expected);
+    setTypedOk(ok);
+    if (ok) {
+      const idx = q.options.findIndex((o) => answersMatch(o, expected) || answersMatch(fill, [o]));
+      choose(idx >= 0 ? idx : q.answer);
+    } else {
+      choose(-1);
+    }
+    setFill("");
+  }
+
   return (
     <Card className="mx-auto max-w-lg">
       <CardContent className="space-y-4">
         <p className="text-xs tabular-nums text-muted">
-          Câu {index + 1}/{total} · đúng {score}
+          {endless ? `Câu ${index + 1} · đúng ${score}` : `Câu ${index + 1}/${total} · đúng ${score}`}
         </p>
         {listenOnly ? (
           <div className="flex flex-col items-center gap-3 py-4">
@@ -67,20 +91,29 @@ export function QuizCard({
             {q.speak ? <SpeakButton text={q.speak} /> : null}
           </>
         )}
-        {fillKind ? (
+        {canType && !revealed ? (
           <form
             className="flex gap-2"
             onSubmit={(e) => {
               e.preventDefault();
-              const idx = q.options.findIndex((o) => normalizeRomaji(o) === normalizeRomaji(fill));
-              choose(idx >= 0 ? idx : -1);
-              setFill("");
+              submitTyped();
             }}
           >
-            <Input value={fill} onChange={(e) => setFill(e.target.value)} placeholder="Điền romaji" autoComplete="off" />
+            <Input
+              ref={inputRef}
+              value={fill}
+              onChange={(e) => setFill(e.target.value)}
+              placeholder={q.typedHint ?? "Điền đáp án"}
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
             <Button type="submit">OK</Button>
           </form>
         ) : null}
+        {typedOk === true ? <p className="text-sm text-success">Đúng — khớp với phần gõ.</p> : null}
+        {typedOk === false ? <p className="text-sm text-danger">Chưa khớp. Đáp án đúng được tô xanh.</p> : null}
         <div className="grid gap-2">
           {q.options.map((o, idx) => (
             <Button
@@ -96,7 +129,9 @@ export function QuizCard({
         {revealed ? (
           <div className="space-y-3">
             <p className="text-sm text-muted">{q.explain}</p>
-            <Button onClick={onNext}>{index + 1 >= total ? "Xem điểm" : "Câu tiếp"}</Button>
+            <Button onClick={onNext}>
+              {nextLabel ?? (endless ? "Câu tiếp" : index + 1 >= total ? "Xem điểm" : "Câu tiếp")}
+            </Button>
           </div>
         ) : null}
       </CardContent>

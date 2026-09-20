@@ -1,5 +1,5 @@
 import { o as __toESM } from "../../_runtime.mjs";
-import { E as require_react, T as require_jsx_runtime, v as useLayoutEffect2, y as createContextScope } from "./react-alert-dialog+[...].mjs";
+import { D as require_react, E as require_jsx_runtime, b as createContextScope, y as useLayoutEffect2 } from "./react-alert-dialog+[...].mjs";
 //#region node_modules/@radix-ui/react-use-size/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var __defProp$1 = Object.defineProperty;

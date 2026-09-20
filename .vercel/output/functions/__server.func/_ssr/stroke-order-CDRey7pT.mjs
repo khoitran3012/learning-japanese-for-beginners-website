@@ -1,8 +1,8 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { E as require_react, T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { D as require_react, E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { t as cn } from "./utils-D10sm1uC.mjs";
 import { t as Button } from "./button-D6esF8zp.mjs";
-import { E as Eraser, d as RotateCcw, f as Play, m as Pause, o as StepForward } from "../_libs/lucide-react.mjs";
+import { g as Pause, k as Eraser, m as Play, p as RotateCcw, s as StepForward } from "../_libs/lucide-react.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/stroke-order-CDRey7pT.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();

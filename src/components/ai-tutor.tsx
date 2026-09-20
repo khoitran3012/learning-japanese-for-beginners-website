@@ -2,8 +2,8 @@ import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { applyLocalAiFromSettings } from "@/lib/ai/provider";
-import { explainWithCloudAi, explainWithLocalAi } from "@/lib/ai/tutor";
+import { chatLocalAi } from "@/lib/ai/local-rpc";
+import { explainWithCloudAi } from "@/lib/ai/tutor";
 import { useSettings } from "@/lib/akari/settings";
 
 export function AiTutor({ seed }: { seed: string }) {
@@ -22,8 +22,17 @@ export function AiTutor({ seed }: { seed: string }) {
     setText(null);
     try {
       if (settings.aiMode === "local") {
-        applyLocalAiFromSettings(settings);
-        const res = await explainWithLocalAi(prompt, settings.localAiSystem);
+        const res = await chatLocalAi({
+          data: {
+            prompt,
+            url: settings.localAiUrl,
+            kind: settings.localAiKind,
+            model: settings.localAiModel,
+            system: settings.localAiSystem,
+            temperature: settings.localAiTemperature,
+            maxTokens: settings.localAiMaxTokens,
+          },
+        });
         if (!res.ok) setError(res.error);
         else setText(res.text);
       } else {
@@ -42,7 +51,9 @@ export function AiTutor({ seed }: { seed: string }) {
     <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
       <p className="text-sm font-medium">Hỏi gia sư AI</p>
       <p className="text-xs text-muted">
-        {settings.aiMode === "local" ? `Local · ${settings.localAiModel}` : "Đám mây · chỉ khi bạn bấm hỏi"}
+        {settings.aiMode === "local"
+          ? `Ollama trên máy host · ${settings.localAiModel}`
+          : "Đám mây · chỉ khi bạn bấm hỏi"}
       </p>
       <Textarea
         value={q}

@@ -1,4 +1,4 @@
-import { T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { v as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as Button } from "./button-D6esF8zp.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/dictionary._id-Cg9kFrIq.js

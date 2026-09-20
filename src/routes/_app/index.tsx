@@ -134,6 +134,9 @@ function HomePage() {
           <Link to="/daily">Bài tập hôm nay</Link>
         </Button>
         <Button asChild variant="secondary">
+          <Link to="/garden">Khu vườn</Link>
+        </Button>
+        <Button asChild variant="secondary">
           <Link to="/play">Giải trí</Link>
         </Button>
         <Button asChild variant="secondary">

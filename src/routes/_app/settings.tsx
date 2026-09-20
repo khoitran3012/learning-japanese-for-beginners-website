@@ -21,11 +21,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useSettings } from "@/lib/akari/settings";
-import { applyLocalAiFromSettings, getAI } from "@/lib/ai/provider";
+import { applyLocalAiFromSettings } from "@/lib/ai/provider";
+import { probeLocalAi } from "@/lib/ai/local-rpc";
 import { exportAll, importAll, validateBackup, wipeUserData } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { useLocalFirst } from "@/lib/api/api-client";
 import type { ThemeMode } from "@/lib/akari/types";
+import { getDbInfo, type DbInfo } from "@/lib/akari/db-info";
+import { hasRecoveryCode, issueRecoveryCode } from "@/lib/akari/recovery";
+import { authClient } from "@/lib/auth/client";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_app/settings")({ component: Page });
 
@@ -34,10 +39,36 @@ function Page() {
   const load = useProgress((s) => s.load);
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [dbInfo, setDbInfo] = useState<DbInfo | null>(null);
+  const [aiModels, setAiModels] = useState<string[]>([]);
+  const [aiProbe, setAiProbe] = useState<string | null>(null);
+  const { user } = useCurrentUserState();
+  const [hasCode, setHasCode] = useState(false);
+  const [freshCode, setFreshCode] = useState<string | null>(null);
+  const [codeBusy, setCodeBusy] = useState(false);
+  const [curPass, setCurPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [passBusy, setPassBusy] = useState(false);
 
   useEffect(() => {
     useLocalFirst(settings.onlineDictionary);
   }, [settings.onlineDictionary]);
+
+  useEffect(() => {
+    void getDbInfo()
+      .then(setDbInfo)
+      .catch(() => setDbInfo(null));
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setHasCode(false);
+      return;
+    }
+    void hasRecoveryCode()
+      .then((r) => setHasCode(r.has))
+      .catch(() => setHasCode(false));
+  }, [user]);
 
   async function onExport() {
     const payload = await exportAll({
@@ -96,6 +127,123 @@ function Page() {
       <PageHeader kicker="設定" title="Cài đặt" description="Giao diện, ôn tập, AI local và sao lưu." />
 
       <div className="space-y-4">
+        {dbInfo ? (
+          <Card>
+            <CardContent className="space-y-2">
+              <h2 className="font-medium">Cơ sở dữ liệu SQL</h2>
+              <p className="text-sm text-muted">
+                Tài khoản, bảng xếp hạng, lộ trình và vườn được lưu bằng <strong>{dbInfo.label}</strong>.
+                {dbInfo.persistent
+                  ? " Dữ liệu còn sau khi tắt máy chủ."
+                  : " Muốn giữ tài khoản khi host: điền databaseUrl Postgres trong akari-host.json, hoặc chạy start-akari.bat (tự lưu file SQL)."}
+              </p>
+              <p className="text-xs text-subtle">
+                Tiến độ flashcard / SRS vẫn trên máy bạn (IndexedDB) để học offline.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {user ? (
+          <Card>
+            <CardContent className="space-y-4">
+              <h2 className="font-medium">Mật khẩu & khôi phục</h2>
+              <p className="text-sm text-muted">
+                App không gửi email. Mã khôi phục dùng khi quên mật khẩu trên trang đăng nhập.
+                {hasCode ? " Bạn đã có mã — tạo mới sẽ hủy mã cũ." : " Bạn chưa có mã, hãy tạo ngay."}
+              </p>
+              {freshCode ? (
+                <p className="rounded-[10px] border border-border bg-bg-elevated px-3 py-3 text-center font-mono text-lg tracking-wide">
+                  {freshCode}
+                </p>
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  disabled={codeBusy}
+                  onClick={async () => {
+                    setCodeBusy(true);
+                    try {
+                      const res = await issueRecoveryCode();
+                      if (res.ok) {
+                        setFreshCode(res.code);
+                        setHasCode(true);
+                        toast("Lưu mã này ngay — chỉ hiện một lần.");
+                      } else toast.error(res.error);
+                    } catch {
+                      toast.error("Không tạo được mã. Đăng nhập lại rồi thử.");
+                    } finally {
+                      setCodeBusy(false);
+                    }
+                  }}
+                >
+                  {hasCode ? "Tạo mã mới" : "Tạo mã khôi phục"}
+                </Button>
+                {freshCode ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(freshCode).then(() => toast("Đã chép mã"));
+                    }}
+                  >
+                    Chép mã
+                  </Button>
+                ) : null}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="cur-pass">Mật khẩu hiện tại</Label>
+                  <Input
+                    id="cur-pass"
+                    type="password"
+                    autoComplete="current-password"
+                    value={curPass}
+                    onChange={(e) => setCurPass(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-pass">Mật khẩu mới</Label>
+                  <Input
+                    id="new-pass"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    value={newPass}
+                    onChange={(e) => setNewPass(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <Button
+                disabled={passBusy || curPass.length < 8 || newPass.length < 8}
+                onClick={async () => {
+                  setPassBusy(true);
+                  try {
+                    const res = await authClient.changePassword({
+                      currentPassword: curPass,
+                      newPassword: newPass,
+                      revokeOtherSessions: true,
+                    });
+                    if (res.error) toast.error(res.error.message || "Không đổi được mật khẩu.");
+                    else {
+                      toast("Đã đổi mật khẩu");
+                      setCurPass("");
+                      setNewPass("");
+                    }
+                  } catch {
+                    toast.error("Không đổi được mật khẩu.");
+                  } finally {
+                    setPassBusy(false);
+                  }
+                }}
+              >
+                Đổi mật khẩu
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+
         <Card>
           <CardContent className="space-y-4">
             <h2 className="font-medium">Giao diện</h2>
@@ -205,7 +353,7 @@ function Page() {
           <CardContent className="space-y-4">
             <h2 className="font-medium">AI gia sư</h2>
             <p className="text-sm text-muted">
-              Tùy chọn. Học không cần AI. Local chạy trên máy bạn (Ollama hoặc LM Studio). Đám mây chỉ gọi khi bạn bấm hỏi.
+              Tùy chọn. Học không cần AI. Ollama chạy trên máy host (cùng máy với Akari). Đám mây chỉ gọi khi bạn bấm hỏi.
             </p>
             <div className="flex flex-wrap gap-2">
               {([
@@ -297,17 +445,73 @@ function Page() {
                 <Button
                   size="sm"
                   variant="secondary"
+                  disabled={busy}
                   onClick={async () => {
                     applyLocalAiFromSettings(settings);
-                    const ok = await getAI().available();
-                    toast(ok ? "Kết nối AI local được" : "Không thấy AI local — kiểm tra URL, model đang chạy, và CORS");
+                    setBusy(true);
+                    setAiProbe(null);
+                    try {
+                      const res = await probeLocalAi({
+                        data: { url: settings.localAiUrl, kind: settings.localAiKind },
+                      });
+                      if (!res.ok) {
+                        setAiModels([]);
+                        setAiProbe(res.error);
+                        toast.error(res.error);
+                        return;
+                      }
+                      setAiModels(res.models);
+                      const current = settings.localAiModel.replace(/:latest$/, "");
+                      const match = res.models.find((m) => {
+                        const id = m.replace(/:latest$/, "");
+                        return id === current || m === settings.localAiModel || m.startsWith(`${current}:`);
+                      });
+                      if (!match && res.models[0]) {
+                        const picked = res.models[0].replace(/:latest$/, "");
+                        settings.set({ localAiModel: picked });
+                        setAiProbe(`Kết nối được. Đã chọn model ${picked}.`);
+                      } else {
+                        setAiProbe(`Kết nối được · ${res.models.length} model.`);
+                      }
+                      toast.success("Kết nối Ollama được");
+                    } catch {
+                      setAiProbe("Không gọi được máy chủ Akari.");
+                      toast.error("Không gọi được máy chủ Akari.");
+                    } finally {
+                      setBusy(false);
+                    }
                   }}
                 >
                   Kiểm tra kết nối
                 </Button>
+                {aiProbe ? (
+                  <p className={`text-sm ${aiProbe.startsWith("Kết nối") ? "text-muted" : "text-danger"}`}>{aiProbe}</p>
+                ) : null}
+                {aiModels.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {aiModels.map((m) => {
+                      const short = m.replace(/:latest$/, "");
+                      const active =
+                        settings.localAiModel === m ||
+                        settings.localAiModel === short ||
+                        m.startsWith(`${settings.localAiModel}:`);
+                      return (
+                        <Button
+                          key={m}
+                          size="sm"
+                          variant={active ? "default" : "secondary"}
+                          onClick={() => settings.set({ localAiModel: short })}
+                        >
+                          {short}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                ) : null}
                 <p className="text-xs text-subtle">
-                  Ollama: <code className="font-mono">OLLAMA_ORIGINS=*</code> rồi <code className="font-mono">ollama serve</code>.
-                  LM Studio: bật server local (OpenAI compatible) cổng 1234. Trình duyệt chặn máy chủ không CORS.
+                  Akari gọi Ollama từ máy host (không cần CORS). Giữ URL{" "}
+                  <code className="font-mono">http://localhost:11434</code>. Nếu chưa có model, mở CMD:{" "}
+                  <code className="font-mono">ollama pull llama3.2</code>
                 </p>
               </div>
             ) : null}

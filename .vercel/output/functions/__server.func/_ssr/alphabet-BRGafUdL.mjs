@@ -1,4 +1,4 @@
-import { T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { v as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as KATAKANA, t as HIRAGANA } from "./kana-CV-aAiLY.mjs";
 import { t as PageHeader } from "./page-header-BwwPPGfl.mjs";

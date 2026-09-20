@@ -13,7 +13,7 @@ var install_page_default = "<!DOCTYPE html>\n<html lang=\"en\" class=\"device-de
 //#region \0virtual:grok-og-identity
 var grokOgIdentity = { "site": {
 	"title": "Akari",
-	"description": "Học tiếng Nhật từ số 0",
+	"description": "Học tiếng Nhật từ số 0, trong khu vườn êm đềm.",
 	"card": "custom",
 	"image": "/og.jpg"
 } };

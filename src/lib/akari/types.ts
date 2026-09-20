@@ -93,9 +93,23 @@ export interface VocabEntry {
   example_kana?: string;
   example_romaji: string;
   example_meaning_vi: string;
+  examples?: Example[];
   tags: string[];
   difficulty: 1 | 2 | 3 | 4 | 5;
   common?: boolean;
+}
+
+export interface KanjiExample {
+  word: string;
+  kana: string;
+  romaji: string;
+  meaning_vi: string;
+  reading?: "on" | "kun";
+  usage?: string;
+  sentence?: string;
+  sentence_kana?: string;
+  sentence_romaji?: string;
+  sentence_vi?: string;
 }
 
 export interface KanjiEntry {
@@ -109,12 +123,7 @@ export interface KanjiEntry {
   level: JlptLevel;
   stroke_count: number;
   radical?: string;
-  examples: Array<{
-    word: string;
-    kana: string;
-    romaji: string;
-    meaning_vi: string;
-  }>;
+  examples: KanjiExample[];
 }
 
 export interface GrammarEntry {

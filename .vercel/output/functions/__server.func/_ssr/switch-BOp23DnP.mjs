@@ -1,4 +1,4 @@
-import { T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 import { t as cn } from "./utils-D10sm1uC.mjs";
 import { n as SwitchThumb, t as Switch$1 } from "../_libs/radix-ui__react-switch.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/switch-BOp23DnP.js

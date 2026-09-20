@@ -254,3 +254,253 @@
     radial-gradient(1000px 500px at 90% -20%, color-mix(in oklab, var(--color-accent) 14%, transparent), transparent 55%),
     var(--color-bg);
 }
+
+.garden-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-mist);
+  box-shadow: var(--shadow-soft);
+}
+
+.garden-stage {
+  position: relative;
+  height: min(70vh, 36rem);
+  min-height: 22rem;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  background: #cfe0d4;
+}
+
+.garden-stage.is-placing {
+  cursor: crosshair;
+}
+
+.garden-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.garden-world {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-origin: center center;
+  transition: none;
+  will-change: transform;
+}
+
+.garden-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+.garden-bg-night {
+  mix-blend-mode: multiply;
+}
+
+.garden-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(28 25 23 / 0.18), transparent 42%);
+}
+
+.garden-prop {
+  position: absolute;
+  translate: -50% -80%;
+  filter: drop-shadow(0 6px 8px rgb(28 25 23 / 0.18));
+  pointer-events: none;
+}
+
+.garden-prop.is-living {
+  animation: garden-bob 4.5s ease-in-out infinite;
+}
+
+.garden-mascot {
+  position: absolute;
+  left: 6%;
+  bottom: 8%;
+  width: 4.5rem;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.garden-mascot-wave {
+  transform-origin: 40% 80%;
+  animation: garden-wave 3.2s ease-in-out infinite;
+}
+
+.garden-cloud {
+  position: absolute;
+  width: 9rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  background: rgb(255 253 248 / 0.45);
+  animation: garden-drift 48s linear infinite;
+  pointer-events: none;
+}
+
+.garden-cloud.c2 {
+  width: 6rem;
+  animation-duration: 62s;
+  opacity: 0.7;
+}
+
+.garden-critter {
+  position: absolute;
+  width: 1.4rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.garden-critter.is-butterfly {
+  left: 30%;
+  top: 58%;
+  background: #c45b52;
+  animation: garden-flutter 9s ease-in-out infinite;
+}
+
+.garden-critter.is-bird {
+  left: -8%;
+  top: 28%;
+  background: #8b9bb4;
+  animation: garden-fly 16s linear infinite;
+}
+
+.garden-firefly {
+  position: absolute;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: #d4a25a;
+  box-shadow: 0 0 10px #d4a25a;
+  animation: garden-glow 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.garden-petals span,
+.garden-snow span {
+  position: absolute;
+  top: -8%;
+  width: 0.45rem;
+  height: 0.6rem;
+  border-radius: 999px 0;
+  background: #e8b4b8;
+  animation: garden-fall 9s linear infinite;
+  pointer-events: none;
+}
+
+.garden-petals.is-maple span {
+  background: #c88870;
+}
+
+.garden-snow span {
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: #f4efe6;
+}
+
+.garden-empty {
+  position: absolute;
+  inset: auto 1rem 1.25rem;
+  z-index: 6;
+  max-width: 22rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--color-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--color-fg);
+}
+
+.garden-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0.9rem 1rem 1rem;
+}
+
+.garden-chip {
+  min-width: min(100%, 18rem);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.garden-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(28 25 23 / 0.42);
+}
+
+.garden-modal-card {
+  width: min(24rem, 100%);
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.garden-unlock-glow {
+  filter: drop-shadow(0 0 16px color-mix(in oklab, var(--color-meadow) 50%, transparent));
+}
+
+@keyframes garden-bob {
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes garden-wave {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(6deg); }
+}
+
+@keyframes garden-drift {
+  from { transform: translateX(-10%); }
+  to { transform: translateX(120%); }
+}
+
+@keyframes garden-flutter {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, -18px); }
+}
+
+@keyframes garden-fly {
+  from { transform: translateX(0); }
+  to { transform: translateX(140vw); }
+}
+
+@keyframes garden-glow {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes garden-fall {
+  to { transform: translateY(120vh) rotate(120deg); opacity: 0.2; }
+}
+
+@media (max-width: 640px) {
+  .garden-stage { height: min(62vh, 28rem); min-height: 18rem; }
+  .garden-mascot { width: 3.6rem; }
+}
+

@@ -5,6 +5,7 @@ import { KANJI_N5 } from "@/data/kanji-n5";
 import { KANJI_N4 } from "@/data/kanji-n4";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
+import { meaningParts } from "./answer-check";
 import { kanaToRomaji, toHiragana } from "./kana-util";
 import type { VocabEntry } from "./types";
 
@@ -21,17 +22,23 @@ export type QuizKind =
   | "listen-kanji"
   | "grammar"
   | "particle"
+  | "vocab-kana"
+  | "type-romaji"
+  | "cloze"
   | "mix";
 
 export interface QuizQuestion {
   id: string;
   kind: QuizKind;
+  sourceId: string;
   prompt: string;
   promptJp?: string;
   speak?: string;
   options: string[];
   answer: number;
   explain: string;
+  typedAnswers?: string[];
+  typedHint?: string;
 }
 
 function shuffle<T>(arr: T[], rand: () => number = Math.random) {
@@ -49,6 +56,12 @@ function pickWrong<T>(pool: T[], correct: T, n: number, key: (x: T) => string, r
     pool.filter((x) => key(x) !== ck),
     rand,
   ).slice(0, n);
+}
+
+function pickOne<T>(pool: T[], used: Set<string>, idOf: (x: T) => string, rand: () => number): T | null {
+  const fresh = pool.filter((x) => !used.has(idOf(x)));
+  if (!fresh.length) return null;
+  return fresh[Math.floor(rand() * fresh.length)] ?? null;
 }
 
 export function mulberry32(seed: number) {
@@ -73,6 +86,10 @@ function kanjiSpeak(c: { kunyomi: string[]; onyomi: string[]; character: string 
   return c.kunyomi[0] || toHiragana(c.onyomi[0] ?? "") || c.character;
 }
 
+function qid(kind: string, source: string, rand: () => number) {
+  return `q-${kind}-${source}-${Math.floor(rand() * 1e9).toString(36)}`;
+}
+
 const PARTICLES: Array<{ blank: string; options: string[]; answer: string; explain: string; speak: string }> = [
   { blank: "わたし____学生です。", options: ["は", "を", "へ", "と"], answer: "は", explain: "は đánh dấu chủ đề: tôi thì là học sinh.", speak: "わたしはがくせいです。" },
   { blank: "パン____食べます。", options: ["を", "に", "で", "が"], answer: "を", explain: "を đánh dấu tân ngữ của động từ tha.", speak: "パンをたべます。" },
@@ -82,249 +99,412 @@ const PARTICLES: Array<{ blank: string; options: string[]; answer: string; expla
   { blank: "友達____話します。", options: ["と", "を", "へ", "で"], answer: "と", explain: "と nghĩa là cùng với.", speak: "ともだちとはなします。" },
   { blank: "水____ありますか。", options: ["が", "を", "へ", "で"], answer: "が", explain: "が đánh dấu chủ ngữ tồn tại / nhấn mạnh.", speak: "みずがありますか。" },
   { blank: "これ____えんぴつです。", options: ["は", "を", "へ", "で"], answer: "は", explain: "は: đây thì là bút chì.", speak: "これはえんぴつです。" },
+  { blank: "駅____歩きます。", options: ["まで", "を", "が", "も"], answer: "まで", explain: "まで: đến tận nhà ga.", speak: "えきまであるきます。" },
+  { blank: "バス____来ます。", options: ["が", "を", "へ", "で"], answer: "が", explain: "が đánh dấu chủ ngữ của 来ます.", speak: "バスがきます。" },
+  { blank: "日本____来ました。", options: ["から", "を", "へ", "と"], answer: "から", explain: "から: từ Nhật Bản đến.", speak: "にほんからきました。" },
+  { blank: "コーヒー____お茶を飲みます。", options: ["や", "を", "に", "で"], answer: "や", explain: "や liệt kê không đầy đủ: cà phê và trà…", speak: "コーヒーやおちゃをのみます。" },
+  { blank: "毎日日本語____勉強します。", options: ["を", "に", "が", "へ"], answer: "を", explain: "を: học tiếng Nhật (tân ngữ).", speak: "まいにちにほんごをべんきょうします。" },
+  { blank: "うち____帰ります。", options: ["へ", "を", "が", "と"], answer: "へ", explain: "へ: về nhà (hướng).", speak: "うちへかえります。" },
+  { blank: "はし____食べます。", options: ["で", "を", "に", "へ"], answer: "で", explain: "で: dùng đũa để ăn (phương tiện).", speak: "はしでたべます。" },
+  { blank: "猫____好きです。", options: ["が", "を", "へ", "で"], answer: "が", explain: "が với 好き: thích mèo.", speak: "ねこがすきです。" },
+  { blank: "あした____テストがあります。", options: ["は", "を", "へ", "と"], answer: "は", explain: "は đánh dấu chủ đề thời gian: còn ngày mai thì…", speak: "あしたはテストがあります。" },
+  { blank: "先生____もらいました。", options: ["に", "を", "へ", "が"], answer: "に", explain: "に: nhận từ thầy/cô.", speak: "せんせいにもらいました。" },
+  { blank: "車____乗ります。", options: ["に", "を", "へ", "と"], answer: "に", explain: "に: lên xe / ngồi vào xe.", speak: "くるまにのります。" },
+  { blank: "兄弟____いません。", options: ["は", "を", "へ", "で"], answer: "は", explain: "は + いません: không có anh chị em.", speak: "きょうだいはいません。" },
 ];
 
-export function makeQuiz(kind: QuizKind, count = 10, rand: () => number = Math.random): QuizQuestion[] {
-  if (kind === "mix") {
-    const kinds: QuizKind[] = [
-      "hira-romaji",
-      "kata-romaji",
-      "vocab-meaning",
-      "meaning-vocab",
-      "kanji",
-      "kanji-read",
-      "listen-kanji",
-      "grammar",
-      "listen",
-      "listen-vocab",
-      "particle",
-    ];
-    const out: QuizQuestion[] = [];
-    const per = Math.max(1, Math.ceil(count / kinds.length));
-    for (const k of kinds) out.push(...makeQuiz(k, per, rand));
-    return shuffle(out, rand).slice(0, count);
-  }
+const MIX_KINDS: QuizKind[] = [
+  "hira-romaji",
+  "romaji-hira",
+  "kata-romaji",
+  "vocab-meaning",
+  "meaning-vocab",
+  "kanji",
+  "kanji-read",
+  "listen-kanji",
+  "grammar",
+  "listen",
+  "listen-vocab",
+  "particle",
+  "vocab-kana",
+  "type-romaji",
+  "cloze",
+];
 
-  const hira = HIRAGANA.filter((k) => k.group === "gojuon");
-  const kata = KATAKANA.filter((k) => k.group === "gojuon");
+function pools() {
+  const hira = HIRAGANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
+  const kata = KATAKANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
   const vocab: VocabEntry[] = [...VOCAB_N5, ...VOCAB_N4];
   const kanji = [...KANJI_N5, ...KANJI_N4];
   const grammar = [...GRAMMAR_N5, ...GRAMMAR_N4];
+  return { hira, kata, vocab, kanji, grammar };
+}
+
+function buildOne(kind: QuizKind, used: Set<string>, rand: () => number): QuizQuestion | null {
+  const { hira, kata, vocab, kanji, grammar } = pools();
+  const mark = (sourceId: string) => used.add(`${kind}:${sourceId}`);
 
   if (kind === "hira-romaji" || kind === "kata-romaji") {
     const pool = kind === "hira-romaji" ? hira : kata;
-    return shuffle(pool, rand)
-      .slice(0, count)
-      .map((c) => {
-        const wrong = pickWrong(pool, c, 3, (x) => x.romaji, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-${c.id}`,
-          kind,
-          prompt: `${c.char} đọc là?`,
-          promptJp: c.char,
-          speak: c.char,
-          options: opts.map((o) => o.romaji),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.char} · ${c.romaji}`,
-        };
-      });
+    const c = pickOne(pool, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(pool, c, 3, (x) => x.romaji, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `${c.char} đọc là?`,
+      promptJp: c.char,
+      speak: c.char,
+      options: opts.map((o) => o.romaji),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.char} · ${c.romaji}`,
+      typedAnswers: [c.romaji],
+      typedHint: "Gõ romaji",
+    };
   }
 
   if (kind === "romaji-hira") {
-    return shuffle(hira, rand)
-      .slice(0, count)
-      .map((c) => {
-        const wrong = pickWrong(hira, c, 3, (x) => x.char, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-r-${c.id}`,
-          kind,
-          prompt: `"${c.romaji}" là chữ nào?`,
-          speak: c.char,
-          options: opts.map((o) => o.char),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.romaji} = ${c.char}`,
-        };
-      });
+    const c = pickOne(hira, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(hira, c, 3, (x) => x.char, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `"${c.romaji}" là chữ nào?`,
+      speak: c.char,
+      options: opts.map((o) => o.char),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.romaji} = ${c.char}`,
+    };
   }
 
   if (kind === "listen") {
-    return shuffle(hira, rand)
-      .slice(0, count)
-      .map((c) => {
-        const wrong = pickWrong(hira, c, 3, (x) => x.char, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-l-${c.id}`,
-          kind,
-          prompt: "Nghe và chọn chữ",
-          speak: c.char,
-          options: opts.map((o) => `${o.char} · ${o.romaji}`),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `Bạn nghe ${c.char} (${c.romaji}).`,
-        };
-      });
+    const c = pickOne(hira, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(hira, c, 3, (x) => x.char, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: "Nghe và chọn chữ",
+      speak: c.char,
+      options: opts.map((o) => `${o.char} · ${o.romaji}`),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `Bạn nghe ${c.char} (${c.romaji}).`,
+    };
   }
 
   if (kind === "listen-vocab") {
-    const pool = VOCAB_N5;
-    return shuffle(pool, rand)
-      .slice(0, count)
-      .map((c) => {
-        const wrong = pickWrong(pool, c, 3, (x) => x.meaning_vi, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-lv-${c.id}`,
-          kind,
-          prompt: "Nghe từ và chọn nghĩa",
-          speak: c.kana,
-          options: opts.map((o) => o.meaning_vi),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.word} · ${c.kana} · ${c.romaji}: ${c.meaning_vi}.`,
-        };
-      });
+    const pool = vocab;
+    const c = pickOne(pool, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(pool, c, 3, (x) => x.meaning_vi, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: "Nghe từ và chọn nghĩa",
+      speak: c.kana,
+      options: opts.map((o) => o.meaning_vi),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.word} · ${c.kana} · ${c.romaji}: ${c.meaning_vi}.`,
+    };
   }
 
   if (kind === "kanji") {
-    return shuffle(kanji, rand)
-      .slice(0, count)
-      .map((c) => {
-        const speak = kanjiSpeak(c);
-        const wrong = pickWrong(kanji, c, 3, (x) => x.meaning_vi, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-${c.id}`,
-          kind,
-          prompt: `${c.character} nghĩa là?`,
-          promptJp: c.character,
-          speak,
-          options: opts.map((o) => o.meaning_vi),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.character} · ${c.meaning_vi}. Kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.map((o) => `${o} (${kanaToRomaji(o)})`).join(" / ")}.`,
-        };
-      });
+    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const speak = kanjiSpeak(c);
+    const wrong = pickWrong(kanji, c, 3, (x) => x.meaning_vi, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `${c.character} nghĩa là?`,
+      promptJp: c.character,
+      speak,
+      options: opts.map((o) => o.meaning_vi),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.character} · ${c.meaning_vi}. Kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.map((o) => `${o} (${kanaToRomaji(o)})`).join(" / ")}.`,
+      typedAnswers: meaningParts(c.meaning_vi),
+      typedHint: "Gõ nghĩa tiếng Việt",
+    };
   }
 
   if (kind === "kanji-read") {
-    return shuffle(kanji, rand)
-      .slice(0, count)
-      .map((c) => {
-        const reading = kanjiSpeak(c);
-        const romaji = kanaToRomaji(reading);
-        const pool = kanji
-          .map((k) => {
-            const r = kanjiSpeak(k);
-            return { id: k.id, label: `${r} · ${kanaToRomaji(r)}` };
-          })
-          .filter((x) => x.label);
-        const correct = { id: c.id, label: `${reading} · ${romaji}` };
-        const wrong = pickWrong(pool, correct, 3, (x) => x.label, rand);
-        const opts = shuffle([correct, ...wrong], rand);
-        return {
-          id: `q-kr-${c.id}`,
-          kind,
-          prompt: `${c.character} đọc là? (hiragana / romaji)`,
-          promptJp: c.character,
-          speak: reading,
-          options: opts.map((o) => o.label),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.character} · kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.join(" / ")} (${c.onyomi.map(kanaToRomaji).join(", ")}).`,
-        };
-      });
+    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const reading = kanjiSpeak(c);
+    const romaji = kanaToRomaji(reading);
+    const pool = kanji
+      .map((k) => {
+        const r = kanjiSpeak(k);
+        return { id: k.id, label: `${r} · ${kanaToRomaji(r)}` };
+      })
+      .filter((x) => x.label);
+    const correct = { id: c.id, label: `${reading} · ${romaji}` };
+    const wrong = pickWrong(pool, correct, 3, (x) => x.label, rand);
+    const opts = shuffle([correct, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `${c.character} đọc là? (hiragana / romaji)`,
+      promptJp: c.character,
+      speak: reading,
+      options: opts.map((o) => o.label),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.character} · kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.join(" / ")} (${c.onyomi.map(kanaToRomaji).join(", ")}).`,
+      typedAnswers: [reading, romaji, ...c.kunyomi, ...c.onyomi.map(toHiragana)].filter(Boolean),
+      typedHint: "Gõ hiragana hoặc romaji",
+    };
   }
 
   if (kind === "listen-kanji") {
-    return shuffle(kanji, rand)
-      .slice(0, count)
-      .map((c) => {
-        const speak = kanjiSpeak(c);
-        const wrong = pickWrong(kanji, c, 3, (x) => x.character, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-lk-${c.id}`,
-          kind,
-          prompt: "Nghe cách đọc (hiragana), chọn kanji",
-          speak,
-          options: opts.map((o) => `${o.character} · ${o.meaning_vi}`),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `Nghe ${speak} (${kanaToRomaji(speak)}) → ${c.character}. On ${c.onyomi.join("/")} · kun ${c.kunyomi.join("/") || "—"}.`,
-        };
-      });
+    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const speak = kanjiSpeak(c);
+    const wrong = pickWrong(kanji, c, 3, (x) => x.character, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: "Nghe cách đọc (hiragana), chọn kanji",
+      speak,
+      options: opts.map((o) => `${o.character} · ${o.meaning_vi}`),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `Nghe ${speak} (${kanaToRomaji(speak)}) → ${c.character}. On ${c.onyomi.join("/")} · kun ${c.kunyomi.join("/") || "—"}.`,
+    };
   }
 
   if (kind === "grammar") {
-    return shuffle(grammar, rand)
-      .slice(0, count)
-      .map((c) => {
-        const wrong = pickWrong(grammar, c, 3, (x) => x.meaning_vi, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-${c.id}`,
-          kind,
-          prompt: `${c.name} dùng để?`,
-          promptJp: c.name,
-          options: opts.map((o) => o.meaning_vi),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.name}: ${c.meaning_vi}. ${c.structure}`,
-        };
-      });
+    const c = pickOne(grammar, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(grammar, c, 3, (x) => x.meaning_vi, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `${c.name} dùng để?`,
+      promptJp: c.name,
+      options: opts.map((o) => o.meaning_vi),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.name}: ${c.meaning_vi}. ${c.structure}`,
+    };
   }
 
   if (kind === "particle") {
-    return shuffle(PARTICLES, rand)
-      .slice(0, count)
-      .map((c, i) => {
-        const opts = shuffle(c.options, rand);
-        return {
-          id: `q-p-${i}-${c.answer}`,
-          kind,
-          prompt: "Chọn trợ từ đúng",
-          promptJp: c.blank,
-          speak: c.speak,
-          options: opts,
-          answer: opts.findIndex((o) => o === c.answer),
-          explain: c.explain,
-        };
-      });
+    const c = pickOne(PARTICLES, used, (x) => `${kind}:${x.blank}`, rand);
+    if (!c) return null;
+    mark(c.blank);
+    const opts = shuffle(c.options, rand);
+    return {
+      id: qid(kind, c.blank, rand),
+      kind,
+      sourceId: c.blank,
+      prompt: "Chọn trợ từ đúng",
+      promptJp: c.blank,
+      speak: c.speak,
+      options: opts,
+      answer: opts.findIndex((o) => o === c.answer),
+      explain: c.explain,
+    };
   }
 
   if (kind === "meaning-vocab") {
-    const vpool = VOCAB_N5;
-    return shuffle(vpool, rand)
-      .slice(0, count)
-      .map((c) => {
-        const wrong = pickWrong(vpool, c, 3, (x) => x.word, rand);
-        const opts = shuffle([c, ...wrong], rand);
-        return {
-          id: `q-mv-${c.id}`,
-          kind,
-          prompt: `"${c.meaning_vi}" = ?`,
-          speak: c.kana,
-          options: opts.map((o) => `${o.word} · ${o.kana}`),
-          answer: opts.findIndex((o) => o.id === c.id),
-          explain: `${c.meaning_vi} là ${c.word} (${c.kana}, ${c.romaji}).`,
-        };
-      });
+    const c = pickOne(vocab, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(vocab, c, 3, (x) => x.word, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `"${c.meaning_vi}" = ?`,
+      speak: c.kana,
+      options: opts.map((o) => `${o.word} · ${o.kana}`),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.meaning_vi} là ${c.word} (${c.kana}, ${c.romaji}).`,
+      typedAnswers: [c.romaji, c.kana, c.word],
+      typedHint: "Gõ từ (romaji / kana)",
+    };
   }
 
-  const vpool: VocabEntry[] = vocab;
-  return shuffle(vpool, rand)
-    .slice(0, count)
-    .map((c) => {
-      const wrong = pickWrong(vpool, c, 3, (x) => x.meaning_vi, rand);
+  if (kind === "vocab-kana") {
+    const c = pickOne(vocab, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(vocab, c, 3, (x) => x.kana, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `${c.word} đọc (kana) là?`,
+      promptJp: c.word,
+      speak: c.kana,
+      options: opts.map((o) => `${o.kana} · ${o.romaji}`),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.word} = ${c.kana} (${c.romaji}).`,
+      typedAnswers: [c.kana, c.romaji],
+      typedHint: "Gõ kana hoặc romaji",
+    };
+  }
+
+  if (kind === "type-romaji") {
+    const bag = rand() < 0.45 ? hira : rand() < 0.7 ? vocab : kanji;
+    if (bag === hira) {
+      const c = pickOne(hira, used, (x) => `${kind}:${x.id}`, rand);
+      if (!c) return null;
+      mark(c.id);
+      const wrong = pickWrong(hira, c, 3, (x) => x.romaji, rand);
       const opts = shuffle([c, ...wrong], rand);
       return {
-        id: `q-v-${c.id}`,
-        kind: "vocab-meaning",
-        prompt: `${c.word} nghĩa là?`,
+        id: qid(kind, c.id, rand),
+        kind,
+        sourceId: c.id,
+        prompt: "Gõ romaji của chữ này",
+        promptJp: c.char,
+        speak: c.char,
+        options: opts.map((o) => o.romaji),
+        answer: opts.findIndex((o) => o.id === c.id),
+        explain: `${c.char} · ${c.romaji}`,
+        typedAnswers: [c.romaji],
+        typedHint: "Gõ romaji rồi Enter",
+      };
+    }
+    if (bag === vocab) {
+      const c = pickOne(vocab, used, (x) => `${kind}:${x.id}`, rand);
+      if (!c) return null;
+      mark(c.id);
+      const wrong = pickWrong(vocab, c, 3, (x) => x.romaji, rand);
+      const opts = shuffle([c, ...wrong], rand);
+      return {
+        id: qid(kind, c.id, rand),
+        kind,
+        sourceId: c.id,
+        prompt: "Gõ romaji của từ này",
         promptJp: c.word,
         speak: c.kana,
-        options: opts.map((o) => o.meaning_vi),
+        options: opts.map((o) => o.romaji),
         answer: opts.findIndex((o) => o.id === c.id),
-        explain: `${c.word} (${c.kana}, ${c.romaji}): ${c.meaning_vi}.`,
+        explain: `${c.word} · ${c.kana} · ${c.romaji}`,
+        typedAnswers: [c.romaji, c.kana],
+        typedHint: "Gõ romaji",
       };
-    });
+    }
+    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const reading = kanjiSpeak(c);
+    const romaji = kanaToRomaji(reading);
+    const wrongReadings = pickWrong(kanji, c, 3, (x) => kanaToRomaji(kanjiSpeak(x)), rand);
+    const opts = shuffle([romaji, ...wrongReadings.map((k) => kanaToRomaji(kanjiSpeak(k)))], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: "Gõ romaji cách đọc kanji",
+      promptJp: c.character,
+      speak: reading,
+      options: opts,
+      answer: opts.findIndex((o) => o === romaji),
+      explain: `${c.character} · ${reading} · ${romaji}`,
+      typedAnswers: [romaji, reading, ...c.kunyomi],
+      typedHint: "Gõ romaji hoặc hiragana",
+    };
+  }
+
+  if (kind === "cloze") {
+    const clozePool = vocab.filter((v) => v.example_sentence.includes(v.word) || v.example_sentence.includes(v.kana));
+    const c = pickOne(clozePool, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const blank = c.example_sentence.includes(c.word)
+      ? c.example_sentence.replace(c.word, "____")
+      : c.example_sentence.replace(c.kana, "____");
+    const wrong = pickWrong(vocab, c, 3, (x) => x.word, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: "Điền từ vào chỗ trống",
+      promptJp: blank,
+      speak: c.example_kana || c.kana,
+      options: opts.map((o) => `${o.word} · ${o.kana}`),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.example_sentence} — ${c.example_meaning_vi}`,
+      typedAnswers: [c.word, c.kana, c.romaji],
+      typedHint: "Gõ từ còn thiếu",
+    };
+  }
+
+  const c = pickOne(vocab, used, (x) => `vocab-meaning:${x.id}`, rand);
+  if (!c) return null;
+  used.add(`vocab-meaning:${c.id}`);
+  const wrong = pickWrong(vocab, c, 3, (x) => x.meaning_vi, rand);
+  const opts = shuffle([c, ...wrong], rand);
+  return {
+    id: qid("vocab-meaning", c.id, rand),
+    kind: "vocab-meaning",
+    sourceId: c.id,
+    prompt: `${c.word} nghĩa là?`,
+    promptJp: c.word,
+    speak: c.kana,
+    options: opts.map((o) => o.meaning_vi),
+    answer: opts.findIndex((o) => o.id === c.id),
+    explain: `${c.word} (${c.kana}, ${c.romaji}): ${c.meaning_vi}.`,
+    typedAnswers: meaningParts(c.meaning_vi),
+    typedHint: "Gõ nghĩa tiếng Việt",
+  };
+}
+
+export function nextQuestion(kind: QuizKind, used: Set<string>, rand: () => number = Math.random): QuizQuestion | null {
+  if (kind === "mix") {
+    const order = shuffle(MIX_KINDS, rand);
+    for (const k of order) {
+      const q = buildOne(k, used, rand);
+      if (q) return q;
+    }
+    used.clear();
+    return buildOne(shuffle(MIX_KINDS, rand)[0] ?? "vocab-meaning", used, rand);
+  }
+  const q = buildOne(kind, used, rand);
+  if (q) return q;
+  const stale = [...used].filter((k) => k.startsWith(`${kind}:`));
+  for (const k of stale) used.delete(k);
+  return buildOne(kind, used, rand);
+}
+
+export function makeQuiz(kind: QuizKind, count = 10, rand: () => number = Math.random): QuizQuestion[] {
+  const used = new Set<string>();
+  const out: QuizQuestion[] = [];
+  let guard = 0;
+  while (out.length < count && guard++ < count * 12) {
+    const q = nextQuestion(kind, used, rand);
+    if (!q) break;
+    out.push(q);
+  }
+  return out;
 }
 
 export function makeDailyQuiz(date: string, count = 15) {

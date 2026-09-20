@@ -1,4 +1,4 @@
-import { T as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
+import { E as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+[...].mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/empty-state-A1bLnuh-.js
 var import_jsx_runtime = require_jsx_runtime();
 function EmptyState({ title, description, action }) {

@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getAI } from "./provider";
 
 export const explainWithCloudAi = createServerFn({ method: "POST" })
   .validator((input: { prompt: string }) => ({
@@ -39,16 +38,3 @@ export const explainWithCloudAi = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Lỗi mạng khi gọi AI." };
     }
   });
-
-export async function explainWithLocalAi(prompt: string, system?: string) {
-  const ai = getAI();
-  if (!(await ai.available())) {
-    return { ok: false as const, error: "Không kết nối được AI local. Kiểm tra URL trong Cài đặt." };
-  }
-  try {
-    const res = await ai.explain(prompt, system);
-    return { ok: true as const, text: res.text };
-  } catch {
-    return { ok: false as const, error: "AI local không phản hồi." };
-  }
-}

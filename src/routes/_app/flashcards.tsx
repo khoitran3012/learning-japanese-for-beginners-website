@@ -7,7 +7,9 @@ import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
 import { KANJI_N5 } from "@/data/kanji-n5";
+import { KANJI_N4 } from "@/data/kanji-n4";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
+import { meaningParts } from "@/lib/akari/answer-check";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
@@ -30,22 +32,26 @@ function Page() {
   const cards: FlashCard[] = useMemo(() => {
     let built: FlashCard[] = [];
     if (deck === "hiragana") {
-      built = HIRAGANA.filter((k) => k.group === "gojuon").map((k) => ({
+      built = HIRAGANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "yoon").map((k) => ({
         id: k.id,
         front: k.char,
         back: `${k.romaji}\n${k.examples[0]?.vi ?? ""}`,
         extra: k.examples[0]?.jp,
         speak: k.char,
         type: "kana" as const,
+        answers: [k.romaji],
+        answerHint: "Gõ romaji",
       }));
     } else if (deck === "katakana") {
-      built = KATAKANA.filter((k) => k.group === "gojuon").map((k) => ({
+      built = KATAKANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "yoon").map((k) => ({
         id: k.id,
         front: k.char,
         back: `${k.romaji}\n${k.examples[0]?.vi ?? ""}`,
         extra: k.examples[0]?.jp,
         speak: k.char,
         type: "kana" as const,
+        answers: [k.romaji],
+        answerHint: "Gõ romaji",
       }));
     } else if (deck === "vocab") {
       built = [...VOCAB_N5, ...VOCAB_N4].map((v) => ({
@@ -55,14 +61,18 @@ function Page() {
         extra: v.example_sentence,
         speak: v.word,
         type: "vocab" as const,
+        answers: [v.romaji, v.kana, v.word, ...meaningParts(v.meaning_vi)],
+        answerHint: "Gõ romaji, kana hoặc nghĩa",
       }));
     } else if (deck === "kanji") {
-      built = KANJI_N5.map((k) => ({
+      built = [...KANJI_N5, ...KANJI_N4].map((k) => ({
         id: k.id,
         front: k.character,
-        back: `${k.meaning_vi}\n${k.onyomi.join(" / ")}`,
+        back: `${k.meaning_vi}\n${k.onyomi.join(" / ")} · ${k.kunyomi.join(" / ")}`,
         speak: k.character,
         type: "kanji" as const,
+        answers: [...meaningParts(k.meaning_vi), k.romaji, ...k.kunyomi, ...k.onyomi],
+        answerHint: "Gõ nghĩa hoặc cách đọc",
       }));
     } else if (deck === "mine") {
       built = [...myWords].map((id) => {
@@ -75,6 +85,8 @@ function Page() {
             extra: d.examples[0]?.jp,
             speak: d.kanji,
             type: "vocab" as const,
+            answers: [d.romaji, d.kana, d.kanji, ...d.meanings.flatMap(meaningParts)],
+            answerHint: "Gõ romaji, kana hoặc nghĩa",
           };
         }
         const r = resolveStudyItem(id);
@@ -84,6 +96,8 @@ function Page() {
           back: r?.sub ?? "",
           speak: r?.speak,
           type: "custom" as const,
+          answers: r?.sub ? meaningParts(r.sub) : [],
+          answerHint: "Gõ đáp án",
         };
       });
     } else {
@@ -93,6 +107,8 @@ function Page() {
         back: `${g.structure}\n${g.meaning_vi}`,
         extra: g.examples[0]?.jp,
         type: "grammar" as const,
+        answers: meaningParts(g.meaning_vi),
+        answerHint: "Gõ nghĩa tiếng Việt",
       }));
     }
 
@@ -106,7 +122,7 @@ function Page() {
       <PageHeader
         kicker="札"
         title="Flashcard"
-        description="Ưu tiên thẻ đến hạn. Lật thẻ, tự đánh giá — khoảng cách ôn tăng khi bạn nhớ."
+        description="Gõ đáp án để tự kiểm tra. Nhớ / Dễ hoặc gõ đúng thì lưu ngay. Thẻ quên sẽ quay lại trong phiên."
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {(
