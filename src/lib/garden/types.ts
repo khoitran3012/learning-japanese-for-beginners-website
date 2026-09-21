@@ -15,6 +15,7 @@ export type GardenSnapshot = {
   levelName: string;
   levelNameJp: string;
   nextLevelXp: number | null;
+  prevLevelXp: number;
   wordsLearned: number;
   lessons: number;
   streak: number;
@@ -27,10 +28,34 @@ export type GardenSnapshot = {
   unlocked: string[];
   newUnlocks: { id: string; name: string; nameJp: string; category: GardenCategory }[];
   placements: GardenPlacement[];
+  treeId: string;
+  mood: string;
 };
 
 export type GardenLearningInput = {
   wordsLearned: number;
   streak: number;
   studiedToday: boolean;
+};
+
+export type DailyGoalItem = {
+  id: string;
+  label: string;
+  href: string;
+  done: boolean;
+  current: number;
+  target: number;
+};
+
+export type GardenDayMark = {
+  date: string;
+  minutes: number;
+  items: number;
+  quizzes: number;
+};
+
+export type GardenHistoryRow = {
+  date: string;
+  xp: number;
+  note: string;
 };

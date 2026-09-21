@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { allKanji } from "@/data/kanji-set";
+import { RADICALS } from "@/data/radicals";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { LESSONS } from "@/data/lessons";
@@ -53,6 +54,24 @@ export function SearchDialog({
           title: kj.character,
           sub: kj.han_viet ? `${kj.han_viet} · ${kj.meaning_vi}` : kj.meaning_vi,
           to: `/kanji/${kj.id}`,
+        });
+      }
+    }
+    for (const rd of RADICALS) {
+      if (
+        rd.char === query ||
+        rd.parent === query ||
+        rd.variants.includes(query) ||
+        foldVi(rd.han_viet).includes(qFold) ||
+        foldVi(rd.meaning_vi).includes(qFold) ||
+        rd.name_kana.includes(query) ||
+        foldVi(rd.name_jp).includes(qFold)
+      ) {
+        out.push({
+          type: "Bộ thủ",
+          title: rd.char,
+          sub: `${rd.han_viet} · ${rd.name_kana} · ${rd.meaning_vi}`,
+          to: `/radicals/${rd.id}`,
         });
       }
     }

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PagePager } from "@/components/page-pager";
+import { Button } from "@/components/ui/button";
 import { allKanji } from "@/data/kanji-set";
 import { KANJI_LESSONS, kanjiLessonById, kanjiLessonsByPath, kanjiLessonsFor } from "@/data/kanji-lessons";
 import { useProgress } from "@/lib/akari/progress";
@@ -99,7 +100,12 @@ function Page() {
       <PageHeader
         kicker="漢字"
         title="Kanji"
-        description="Học từ N5 đến N1. Mỗi bài vài chữ — Hán-Việt trước, nét và on/kun sau."
+        description="Học từ N5 đến N1. Mỗi chữ: Hán-Việt, rồi on (ghép chữ) và kun (một mình / có đuôi hiragana)."
+        actions={
+          <Button asChild variant="secondary">
+            <Link to="/radicals">Bộ thủ</Link>
+          </Button>
+        }
       />
       <ol className="mb-4 flex flex-wrap items-center gap-1.5 text-sm">
         {(["N5", "N4", "N3", "N2", "N1"] as const).map((x, i) => (

@@ -26,10 +26,10 @@ export type GardenMilestone = {
 
 export const GARDEN_CONFIG = {
   xp: {
-    perWord: 3,
-    perLesson: 20,
+    perWord: 1,
+    perLesson: 15,
     /** Daily claim after a real study session that day. */
-    daily: 15,
+    daily: 30,
     /** Max words the client may add in one sync (anti-cheat). */
     maxWordDelta: 80,
     maxWords: 20000,

@@ -14,6 +14,8 @@ import { useProgress, learnedCount } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
 import { primaryLessonHref } from "@/lib/akari/lesson-links";
+import { HomeGardenCard } from "@/components/garden/GardenChrome";
+import { useGarden } from "@/lib/garden/use-garden";
 
 export const Route = createFileRoute("/_app/")({ component: HomePage });
 
@@ -48,6 +50,7 @@ function HomePage() {
   );
   const minutes = today?.minutes ?? 0;
   const goalPct = Math.min(100, (minutes / dailyGoal) * 100);
+  const { garden } = useGarden();
 
   const stats = [
     { label: "Hiragana", value: hira, total: hiraBase },
@@ -97,6 +100,10 @@ function HomePage() {
         </Card>
       </div>
 
+      <div className="mb-6">
+        <HomeGardenCard garden={garden} goalPct={goalPct} />
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardContent className="space-y-4">
@@ -133,7 +140,7 @@ function HomePage() {
           <Link to="/daily">Bài tập hôm nay</Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link to="/garden">Khu vườn</Link>
+          <Link to="/garden">Vườn Sakura</Link>
         </Button>
         <Button asChild variant="secondary">
           <Link to="/play">Giải trí</Link>
@@ -146,6 +153,9 @@ function HomePage() {
         </Button>
         <Button asChild variant="secondary">
           <Link to="/hiragana">Bảng Hiragana</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link to="/radicals">Bộ thủ</Link>
         </Button>
         <Button asChild variant="secondary">
           <Link to="/dictionary">Mở từ điển</Link>

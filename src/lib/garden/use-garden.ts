@@ -1,20 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { todayKey } from "@/lib/utils";
-import { useProgress } from "@/lib/akari/progress";
+import { learnedCount, useProgress } from "@/lib/akari/progress";
 import { learnedWordCount } from "./sync";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import {
-  acknowledgeGardenUnlocks,
   claimGardenDaily,
   loadGarden,
   reportGardenLearning,
-  saveGardenPlacements,
   setGardenSound,
 } from "./api";
-import { localSnapshot, markLocalSeen, saveLocalPlacements, setLocalSound, claimLocalDaily } from "./local";
+import { localSnapshot, setLocalSound, claimLocalDaily } from "./local";
 import { GARDEN_CONFIG } from "./config";
 import { gardenEvents } from "./events";
-import type { GardenPlacement, GardenSnapshot } from "./types";
+import { calendarMarks, dailyGoalsFrom, historyFromDays } from "./goals";
+import type { GardenSnapshot } from "./types";
 
 function fromLocalProgress(
   srs: Record<string, import("@/lib/akari/types").SrsItem>,
@@ -23,14 +22,19 @@ function fromLocalProgress(
   lastStudyDate: string | null,
   quizScores: { score: number; total: number }[],
 ): GardenSnapshot {
-  const words = learnedWordCount(srs);
   return localSnapshot({
-    wordsLearned: words,
+    wordsLearned: learnedCount(srs, "v-"),
     lessons: lessons.size,
     streak,
     quizzes: quizScores.length,
-    studyXp: quizScores.reduce((a, q) => a + q.score * 10, 0),
+    studyXp: 0,
     lastStudyDate,
+    kanaHira: learnedCount(srs, "h-"),
+    kanaKata: learnedCount(srs, "k-"),
+    vocab: learnedCount(srs, "v-"),
+    kanji: learnedCount(srs, "kj-"),
+    grammar: learnedCount(srs, "g-"),
+    quizScores,
   });
 }
 
@@ -41,17 +45,37 @@ export function useGarden() {
   const streak = useProgress((s) => s.streak);
   const lastStudyDate = useProgress((s) => s.lastStudyDate);
   const quizScores = useProgress((s) => s.quizScores);
+  const today = useProgress((s) => s.today);
+  const days = useProgress((s) => s.days);
   const ready = useProgress((s) => s.ready);
   const [remote, setRemote] = useState<GardenSnapshot | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
 
   const local = useMemo(
     () => fromLocalProgress(srs, lessons, streak, lastStudyDate, quizScores),
-    [srs, lessons, streak, lastStudyDate, quizScores],
+    [srs, lessons, streak, lastStudyDate, quizScores, tick],
   );
 
-  const garden = remote?.signedIn ? remote : local;
+  const garden: GardenSnapshot = useMemo(() => {
+    if (!remote?.signedIn) return local;
+    return {
+      ...local,
+      signedIn: true,
+      soundOn: remote.soundOn,
+      dailyBonus: remote.dailyBonus,
+      lastDailyDate: remote.lastDailyDate,
+      canClaimDaily: local.lastStudyDate === todayKey() && remote.lastDailyDate !== todayKey(),
+    };
+  }, [local, remote]);
+
+  const date = todayKey();
+  const goals = useMemo(() => dailyGoalsFrom({ today, srs, date }), [today, srs, date]);
+  const marks = useMemo(() => calendarMarks(days, date), [days, date]);
+  const history = useMemo(() => historyFromDays(days), [days]);
+  const startedAt = days.length ? [...days].sort((a, b) => a.date.localeCompare(b.date))[0]?.date ?? lastStudyDate : lastStudyDate;
+  const goalsDone = goals.length > 0 && goals.every((g) => g.done);
 
   const refresh = useCallback(async () => {
     try {
@@ -96,33 +120,9 @@ export function useGarden() {
     });
   }, [ready, isPending, srs, streak, lastStudyDate]);
 
-  const ackUnlocks = useCallback(async (ids: string[]) => {
-    if (!ids.length) return;
-    if (garden.signedIn) {
-      try {
-        const next = await acknowledgeGardenUnlocks({ data: ids });
-        setRemote(next);
-        return;
-      } catch {
-        setError(true);
-      }
-    }
-    markLocalSeen(ids);
-    setRemote(null);
-  }, [garden.signedIn]);
-
-  const savePlacements = useCallback(async (placements: GardenPlacement[]) => {
-    if (garden.signedIn) {
-      try {
-        const next = await saveGardenPlacements({ data: placements });
-        setRemote(next);
-        return;
-      } catch {
-        setError(true);
-      }
-    }
-    saveLocalPlacements(placements);
-  }, [garden.signedIn]);
+  const ackUnlocks = useCallback(async (_ids: string[]) => {
+    return;
+  }, []);
 
   const claimDaily = useCallback(async () => {
     if (garden.signedIn) {
@@ -135,8 +135,14 @@ export function useGarden() {
       }
     }
     claimLocalDaily(lastStudyDate === todayKey());
+    setTick((n) => n + 1);
     return fromLocalProgress(srs, lessons, streak, lastStudyDate, quizScores);
   }, [garden.signedIn, lastStudyDate, srs, lessons, streak, quizScores]);
+
+  useEffect(() => {
+    if (!ready || !goalsDone || !garden.canClaimDaily) return;
+    void claimDaily();
+  }, [ready, goalsDone, garden.canClaimDaily, claimDaily]);
 
   const toggleSound = useCallback(async (on: boolean) => {
     if (garden.signedIn) {
@@ -149,6 +155,7 @@ export function useGarden() {
       }
     }
     setLocalSound(on);
+    setTick((n) => n + 1);
   }, [garden.signedIn]);
 
   return {
@@ -157,9 +164,13 @@ export function useGarden() {
     error,
     refresh,
     ackUnlocks,
-    savePlacements,
     claimDaily,
     toggleSound,
     config: GARDEN_CONFIG,
+    goals,
+    marks,
+    history,
+    startedAt,
+    goalsDone,
   };
 }

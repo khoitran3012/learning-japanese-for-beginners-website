@@ -1,4 +1,4 @@
-import type { KanjiEntry } from "@/lib/akari/types";
+import type { KanjiEntry, KanjiExample } from "@/lib/akari/types";
 import { hanVietOf } from "@/data/han-viet";
 
 function k(
@@ -8,7 +8,7 @@ function k(
   meaning_vi: string,
   romaji: string,
   stroke_count: number,
-  examples: Array<{ word: string; kana: string; romaji: string; meaning_vi: string }>,
+  examples: KanjiExample[],
 ): KanjiEntry {
   return {
     id: `kj-n5-${character}`,
@@ -26,8 +26,8 @@ function k(
 
 export const KANJI_N5: KanjiEntry[] = [
   k("日", ["ニチ", "ジツ"], ["ひ", "か"], "ngày / mặt trời", "nichi", 4, [
-    { word: "日本", kana: "にほん", romaji: "nihon", meaning_vi: "Nhật Bản" },
-    { word: "日曜日", kana: "にちようび", romaji: "nichiyoubi", meaning_vi: "Chủ nhật" },
+    { word: "日本", kana: "にほん", romaji: "nihon", meaning_vi: "Nhật Bản", reading: "on", usage: "hai chữ ghép → on (日 đọc に)" },
+    { word: "日曜日", kana: "にちようび", romaji: "nichiyoubi", meaning_vi: "Chủ nhật", reading: "on", usage: "日 đầu đọc にち (on)" },
   ]),
   k("月", ["ゲツ", "ガツ"], ["つき"], "tháng / mặt trăng", "getsu", 4, [
     { word: "月曜日", kana: "げつようび", romaji: "getsuyoubi", meaning_vi: "thứ Hai" },
@@ -282,8 +282,8 @@ export const KANJI_N5: KanjiEntry[] = [
     { word: "新聞", kana: "しんぶん", romaji: "shinbun", meaning_vi: "báo" },
   ]),
   k("食", ["ショク"], ["た・べる"], "ăn", "shoku", 9, [
-    { word: "食べる", kana: "たべる", romaji: "taberu", meaning_vi: "ăn" },
-    { word: "食堂", kana: "しょくどう", romaji: "shokudou", meaning_vi: "nhà ăn" },
+    { word: "食べる", kana: "たべる", romaji: "taberu", meaning_vi: "ăn", reading: "kun", usage: "đuôi べる → kun" },
+    { word: "食堂", kana: "しょくどう", romaji: "shokudou", meaning_vi: "nhà ăn", reading: "on", usage: "食 + 堂, không đuôi → on" },
   ]),
   k("飲", ["イン"], ["の・む"], "uống", "in", 12, [
     { word: "飲む", kana: "のむ", romaji: "nomu", meaning_vi: "uống" },

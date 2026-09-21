@@ -68,6 +68,8 @@
   --color-forest: #2f5640;
   --color-clay: #b56a4e;
   --color-mist: #d4eadc;
+  --color-blossom: #d9a3a8;
+  --color-bark: #6a5348;
   --color-choice: #efe6d8;
   --color-choice-hover: #e6dccb;
   --color-scrim: #1a1714;
@@ -124,6 +126,8 @@
     --color-forest: #8ecfa3;
     --color-clay: #d09078;
     --color-mist: #24382e;
+    --color-blossom: #e8b4b8;
+    --color-bark: #c4a894;
     --color-choice: #35302b;
     --color-choice-hover: #403b35;
     --color-scrim: #080706;
@@ -286,6 +290,81 @@
   cursor: grab;
   touch-action: none;
   background: #cfe0d4;
+}
+
+.tree-stage {
+  cursor: default;
+  touch-action: pan-y;
+  height: min(56vh, 30rem);
+  min-height: 18rem;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-sky) 28%, var(--color-mist)),
+      color-mix(in oklab, var(--color-mist) 55%, var(--color-surface)) 62%,
+      color-mix(in oklab, var(--color-forest) 18%, var(--color-mist))
+    );
+}
+
+.dark .tree-stage {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-sky) 22%, var(--color-bg)),
+      var(--color-surface) 70%
+    );
+}
+
+.tree-haze {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 100%, color-mix(in oklab, var(--color-surface) 40%, transparent), transparent 62%);
+}
+
+.tree-svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tree-layer {
+  transition: opacity 700ms var(--ease-smooth-out);
+}
+
+.tree-layer.is-on { opacity: 1; }
+.tree-layer.is-off { opacity: 0; }
+
+.tree-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: tree-sway 6s ease-in-out infinite;
+}
+
+.tree-petal {
+  animation: garden-fall 12s linear infinite;
+}
+
+.tree-celebrate {
+  animation: tree-pop 800ms var(--ease-smooth-out);
+}
+
+.tree-stage.is-still .tree-sway,
+.tree-stage.is-still .tree-petal {
+  animation: none;
+}
+
+@keyframes tree-sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.6deg); }
+}
+
+@keyframes tree-pop {
+  0% { transform: scale(0.96); filter: blur(2px); }
+  60% { transform: scale(1.03); filter: blur(0); }
+  100% { transform: scale(1); }
 }
 
 .garden-stage.is-placing {
@@ -514,6 +593,6 @@
 }
 
 @media (max-width: 640px) {
-  .garden-stage { height: min(62vh, 28rem); min-height: 18rem; }
+  .garden-stage { height: min(52vh, 24rem); min-height: 16rem; }
   .garden-mascot { width: 3.6rem; }
 }

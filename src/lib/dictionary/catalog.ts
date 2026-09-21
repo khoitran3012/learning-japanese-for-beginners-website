@@ -8,6 +8,7 @@ import { DICTIONARY_EXTRA } from "@/data/dictionary-extra";
 import { DICTIONARY_CORE } from "@/data/dictionary-core";
 import { JLPT_DICTIONARY } from "@/data/dictionary-jlpt";
 import { kanaById } from "@/data/kana";
+import { radicalById } from "@/data/radicals";
 import { buildDictionary, searchLocal } from "./local";
 import { hasKanji } from "@/lib/akari/romaji";
 import type { DictionaryEntry, KanjiEntry } from "@/lib/akari/types";
@@ -160,6 +161,17 @@ export function resolveStudyItem(id: string): ResolvedItem | null {
       to: `/kanji/${kj.id}`,
       type: "Kanji",
       speak: kj.kunyomi[0]?.replace(/[-.]/g, "") || kj.onyomi[0] || kj.character,
+    };
+  }
+  const rd = radicalById(id);
+  if (rd) {
+    return {
+      id,
+      title: rd.char,
+      sub: `${rd.han_viet} · ${rd.meaning_vi}`,
+      to: `/radicals/${rd.id}`,
+      type: "Bộ thủ",
+      speak: rd.name_kana,
     };
   }
   const g = [...GRAMMAR_N5, ...GRAMMAR_N4].find((x) => x.id === id);

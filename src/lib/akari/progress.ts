@@ -31,6 +31,7 @@ interface ProgressState {
   streak: number;
   lastStudyDate: string | null;
   today: DayStats | null;
+  days: DayStats[];
   quizScores: { score: number; total: number }[];
   load: () => Promise<void>;
   mark: (id: string, itemType: SrsItem["itemType"], label: QualityLabel) => Promise<void>;
@@ -54,6 +55,14 @@ function computeStreak(last: string | null, stored: number) {
   return 0;
 }
 
+function upsertDay(days: DayStats[], day: DayStats) {
+  const i = days.findIndex((d) => d.date === day.date);
+  if (i < 0) return [...days, day];
+  const next = [...days];
+  next[i] = day;
+  return next;
+}
+
 export const useProgress = create<ProgressState>((set, get) => ({
   ready: false,
   srs: {},
@@ -63,6 +72,7 @@ export const useProgress = create<ProgressState>((set, get) => ({
   streak: 0,
   lastStudyDate: null,
   today: null,
+  days: [],
   quizScores: [],
   load: async () => {
     try {
@@ -88,6 +98,7 @@ export const useProgress = create<ProgressState>((set, get) => ({
         lastStudyDate: last ?? null,
         streak: computeStreak(last ?? null, streak ?? 0),
         today,
+        days,
         quizScores: quizzes.map((q) => ({ score: q.score, total: q.total })),
       });
     } catch {
@@ -115,7 +126,12 @@ export const useProgress = create<ProgressState>((set, get) => ({
       await setMeta("streak", streak);
     }
     const day = await bumpDayStats({ items, minutes }, today);
-    set({ lastStudyDate: today, streak, today: day });
+    set((s) => ({
+      lastStudyDate: today,
+      streak,
+      today: day,
+      days: upsertDay(s.days, day),
+    }));
     const snap = get();
     void import("@/lib/garden/sync").then(({ scheduleGardenSync }) =>
       scheduleGardenSync({

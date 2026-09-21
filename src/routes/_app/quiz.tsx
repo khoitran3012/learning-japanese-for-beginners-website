@@ -29,12 +29,13 @@ const KINDS: { id: QuizKind; label: string }[] = [
   { id: "kanji", label: "Kanji nghĩa" },
   { id: "kanji-read", label: "Kanji đọc" },
   { id: "listen-kanji", label: "Nghe kanji" },
+  { id: "radical", label: "Bộ thủ" },
   { id: "particle", label: "Trợ từ" },
   { id: "grammar", label: "Ngữ pháp" },
 ];
 
 function srsOf(q: QuizQuestion): { id: string; type: SrsItem["itemType"] } {
-  if (q.kind === "kanji" || q.kind === "kanji-read" || q.kind === "listen-kanji") return { id: q.sourceId, type: "kanji" };
+  if (q.kind === "kanji" || q.kind === "kanji-read" || q.kind === "listen-kanji" || q.kind === "radical") return { id: q.sourceId, type: "kanji" };
   if (
     q.kind === "vocab-meaning" ||
     q.kind === "meaning-vocab" ||

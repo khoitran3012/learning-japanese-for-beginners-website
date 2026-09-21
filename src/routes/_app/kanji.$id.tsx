@@ -8,12 +8,16 @@ import { AiTutor } from "@/components/ai-tutor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { OnKunForKanji, OnKunGuide, ReadingTag, classifyExample, exampleKindLabel } from "@/components/on-kun-panel";
 import { allKanji, kanjiById, kanjiByLevel, kanjiNeighbors } from "@/data/kanji-set";
 import { kanjiLessonOf } from "@/data/kanji-lessons";
+import { radicalOfKanji } from "@/data/radicals";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
-import { kanaToRomaji, toHiragana } from "@/lib/akari/kana-util";
+import { kanaToRomaji } from "@/lib/akari/kana-util";
 import { allKanjiExamples } from "@/lib/akari/examples";
+import { kunReadings, onReadings } from "@/lib/akari/on-kun";
+import { JpText } from "@/components/jp-text";
 
 export const Route = createFileRoute("/_app/kanji/$id")({ component: Page });
 
@@ -25,17 +29,12 @@ function Page() {
   const forgot = useProgress((s) => s.forgot);
   const showRomaji = useSettings((s) => s.showRomaji);
 
-  const onRows = k.onyomi.filter(Boolean).map((on) => {
-    const hira = toHiragana(on);
-    return { kata: on, hira, romaji: kanaToRomaji(hira) };
-  });
-  const kunRows = k.kunyomi.filter(Boolean).map((kun) => ({
-    hira: kun,
-    romaji: kanaToRomaji(kun),
-  }));
-  const primary = kunRows[0]?.hira || onRows[0]?.hira || k.character;
+  const onRows = onReadings(k);
+  const kunRows = kunReadings(k);
+  const primary = kunRows[0]?.kana || onRows[0]?.hira || k.character;
   const usage = allKanjiExamples(k);
   const lesson = kanjiLessonOf(k.character);
+  const radical = radicalOfKanji(k.character);
   const levelPool = kanjiByLevel(k.level);
   const inLevel = kanjiNeighbors(k.id, levelPool);
   const inAll = kanjiNeighbors(k.id, allKanji());
@@ -54,6 +53,15 @@ function Page() {
               className="mt-2 text-xs text-accent hover:underline"
             >
               Bài {lesson.seq}: {lesson.title}
+            </Link>
+          ) : null}
+          {radical ? (
+            <Link
+              to="/radicals/$id"
+              params={{ id: radical.id }}
+              className="mt-1 text-xs text-muted hover:text-accent hover:underline"
+            >
+              Bộ thủ {radical.char} · {radical.han_viet} ({radical.name_kana})
             </Link>
           ) : null}
           <p className="mt-1 text-xs tabular-nums text-subtle">
@@ -76,76 +84,43 @@ function Page() {
         </CardContent>
       </Card>
 
+      <OnKunGuide />
+      <OnKunForKanji kanji={k} words={usage.words} />
+
       {usage.tip ? (
         <Card>
           <CardContent className="space-y-2">
             <h2 className="text-sm text-muted">Cách dùng chữ {k.character}{k.han_viet ? ` · ${k.han_viet}` : ""}</h2>
             <p className="text-sm leading-relaxed">{usage.tip}</p>
-            <p className="text-xs text-subtle">
-              Hán-Việt neo nghĩa. Onyomi (âm Hán, katakana) thường trong từ ghép. Kunyomi (âm Nhật, hiragana) khi chữ đứng một mình hoặc có okurigana.
-            </p>
           </CardContent>
         </Card>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardContent className="space-y-3">
-            <h2 className="text-sm text-muted">Onyomi (âm Hán) · katakana / hiragana / romaji</h2>
-            {onRows.length ? (
-              <ul className="space-y-3">
-                {onRows.map((r) => (
-                  <li key={r.kata}>
-                    <Pronunciation label={r.kata} kana={r.hira} romaji={r.romaji} speak={r.hira} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-subtle">—</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="space-y-3">
-            <h2 className="text-sm text-muted">Kunyomi (âm Nhật) · hiragana / romaji</h2>
-            {kunRows.length ? (
-              <ul className="space-y-3">
-                {kunRows.map((r) => (
-                  <li key={r.hira}>
-                    <Pronunciation kana={r.hira} romaji={r.romaji} speak={r.hira} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-subtle">—</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardContent>
-          <h2 className="mb-3 text-sm text-muted">Từ dùng chữ này</h2>
+          <h2 className="mb-3 text-sm text-muted">Từ dùng chữ này · on hay kun?</h2>
           <ul className="space-y-4">
-            {usage.words.map((ex) => (
+            {usage.words.map((ex) => {
+              const kind = classifyExample(k, ex);
+              return (
               <li key={ex.word} className="border-t border-border pt-3 first:border-0 first:pt-0">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <Link to="/dictionary" search={{ q: ex.word }} className="font-jp text-lg hover:underline">
-                      {ex.word}
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <JpText text={ex.word} className="text-lg" hint={false} />
+                      <ReadingTag kind={kind} />
+                    </div>
                     <p className="text-sm">{ex.meaning_vi}</p>
-                    {ex.reading || ex.usage ? (
-                      <p className="mt-1 text-xs text-subtle">
-                        {ex.reading === "on" ? "Onyomi" : ex.reading === "kun" ? "Kunyomi" : null}
-                        {ex.usage ? ` · ${ex.usage}` : null}
-                      </p>
-                    ) : null}
+                    <p className="mt-1 text-xs text-subtle">
+                      {exampleKindLabel(kind)}
+                      {ex.usage ? ` · ${ex.usage}` : null}
+                    </p>
                   </div>
                 </div>
                 <Pronunciation className="mt-2" kana={ex.kana} romaji={ex.romaji} speak={ex.kana} />
               </li>
-            ))}
+              );
+            })}
           </ul>
         </CardContent>
       </Card>
@@ -158,7 +133,7 @@ function Page() {
               <div key={ex.jp} className="border-t border-border pt-3 first:border-0 first:pt-0">
                 <p className="text-xs text-subtle">Câu {i + 1}</p>
                 <div className="mt-1 flex items-start justify-between gap-3">
-                  <p className="font-jp text-lg">{ex.jp}</p>
+                  <JpText text={ex.jp} className="text-lg" />
                   <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe câu" />
                 </div>
                 {ex.kana ? <p className="text-sm text-muted">{ex.kana}</p> : null}
@@ -178,7 +153,7 @@ function Page() {
         </CardContent>
       </Card>
 
-      <AiTutor seed={`Giải thích kanji ${k.character} (Hán-Việt: ${k.han_viet || "—"}; nghĩa Việt: ${k.meaning_vi}): onyomi ${k.onyomi.join("/")} = ${onRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}, kunyomi ${kunRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}. Cách dùng: ${usage.tip}`} />
+      <AiTutor seed={`Giải thích kanji ${k.character} (Hán-Việt: ${k.han_viet || "—"}; nghĩa Việt: ${k.meaning_vi}): onyomi ${k.onyomi.join("/")} = ${onRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}, kunyomi ${kunRows.map((r) => `${r.kana} ${r.romaji}`).join(", ")}. Cách dùng: ${usage.tip}`} />
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         {prev ? (

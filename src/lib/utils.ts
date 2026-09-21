@@ -9,11 +9,14 @@ export function isBrowser() {
   return typeof window !== "undefined";
 }
 
+/** Ngày học theo múi giờ Việt Nam (UTC+7), tránh lệch UTC. */
 export function todayKey(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
 }
 
 export function uid(prefix = "id") {

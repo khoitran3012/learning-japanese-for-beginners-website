@@ -1,21 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { GardenScene } from "@/components/garden/GardenScene";
-import { CollectionSheet, GardenFallback, GardenHud, GardenLoading, UnlockModal } from "@/components/garden/GardenChrome";
+import {
+  GardenFallback,
+  GardenHud,
+  GardenLoading,
+  LevelUpModal,
+  StreakCalendar,
+  StudyHistory,
+  TreeStats,
+} from "@/components/garden/GardenChrome";
 import { useGarden } from "@/lib/garden/use-garden";
 import { chimeUnlock, setGardenAudio } from "@/lib/garden/audio";
-import { uid } from "@/lib/utils";
-import { GARDEN_ITEM_MAP } from "@/lib/garden/config";
+import { markSeenLevel, peekLastSeenLevel } from "@/lib/garden/local";
+import { todayKey } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/garden")({ component: GardenPage });
 
 function GardenPage() {
-  const { garden, loading, error, ackUnlocks, savePlacements, claimDaily, toggleSound } = useGarden();
-  const [collection, setCollection] = useState(false);
-  const [placing, setPlacing] = useState<string | null>(null);
+  const { garden, loading, error, toggleSound, goals, marks, history, startedAt } = useGarden();
   const [sound, setSound] = useState(garden.soundOn);
+  const [levelUp, setLevelUp] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
+  const seen = useRef(peekLastSeenLevel());
   const reduced =
     typeof window !== "undefined" &&
     (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
@@ -33,8 +42,21 @@ function GardenPage() {
   }, [sound]);
 
   useEffect(() => {
-    if (garden.newUnlocks.length && sound) chimeUnlock();
-  }, [garden.newUnlocks.length, sound]);
+    if (seen.current < 0) {
+      seen.current = garden.level;
+      markSeenLevel(garden.level);
+      return;
+    }
+    if (garden.level > seen.current) {
+      setLevelUp(true);
+      setCelebrate(true);
+      if (sound) chimeUnlock();
+      seen.current = garden.level;
+      markSeenLevel(garden.level);
+      const t = window.setTimeout(() => setCelebrate(false), 1600);
+      return () => window.clearTimeout(t);
+    }
+  }, [garden.level, sound]);
 
   if (loading) return <GardenLoading />;
   if (error && !garden) return <GardenFallback />;
@@ -43,56 +65,43 @@ function GardenPage() {
     <div>
       <PageHeader
         kicker="庭"
-        title="Khu vườn của tôi"
-        description="Học tiếng Nhật càng đều, khu vườn càng sống. Cây không bao giờ chết — chúng chỉ chờ bạn trở lại."
+        title="Vườn tiếng Nhật"
+        description="Mỗi ngày học là một ngày tưới Sakura. Cây không héo — chỉ chờ bạn trở lại."
         actions={
           <Button asChild variant="secondary">
-            <Link to="/daily">Bắt đầu học</Link>
+            <Link to="/daily">Học hôm nay</Link>
           </Button>
         }
       />
       <div className="garden-frame">
-        <GardenScene
-          garden={garden}
-          placing={placing}
-          reduced={reduced}
-          onPlace={(x, y) => {
-            if (!placing) return;
-            const def = GARDEN_ITEM_MAP[placing];
-            void savePlacements([
-              ...garden.placements.filter((p) => p.itemId !== placing),
-              { id: uid("plt"), itemId: placing, x, y, scale: def?.scale ?? 1 },
-            ]);
-            setPlacing(null);
-          }}
-        />
+        <GardenScene garden={garden} reduced={reduced} celebrate={celebrate} />
         <GardenHud
           garden={garden}
           soundOn={sound}
-          placing={placing}
-          onCancelPlace={() => setPlacing(null)}
-          onOpenCollection={() => setCollection(true)}
+          goals={goals}
+          startedAt={startedAt}
           onSound={() => {
             const next = !sound;
             setSound(next);
             void toggleSound(next);
           }}
-          onDaily={() => {
-            void claimDaily();
-          }}
         />
       </div>
-      <CollectionSheet
-        open={collection}
-        onOpenChange={setCollection}
-        garden={garden}
-        onPlace={(id) => setPlacing(id)}
-      />
-      {garden.newUnlocks.length ? (
-        <UnlockModal garden={garden} onDone={(ids) => void ackUnlocks(ids)} />
+      <div className="mt-4 space-y-4">
+        <TreeStats garden={garden} goals={goals} />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <StreakCalendar marks={marks} today={todayKey()} />
+          <StudyHistory rows={history} />
+        </div>
+      </div>
+      {levelUp ? (
+        <LevelUpModal
+          garden={garden}
+          onDone={() => setLevelUp(false)}
+        />
       ) : null}
       {error ? (
-        <p className="mt-3 text-center text-sm text-muted">Khu vườn đang nghỉ một chút — tiến trình học vẫn an toàn.</p>
+        <p className="mt-3 text-center text-sm text-muted">Vườn đang nghỉ một chút — tiến trình học vẫn an toàn.</p>
       ) : null}
     </div>
   );

@@ -11,12 +11,18 @@ export function SpeakButton({
   kana,
   className,
   label = "Nghe",
+  variant = "secondary",
+  size = "sm",
+  onPlayed,
 }: {
   /** Display/source text. TTS prefers `kana` when given — kanji alone is often misread. */
   text: string;
   kana?: string;
   className?: string;
   label?: string;
+  variant?: "default" | "secondary";
+  size?: "sm" | "default";
+  onPlayed?: () => void;
 }) {
   const rate = useSettings((s) => s.ttsRate);
   const [msg, setMsg] = useState<string | null>(null);
@@ -26,13 +32,15 @@ export function SpeakButton({
     <div className={cn("inline-flex flex-col items-start gap-1", className)}>
       <Button
         type="button"
-        variant="secondary"
-        size="sm"
+        variant={variant}
+        size={size}
         aria-label={label}
+        disabled={!spoken}
         onClick={async () => {
+          onPlayed?.();
           const res = await speakJapanese(spoken, rate);
           const status = getTts().statusMessage();
-          setMsg(res.ok ? status : res.message);
+          setMsg(res.ok ? status : res.message ?? "Không đọc được. Bấm lại lần nữa.");
         }}
       >
         <Volume2 />

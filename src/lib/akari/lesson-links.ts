@@ -31,6 +31,7 @@ function practiceLink(id: string): LessonLink | null {
   if (id.startsWith("v-")) return { to: `/vocabulary/${id}`, label: "Từ vựng" };
   if (id.startsWith("g-")) return { to: `/grammar/${id}`, label: "Ngữ pháp" };
   if (id.startsWith("kj-")) return { to: `/kanji/${id}`, label: "Kanji" };
+  if (id.startsWith("r-")) return { to: `/radicals/${id}`, label: "Bộ thủ" };
   return null;
 }
 
@@ -55,6 +56,7 @@ function stageLink(lesson: Lesson): LessonLink {
     case "ngữ pháp":
       return { to: "/grammar", label: "Ngữ pháp" };
     case "kanji": {
+      if (lesson.id === "l-n5-bushu") return { to: "/radicals", label: "Bộ thủ" };
       const kl = kanjiLessonByPath(lesson.id);
       if (kl) {
         const many = kanjiLessonsByPath(lesson.id);

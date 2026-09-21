@@ -11,6 +11,7 @@ import { hanVietOfWord } from "@/data/han-viet";
 import { useSettings } from "@/lib/akari/settings";
 import { copyToClipboard } from "@/lib/utils";
 import type { DictionaryEntry } from "@/lib/akari/types";
+import { JpText } from "@/components/jp-text";
 
 export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
   const showRomaji = useSettings((s) => s.showRomaji);
@@ -36,7 +37,9 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
             ))}
             {entry.common ? <Badge variant="success">Phổ biến</Badge> : null}
           </div>
-          <p className="text-kana mt-4 text-6xl">{entry.kanji}</p>
+          <div className="mt-4">
+            <JpText text={entry.kanji} className="text-kana text-6xl" hint={false} />
+          </div>
           <p className="mt-2 font-jp text-xl text-muted">{entry.kana}</p>
           {showRomaji ? <p className="text-accent">{entry.romaji}</p> : null}
           {wordHv ? <p className="mt-2 text-sm">Hán-Việt: {wordHv}</p> : null}
@@ -76,7 +79,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
             {entry.examples.map((ex) => (
               <div key={ex.jp} className="border-t border-border pt-3 first:border-0 first:pt-0">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="font-jp text-lg">{ex.jp}</p>
+                  <JpText text={ex.jp} className="text-lg" />
                   <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe câu" />
                 </div>
                 {ex.kana ? <p className="text-sm text-muted">{ex.kana}</p> : null}

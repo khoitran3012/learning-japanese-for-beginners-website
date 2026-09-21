@@ -1,4 +1,5 @@
 import { GARDEN_CONFIG, GARDEN_ITEM_MAP } from "./config";
+import { DEFAULT_TREE, stageFromXp, studyXpFrom, treeById } from "./trees";
 import type { GardenPlacement, GardenSnapshot } from "./types";
 
 export type GardenFacts = {
@@ -14,9 +15,33 @@ export type GardenFacts = {
   seenUnlocks: string[];
   placements: GardenPlacement[];
   today: string;
+  kanaHira?: number;
+  kanaKata?: number;
+  vocab?: number;
+  kanji?: number;
+  grammar?: number;
+  quizScores?: Array<{ score: number; total: number }>;
 };
 
-export function gardenXpFrom(facts: Pick<GardenFacts, "wordsLearned" | "lessons" | "studyXp" | "dailyBonus">) {
+export function gardenXpFrom(facts: GardenFacts) {
+  if (
+    facts.kanaHira != null ||
+    facts.vocab != null ||
+    facts.kanji != null ||
+    facts.quizScores != null
+  ) {
+    return studyXpFrom({
+      kanaHira: facts.kanaHira ?? 0,
+      kanaKata: facts.kanaKata ?? 0,
+      vocab: facts.vocab ?? facts.wordsLearned,
+      kanji: facts.kanji ?? 0,
+      grammar: facts.grammar ?? 0,
+      lessons: facts.lessons,
+      quizzes: facts.quizScores ?? Array.from({ length: facts.quizzes }, () => ({ score: 1, total: 1 })),
+      streak: facts.streak,
+      dailyBonus: facts.dailyBonus,
+    });
+  }
   const { perWord, perLesson } = GARDEN_CONFIG.xp;
   return Math.max(
     0,
@@ -28,17 +53,15 @@ export function gardenXpFrom(facts: Pick<GardenFacts, "wordsLearned" | "lessons"
 }
 
 export function gardenLevelFromXp(xp: number) {
-  const levels = GARDEN_CONFIG.levels;
-  let current: (typeof levels)[number] = levels[0]!;
-  for (const row of levels) {
-    if (xp >= row.xp) current = row;
-  }
-  const next = levels.find((row) => row.level === current.level + 1) ?? null;
+  const tree = treeById(DEFAULT_TREE);
+  const { current, next } = stageFromXp(xp, tree);
   return {
     level: current.level,
     name: current.name,
     nameJp: current.nameJp,
     nextXp: next?.xp ?? null,
+    prevXp: current.xp,
+    mood: current.mood,
   };
 }
 
@@ -104,6 +127,7 @@ export function buildSnapshot(facts: GardenFacts, signedIn: boolean): GardenSnap
     levelName: level.name,
     levelNameJp: level.nameJp,
     nextLevelXp: level.nextXp,
+    prevLevelXp: level.prevXp,
     wordsLearned: facts.wordsLearned,
     lessons: facts.lessons,
     streak: facts.streak,
@@ -116,6 +140,8 @@ export function buildSnapshot(facts: GardenFacts, signedIn: boolean): GardenSnap
     unlocked,
     newUnlocks,
     placements: mergePlacements(facts.placements, unlocked),
+    treeId: DEFAULT_TREE,
+    mood: level.mood,
   };
 }
 

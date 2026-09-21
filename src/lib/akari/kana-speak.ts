@@ -1,7 +1,10 @@
 import { toHiragana } from "./kana-util";
 
 const HAS_KANA = /[\u3040-\u30ff]/;
-const KANA_ONLY = /^[\u3040-\u30ffー\s]+$/;
+/** Pure kana (after stripping pauses). */
+const KANA_CORE = /^[\u3040-\u30ffー]+$/;
+/** TTS may keep Japanese pauses. */
+const KANA_OR_PAUSE = /^[\u3040-\u30ffー。、！？\s]+$/;
 
 /** Longer first so こんにちは is kept intact before は. */
 const PROTECT_HA = [
@@ -72,21 +75,36 @@ function stripNotes(raw: string) {
     .trim();
 }
 
-/** One reading, hiragana, no okurigana dots. */
+/** Kun/on lists like ひ、び、か — not a spoken sentence. */
+function isReadingList(s: string) {
+  if (/[。！？]|です|ます|ください|ですか|ません/.test(s)) return false;
+  const parts = s.split(/[、，,/／]/).map((p) => p.trim()).filter(Boolean);
+  if (parts.length < 2) return false;
+  return parts.every((p) => p.replace(/[・･.\s]/g, "").length <= 8);
+}
+
+/**
+ * One reading, hiragana.
+ * Keeps 、。！？ so TTS pauses on full sentences. Does not chop いま、なんじですか at the comma.
+ */
 export function readingToKana(raw: string): string {
   let s = stripNotes(raw.normalize("NFKC"));
   if (!s) return "";
-  s = s.replace(/、/g, "/").replace(/[，,]/g, "/");
-  s = (s.split("/")[0] ?? "").trim();
+  if (isReadingList(s)) {
+    s = (s.split(/[、，,/／]/)[0] ?? "").trim();
+  }
   s = toHiragana(s);
-  s = s.replace(/[・･·．.]/g, "");
+  s = s.replace(/[・･·]/g, "");
   s = s.replace(/[-－]/g, "");
+  s = s.replace(/[「」『』]/g, "");
+  s = s.replace(/[．.]/g, "。");
+  s = s.replace(/[，,]/g, "、");
   s = s.replace(/\s+/g, "");
   return s;
 }
 
 function looksLikeSentence(s: string) {
-  return /[。！？、]|です|ます|でした|ました|だ$|である/.test(s) || s.length >= 8;
+  return /[。！？、]|です|ます|でした|ました|ください|ですか|ません|でしょう/.test(s);
 }
 
 function protectThen(s: string, words: string[], replace: (t: string) => string) {
@@ -133,17 +151,22 @@ export function yomigana(kana: string): string {
   return s;
 }
 
+function usable(s: string) {
+  return Boolean(s && HAS_KANA.test(s) && KANA_OR_PAUSE.test(s));
+}
+
 /** Kana-only TTS input. Parenthetical POS notes and kanji guesses are stripped. */
 export function ttsKana(kana: string | undefined, word = ""): string {
   const fromKana = yomigana(kana ?? "");
-  if (fromKana && HAS_KANA.test(fromKana) && KANA_ONLY.test(fromKana)) return fromKana;
+  if (usable(fromKana)) return fromKana;
   const fromWord = yomigana(word);
-  if (fromWord && HAS_KANA.test(fromWord) && KANA_ONLY.test(fromWord)) return fromWord;
-  if (fromKana && HAS_KANA.test(fromKana)) return fromKana;
-  return fromWord || fromKana || stripNotes(kana || word);
+  if (usable(fromWord)) return fromWord;
+  if (fromKana && HAS_KANA.test(fromKana)) return fromKana.replace(/[^\u3040-\u30ffー。、！？]/g, "");
+  const fallback = (fromWord || fromKana || stripNotes(kana || word)).replace(/[^\u3040-\u30ffー。、！？]/g, "");
+  return fallback;
 }
 
 export function isSpeakableKana(text: string): boolean {
-  const t = ttsKana(text, text);
-  return t.length > 0 && KANA_ONLY.test(t) && HAS_KANA.test(t);
+  const t = ttsKana(text, text).replace(/[。、！？\s]/g, "");
+  return t.length > 0 && KANA_CORE.test(t) && HAS_KANA.test(t);
 }

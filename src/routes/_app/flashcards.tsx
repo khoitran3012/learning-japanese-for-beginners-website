@@ -7,6 +7,7 @@ import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
 import { practiceKanji, kanjiByLevel, allKanji } from "@/data/kanji-set";
+import { learnRadicals } from "@/data/radicals";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { meaningParts } from "@/lib/akari/answer-check";
 import { useProgress } from "@/lib/akari/progress";
@@ -19,7 +20,7 @@ import type { JlptLevel } from "@/lib/akari/types";
 
 export const Route = createFileRoute("/_app/flashcards")({ component: Page });
 
-type Deck = "hiragana" | "katakana" | "vocab" | "kanji" | "grammar" | "mine";
+type Deck = "hiragana" | "katakana" | "vocab" | "kanji" | "radical" | "grammar" | "mine";
 type KanjiLv = JlptLevel | "core" | "all";
 
 function Page() {
@@ -84,6 +85,17 @@ function Page() {
         answers: [...meaningParts(k.meaning_vi), k.han_viet, k.romaji, ...k.kunyomi, ...k.onyomi].filter(Boolean),
         answerHint: "Gõ nghĩa, Hán-Việt hoặc cách đọc",
       }));
+    } else if (deck === "radical") {
+      built = learnRadicals().map((r) => ({
+        id: r.id,
+        front: r.char,
+        back: `${r.han_viet} · ${r.meaning_vi}\n${r.name_kana}\n${r.hint}`,
+        extra: r.examples,
+        speak: r.name_kana,
+        type: "kanji" as const,
+        answers: [r.han_viet, r.name_kana, r.meaning_vi, r.name_jp],
+        answerHint: "Gõ Hán-Việt hoặc tên bộ (kana)",
+      }));
     } else if (deck === "mine") {
       built = [...myWords].map((id) => {
         const d = findEntry(id) ?? findBuiltin(id);
@@ -142,6 +154,7 @@ function Page() {
             ["katakana", "Katakana"],
             ["vocab", "Từ vựng"],
             ["kanji", "Kanji"],
+            ["radical", "Bộ thủ"],
             ["grammar", "Ngữ pháp"],
             ["mine", "Từ của tôi"],
           ] as const

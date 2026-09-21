@@ -4,6 +4,7 @@ import { VOCAB_N4 } from "@/data/vocabulary-n4";
 import { allKanji, practiceKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
+import { learnRadicals } from "@/data/radicals";
 import { meaningParts } from "./answer-check";
 import { kanaToRomaji, toHiragana } from "./kana-util";
 import type { JlptLevel, VocabEntry } from "./types";
@@ -21,6 +22,7 @@ export type QuizKind =
   | "listen-kanji"
   | "grammar"
   | "particle"
+  | "radical"
   | "vocab-kana"
   | "type-romaji"
   | "cloze"
@@ -128,6 +130,7 @@ const MIX_KINDS: QuizKind[] = [
   "listen",
   "listen-vocab",
   "particle",
+  "radical",
   "vocab-kana",
   "type-romaji",
   "cloze",
@@ -333,6 +336,28 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
       options: opts,
       answer: opts.findIndex((o) => o === c.answer),
       explain: c.explain,
+    };
+  }
+
+  if (kind === "radical") {
+    const pool = learnRadicals();
+    const c = pickOne(pool, used, (x) => `${kind}:${x.id}`, rand);
+    if (!c) return null;
+    mark(c.id);
+    const wrong = pickWrong(pool, c, 3, (x) => `${x.han_viet} · ${x.meaning_vi}`, rand);
+    const opts = shuffle([c, ...wrong], rand);
+    return {
+      id: qid(kind, c.id, rand),
+      kind,
+      sourceId: c.id,
+      prompt: `${c.char} là bộ gì?`,
+      promptJp: c.char,
+      speak: c.name_kana,
+      options: opts.map((o) => `${o.han_viet} · ${o.meaning_vi}`),
+      answer: opts.findIndex((o) => o.id === c.id),
+      explain: `${c.char} · ${c.han_viet} · ${c.name_kana} (${kanaToRomaji(c.name_kana)}) · ${c.meaning_vi}. ${c.hint}`,
+      typedAnswers: [c.han_viet, c.name_kana, c.meaning_vi, kanaToRomaji(c.name_kana)].filter(Boolean),
+      typedHint: "Gõ Hán-Việt hoặc tên bộ",
     };
   }
 

@@ -13,6 +13,7 @@ import { useSettings } from "@/lib/akari/settings";
 import { allVocabExamples } from "@/lib/akari/examples";
 import { verbUsageForms } from "@/lib/dictionary/conjugate";
 import { kanjiByChar } from "@/lib/dictionary/catalog";
+import { JpText } from "@/components/jp-text";
 
 export const Route = createFileRoute("/_app/vocabulary/$id")({ component: Page });
 
@@ -36,7 +37,9 @@ function Page() {
       <Card>
         <CardContent className="py-8 text-center">
           <Badge>{v.level}</Badge>
-          <p className="text-kana mt-3 text-6xl">{v.word}</p>
+          <div className="mt-3">
+            <JpText text={v.word} className="text-kana text-6xl" hint={false} />
+          </div>
           <p className="mt-2 font-jp text-xl text-muted">{v.kana}</p>
           {showRomaji ? <p className="text-accent">{v.romaji}</p> : null}
           <p className="mt-3 text-lg">{v.meaning_vi}</p>
@@ -91,7 +94,7 @@ function Page() {
             <div key={ex.jp} className="border-t border-border pt-3 first:border-0 first:pt-0">
               <p className="text-xs text-subtle">Câu {i + 1}</p>
               <div className="mt-1 flex items-start justify-between gap-3">
-                <p className="font-jp text-lg">{ex.jp}</p>
+                <JpText text={ex.jp} className="text-lg" />
                 <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe câu" />
               </div>
               {ex.kana ? <p className="text-sm text-muted">{ex.kana}</p> : null}

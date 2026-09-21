@@ -11,10 +11,18 @@ type LocalGarden = {
   soundOn: boolean;
   dailyBonus: number;
   lastDailyDate: string | null;
+  lastSeenLevel: number;
 };
 
 function emptyLocal(): LocalGarden {
-  return { placements: [], seenUnlocks: [], soundOn: false, dailyBonus: 0, lastDailyDate: null };
+  return {
+    placements: [],
+    seenUnlocks: [],
+    soundOn: false,
+    dailyBonus: 0,
+    lastDailyDate: null,
+    lastSeenLevel: -1,
+  };
 }
 
 export function readLocalGarden(): LocalGarden {
@@ -29,6 +37,7 @@ export function readLocalGarden(): LocalGarden {
       soundOn: Boolean(parsed.soundOn),
       dailyBonus: Number(parsed.dailyBonus) || 0,
       lastDailyDate: typeof parsed.lastDailyDate === "string" ? parsed.lastDailyDate : null,
+      lastSeenLevel: Number.isFinite(Number(parsed.lastSeenLevel)) ? Number(parsed.lastSeenLevel) : -1,
     };
   } catch {
     return emptyLocal();
@@ -44,7 +53,9 @@ export function writeLocalGarden(next: LocalGarden) {
   }
 }
 
-export function localSnapshot(facts: Omit<GardenFacts, "dailyBonus" | "lastDailyDate" | "soundOn" | "seenUnlocks" | "placements" | "today">): GardenSnapshot {
+export function localSnapshot(
+  facts: Omit<GardenFacts, "dailyBonus" | "lastDailyDate" | "soundOn" | "seenUnlocks" | "placements" | "today">,
+): GardenSnapshot {
   const local = readLocalGarden();
   return buildSnapshot(
     {
@@ -86,4 +97,12 @@ export function claimLocalDaily(studiedToday: boolean) {
   };
   writeLocalGarden(next);
   return next;
+}
+
+export function peekLastSeenLevel() {
+  return readLocalGarden().lastSeenLevel;
+}
+
+export function markSeenLevel(level: number) {
+  writeLocalGarden({ ...readLocalGarden(), lastSeenLevel: level });
 }

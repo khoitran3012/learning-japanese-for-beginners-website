@@ -41,6 +41,15 @@ function Page() {
             </CardContent>
           </Card>
         </Link>
+        <Link to="/radicals">
+          <Card className="h-full transition-colors hover:border-accent">
+            <CardContent>
+              <p className="text-kana text-5xl">氵</p>
+              <h2 className="mt-3 font-display text-2xl">Bộ thủ</h2>
+              <p className="mt-1 text-sm text-muted">Phần chữ lặp trong kanji — học biến thể trước khi viết chữ</p>
+            </CardContent>
+          </Card>
+        </Link>
         <Link to="/kanji">
           <Card className="h-full transition-colors hover:border-accent">
             <CardContent>

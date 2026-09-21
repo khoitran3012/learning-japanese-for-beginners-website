@@ -7,7 +7,7 @@ export const PATH_STAGES = [
   { id: "hiragana", label: "Hiragana", kicker: "ひらがな", hint: "Bảng 50 âm — đọc được thì mới nghe và nói được." },
   { id: "katakana", label: "Katakana", kicker: "カタカナ", hint: "Từ mượn, tên riêng, thực đơn." },
   { id: "giao tiếp", label: "Nói & từ vựng N5", kicker: "会話", hint: "Chào hỏi, số, gia đình, trường, ăn uống — nghe rồi nhắc." },
-  { id: "kanji", label: "Kanji + Hán-Việt", kicker: "漢字", hint: "Mỗi chữ một âm Hán-Việt để nhớ nghĩa, rồi mới on/kun." },
+  { id: "kanji", label: "Kanji + Hán-Việt", kicker: "漢字", hint: "Bộ thủ trước, rồi Hán-Việt, rồi on/kun." },
   { id: "từ vựng", label: "Từ vựng N4", kicker: "語彙", hint: "Từ công việc, xã hội — học trong cụm." },
   { id: "ngữ pháp", label: "Ngữ pháp", kicker: "文法", hint: "Trợ từ và mẫu câu sau khi đã có từ để nhét vào." },
   { id: "đọc", label: "Đọc hiểu", kicker: "読解", hint: "Đoạn ngắn, tìm chủ đề và động từ cuối câu." },

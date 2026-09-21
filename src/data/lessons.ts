@@ -349,6 +349,35 @@ const CORE_LESSONS: Lesson[] = [
       },
     ],
     practiceIds: ["v-n5-021", "v-n5-024", "v-n5-133"],
+    unlocks: ["l-n5-bushu"],
+  },
+  {
+    id: "l-n5-bushu",
+    title: "Bộ thủ — chìa khóa đọc kanji",
+    title_jp: "部首",
+    stage: "kanji",
+    level: "N5",
+    order: 20.5,
+    focus: "kanji",
+    summary: "Học biến thể hay gặp (氵亻扌忄艹) trước khi viết chữ. Nhìn bộ là đoán nghĩa.",
+    sections: [
+      {
+        heading: "Bộ thủ là gì?",
+        body: "Kanji ghép từ các 'mảnh' lặp lại. Mảnh mang nghĩa gọi là bộ thủ (部首). 海池河 đều có 氵 (ba giọt nước) — nghĩ đến nước trước khi nhớ on/kun. Người Việt gọi tên Hán-Việt (Thủy, Nhân, Thủ); người Nhật gọi tên bộ (さんずい, にんべん, てへん).",
+        jp: "海 池 河 洗",
+        kana: "うみ いけ かわ あらう",
+        hanViet: "氵 Thủy · 亻 Nhân · 扌 Thủ",
+      },
+      {
+        heading: "Học biến thể, không học 214 bộ một lượt",
+        body: "Sách giáo khoa Nhật dạy dạng viết tắt trước: người bên trái thành 亻, nước thành 氵, tay thành 扌, tim thành 忄, cỏ trên đầu thành 艹, đi đường thành 辶. Thuộc khoảng 25 biến thể này xong, N5 dễ đoán chữ lạ.",
+      },
+      {
+        heading: "Hai bộ dễ nhầm",
+        body: "阝 bên trái là こざとへん (đồi, chỗ: 院階). 阝 bên phải là おおざと (ấp, thành: 都部). 月 bên trái trong 腕肝 là thịt (にくづき), không phải mặt trăng. Ghi nhớ vị trí, không chỉ hình.",
+      },
+    ],
+    practiceIds: ["r-sanzui", "r-ninben", "r-tehen", "r-kusa", "r-gonben"],
     unlocks: ["l-n5-kanji"],
   },
   {
@@ -391,16 +420,16 @@ const CORE_LESSONS: Lesson[] = [
     sections: [
       {
         heading: "Ba lớp cho mỗi chữ",
-        body: "1) Hán-Việt — người Việt đã có sẵn (日 = Nhật, 学 = Học). 2) Nghĩa tiếng Việt đời sống. 3) On (âm Hán, từ ghép) và kun (âm Nhật, có okurigana). Thứ tự này nhanh hơn thuộc ニチ/ジツ trước khi biết chữ nghĩa gì.",
+        body: "1) Bộ thủ — mảnh chữ lặp lại, đoán nghĩa (氵 = nước). 2) Hán-Việt — người Việt đã có sẵn (日 = Nhật, 学 = Học). 3) Nghĩa tiếng Việt đời sống. 4) On (âm Hán, từ ghép) và kun (âm Nhật, có okurigana). Học bộ trước khi thuộc ニチ/ジツ.",
         hanViet: "日 Nhật · 学 Học · 人 Nhân",
       },
       {
         heading: "On khi ghép, kun khi có đuôi hiragana",
-        body: "日本 đọc on にほん. 食べる giữ kun たべる vì còn べる. Học 2 từ thật mỗi chữ, viết đúng nét. Máy đọc hiragana, không đọc thẳng chữ kanji.",
-        jp: "日本で日本語を勉強します。",
-        kana: "にほんでにほんごをべんきょうします。",
-        romaji: "Nihon de nihongo o benkyou shimasu.",
-        hanViet: "日本 Nhật Bản · 日本語 Nhật Bản Ngữ",
+        body: "Onyomi (音読み) là âm Hán — gần Hán-Việt, dùng khi hai kanji dính nhau: 食堂 しょくどう (Thực Đường). Kunyomi (訓読み) là âm Nhật — chữ đứng một mình (山 やま) hoặc có đuôi hiragana gọi là okurigana: 食べる = 食(た) + べる. Cùng chữ 食, ghép thì đọc しょく, có đuôi thì đọc たべる. Đừng học on/kun như hai cột từ — học hai từ thật.",
+        jp: "食堂で食べます。",
+        kana: "しょくどうでたべます。",
+        romaji: "Shokudou de tabemasu.",
+        hanViet: "食堂 Thực Đường (on) · 食べる ăn (kun)",
       },
       {
         heading: "Từ N5 đến N1",

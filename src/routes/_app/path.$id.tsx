@@ -11,6 +11,8 @@ import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { lessonPracticeLinks } from "@/lib/akari/lesson-links";
 import { stageLabel } from "@/lib/akari/path-stages";
+import { OnKunGuide } from "@/components/on-kun-panel";
+import { JpText } from "@/components/jp-text";
 
 export const Route = createFileRoute("/_app/path/$id")({ component: Page });
 
@@ -53,6 +55,7 @@ function Page() {
       ) : null}
 
       <div className="space-y-4">
+        {lesson.id === "l-n5-kanji" ? <OnKunGuide /> : null}
         {lesson.sections.map((s) => (
           <Card key={s.heading}>
             <CardContent>
@@ -61,7 +64,7 @@ function Page() {
               {s.jp ? (
                 <div className="mt-3 flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-jp text-2xl text-fg">{s.jp}</p>
+                    <JpText text={s.jp} className="text-2xl text-fg" />
                     {s.kana ? <p className="mt-1 text-sm text-muted">{s.kana}</p> : null}
                     {showRomaji && s.romaji ? <p className="text-sm text-accent">{s.romaji}</p> : null}
                     {s.hanViet ? <p className="mt-1 text-sm text-fg">Hán-Việt: {s.hanViet}</p> : null}

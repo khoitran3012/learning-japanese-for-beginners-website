@@ -1,5 +1,5 @@
 import type { DictionaryEntry, QuizResult, SearchHistoryItem, SrsItem } from "./types";
-import { isBrowser } from "@/lib/utils";
+import { isBrowser, todayKey } from "@/lib/utils";
 
 const DB_NAME = "akari-nihongo";
 const DB_VERSION = 2;
@@ -161,6 +161,7 @@ export async function allMyWords() {
 
 export async function addQuizResult(result: QuizResult) {
   await idbPut("quiz", result);
+  await bumpDayStats({ quizzes: 1 }, todayKey(new Date(result.at)));
 }
 
 export async function allQuizResults() {
