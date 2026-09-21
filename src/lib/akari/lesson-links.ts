@@ -48,6 +48,9 @@ function stageLink(lesson: Lesson): LessonLink {
       return { to: "/katakana", label: "Katakana" };
     case "từ vựng":
       return { to: "/vocabulary", label: "Từ vựng" };
+    case "giao tiếp":
+      if (lesson.focus === "nghe nói") return { to: "/listen", label: "Luyện nghe" };
+      return { to: "/vocabulary", label: "Từ vựng" };
     case "ngữ pháp":
       return { to: "/grammar", label: "Ngữ pháp" };
     case "kanji":
@@ -58,6 +61,8 @@ function stageLink(lesson: Lesson): LessonLink {
       return { to: "/listen", label: "Luyện nghe" };
     case "kiểm tra":
       return { to: "/quiz", label: "Quiz" };
+    case "nâng cao":
+      return { to: "/dictionary", label: "Từ điển N3–N1" };
     default:
       return { to: "/daily", label: "Bài hôm nay" };
   }

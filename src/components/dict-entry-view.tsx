@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { kanjiInWord, relatedEntries } from "@/lib/dictionary/catalog";
+import { hanVietOfWord } from "@/data/han-viet";
 import { useSettings } from "@/lib/akari/settings";
 import { copyToClipboard } from "@/lib/utils";
 import type { DictionaryEntry } from "@/lib/akari/types";
@@ -16,6 +17,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
   const kanji = kanjiInWord(entry.kanji, entry);
   const posLabel = entry.part_of_speech.join(" · ");
   const related = relatedEntries(entry);
+  const wordHv = hanVietOfWord(entry.kanji);
 
   async function copyHead() {
     const text = `${entry.kanji}　${entry.kana}　${entry.romaji}\n${entry.meanings.join(" · ")}`;
@@ -37,6 +39,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
           <p className="text-kana mt-4 text-6xl">{entry.kanji}</p>
           <p className="mt-2 font-jp text-xl text-muted">{entry.kana}</p>
           {showRomaji ? <p className="text-accent">{entry.romaji}</p> : null}
+          {wordHv ? <p className="mt-2 text-sm">Hán-Việt: {wordHv}</p> : null}
           <ul className="mt-4 space-y-1">
             {entry.meanings.map((m) => (
               <li key={m} className="text-lg">
@@ -104,7 +107,9 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
                     <span className="font-jp text-2xl">{k.char}</span>
                   )}
                   <span className="text-sm text-muted">
-                    {k.entry ? k.entry.meaning_vi : "Chưa có trong bộ kanji N5/N4"}
+                    {k.entry
+                      ? `${k.entry.han_viet ? `${k.entry.han_viet} · ` : ""}${k.entry.meaning_vi}`
+                      : "Chưa có trong bộ kanji N5/N4"}
                   </span>
                 </li>
               ))}

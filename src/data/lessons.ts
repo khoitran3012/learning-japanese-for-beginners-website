@@ -1,6 +1,7 @@
 import type { Lesson } from "@/lib/akari/types";
+import { PATH_LESSONS } from "./lessons-vn-path";
 
-export const LESSONS: Lesson[] = [
+const CORE_LESSONS: Lesson[] = [
   {
     id: "l0-1",
     title: "Tiếng Nhật là gì?",
@@ -8,6 +9,7 @@ export const LESSONS: Lesson[] = [
     stage: "nền tảng",
     level: "0",
     order: 1,
+    focus: "chữ",
     summary: "Bốn lớp chữ viết và cách chúng sống chung trong một câu tiếng Nhật.",
     sections: [
       {
@@ -35,6 +37,7 @@ export const LESSONS: Lesson[] = [
     stage: "nền tảng",
     level: "0",
     order: 2,
+    focus: "chữ",
     summary: "Mỗi mora (nhịp) gần như đều dài bằng nhau; phụ âm cuối gần như chỉ có ん.",
     sections: [
       {
@@ -61,6 +64,7 @@ export const LESSONS: Lesson[] = [
     stage: "nền tảng",
     level: "0",
     order: 3,
+    focus: "chữ",
     summary: "Năm nguyên âm あいうえお là xương sống của toàn bộ bảng năm mươi âm.",
     sections: [
       {
@@ -88,6 +92,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 4,
+    focus: "chữ",
     summary: "あいうえお: nét viết, chiều bút và từ minh họa ngắn.",
     sections: [
       {
@@ -111,6 +116,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 5,
+    focus: "chữ",
     summary: "かきくけこ và cặp dakuten がぎぐげご.",
     sections: [
       {
@@ -133,6 +139,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 6,
+    focus: "chữ",
     summary: "さしすせそ — nhớ し đọc shi, không phải si.",
     sections: [
       {
@@ -155,6 +162,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 7,
+    focus: "chữ",
     summary: "たちつてと — ち chi, つ tsu, っ âm ngắt.",
     sections: [
       {
@@ -177,6 +185,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 8,
+    focus: "chữ",
     summary: "なにぬねの và trợ từ の.",
     sections: [
       {
@@ -199,6 +208,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 9,
+    focus: "chữ",
     summary: "はひふへほ; trợ từ は đọc wa, へ đọc e.",
     sections: [
       {
@@ -221,6 +231,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 10,
+    focus: "chữ",
     summary: "まみむめも — hàng tròn môi.",
     sections: [
       {
@@ -243,6 +254,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 11,
+    focus: "chữ",
     summary: "やゆよ, らりるれろ, わをん và âm ghép yoon.",
     sections: [
       {
@@ -265,6 +277,7 @@ export const LESSONS: Lesson[] = [
     stage: "hiragana",
     level: "N5",
     order: 12,
+    focus: "chữ",
     summary: "Ôn gojuon, dakuten, handakuten, yoon, sokuon và cách dùng hiragana trong câu.",
     sections: [
       {
@@ -288,6 +301,7 @@ export const LESSONS: Lesson[] = [
     stage: "katakana",
     level: "N5",
     order: 13,
+    focus: "chữ",
     summary: "Bảng katakana, nét thẳng, từ mượn và dấu kéo dài ー.",
     sections: [
       {
@@ -305,21 +319,23 @@ export const LESSONS: Lesson[] = [
         body: "Tiếng Nhật thêm ファ, ティ, ヴァ cho âm lạ. Ở N5, thuộc lòng từ thường gặp quan trọng hơn thuộc hết tổ hợp hiếm. Gặp từ mới, đọc theo katakana trước, đoán nghĩa sau.",
       },
     ],
-    unlocks: ["l-n5-vocab"],
+    unlocks: ["l-n5-speak-hello"],
   },
   {
     id: "l-n5-vocab",
-    title: "Từ vựng N5",
+    title: "Từ vựng N5 tổng hợp",
     title_jp: "語彙 N5",
-    stage: "từ vựng",
+    stage: "giao tiếp",
     level: "N5",
-    order: 14,
-    summary: "Nhóm từ đời sống: chào hỏi, trường lớp, thời gian, động từ cơ bản.",
+    order: 20,
+    focus: "từ vựng",
+    summary: "Chào hỏi, trường lớp, thời gian, động từ — học trong câu rồi nghe lại.",
     sections: [
       {
         heading: "Học theo cảnh, không theo danh sách khô",
-        body: "Mỗi từ N5 nên gắn một câu bạn có thể nói hôm nay: 水をください, 学校へ行きます, これは本です. Từ đứng một mình dễ quên. Hãy học kèm category: chào hỏi, gia đình, đồ ăn, giao thông.",
+        body: "Mỗi từ N5 nên gắn một câu bạn có thể nói hôm nay: 水をください, 学校へ行きます, これは本です. Từ đứng một mình dễ quên. Sau khi thuộc nghĩa, mở Luyện nghe: nghe kana, chọn đúng tiếng Việt.",
         jp: "私は毎日日本語を勉強します。",
+        kana: "わたしはまいにちにほんごをべんきょうします。",
         romaji: "Watashi wa mainichi nihongo o benkyou shimasu.",
       },
       {
@@ -332,7 +348,7 @@ export const LESSONS: Lesson[] = [
       },
     ],
     practiceIds: ["v-n5-021", "v-n5-024", "v-n5-133"],
-    unlocks: ["l-n5-grammar"],
+    unlocks: ["l-n5-kanji"],
   },
   {
     id: "l-n5-grammar",
@@ -340,7 +356,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "文法 N5",
     stage: "ngữ pháp",
     level: "N5",
-    order: 15,
+    order: 28,
+    focus: "ngữ pháp",
     summary: "Trợ từ はがをにでへ, thể ます, dạng て, tồn tại ある/いる.",
     sections: [
       {
@@ -359,34 +376,38 @@ export const LESSONS: Lesson[] = [
       },
     ],
     practiceIds: ["g-n5-01", "g-n5-03", "g-n5-19"],
-    unlocks: ["l-n5-kanji"],
+    unlocks: ["l-n5-read"],
   },
   {
     id: "l-n5-kanji",
-    title: "Kanji N5",
-    title_jp: "漢字 N5",
+    title: "Cách học kanji kiểu Việt",
+    title_jp: "漢字の学び方",
     stage: "kanji",
     level: "N5",
-    order: 16,
-    summary: "Khoảng 80 chữ: số, thời gian, người, trường, động từ đời sống.",
+    order: 21,
+    focus: "kanji",
+    summary: "Hán-Việt neo nghĩa, rồi mới on/kun và nét. Không học 80 chữ một lượt.",
     sections: [
       {
-        heading: "Mỗi chữ hai việc: nghĩa và cách đọc",
-        body: "Kanji có âm on (gốc Hán, hay gặp trong từ ghép) và kun (đọc Nhật, hay gặp khi đứng một mình hoặc có okurigana). 山 vừa là サン trong 富士山 vừa là やま. Học kèm từ ghép, đừng học đọc trần.",
-        jp: "山 川 日 月 人",
-        romaji: "yama kawa nichi tsuki hito",
+        heading: "Ba lớp cho mỗi chữ",
+        body: "1) Hán-Việt — người Việt đã có sẵn (日 = Nhật, 学 = Học). 2) Nghĩa tiếng Việt đời sống. 3) On (âm Hán, từ ghép) và kun (âm Nhật, có okurigana). Thứ tự này nhanh hơn thuộc ニチ/ジツ trước khi biết chữ nghĩa gì.",
+        hanViet: "日 Nhật · 学 Học · 人 Nhân",
       },
       {
-        heading: "Thứ tự nét",
-        body: "Trên trước dưới, trái trước phải, ngang trước sổ khi nét cắt. 十 hai nét, 言 bảy nét. Viết đúng nét giúp nhớ chữ và tra từ điển giấy sau này.",
+        heading: "On khi ghép, kun khi có đuôi hiragana",
+        body: "日本 đọc on にほん. 食べる giữ kun たべる vì còn べる. Học 2 từ thật mỗi chữ, viết đúng nét. Máy đọc hiragana, không đọc thẳng chữ kanji.",
+        jp: "日本で日本語を勉強します。",
+        kana: "にほんでにほんごをべんきょうします。",
+        romaji: "Nihon de nihongo o benkyou shimasu.",
+        hanViet: "日本 Nhật Bản · 日本語 Nhật Bản Ngữ",
       },
       {
-        heading: "Cụm nên thuộc sớm",
-        body: "日本, 学生, 先生, 今日, 明日, 食べる, 行く, 見る. Đây là chữ bạn sẽ gặp lại trong mọi bài đọc N5. Mỗi ngày 5 chữ kèm 2 từ ghép hiệu quả hơn 20 chữ không câu.",
+        heading: "Sáu nhóm N5",
+        body: "Số & lịch → ngũ hành → người → trường → hành động → chỗ. Mỗi nhóm vài chữ: nói Hán-Việt, viết nét, flashcard, nghe từ ghép. Xong nhóm này mới sang ngữ pháp.",
       },
     ],
-    practiceIds: ["kj-n5-日", "kj-n5-学", "kj-n5-食"],
-    unlocks: ["l-n5-read"],
+    practiceIds: ["kj-n5-日", "kj-n5-学", "kj-n5-人"],
+    unlocks: ["l-n5-kanji-num"],
   },
   {
     id: "l-n5-read",
@@ -394,7 +415,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "読解 N5",
     stage: "đọc",
     level: "N5",
-    order: 17,
+    order: 29,
+    focus: "đọc",
     summary: "Đoạn 40–80 chữ: lịch sinh hoạt, mua sắm, thời tiết.",
     sections: [
       {
@@ -414,7 +436,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "聴解 N5",
     stage: "nghe",
     level: "N5",
-    order: 18,
+    order: 30,
+    focus: "nghe nói",
     summary: "Nghe câu ngắn: giờ giấc, giá tiền, chỗ gặp, đồng ý/từ chối.",
     sections: [
       {
@@ -434,7 +457,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "確認テスト N5",
     stage: "kiểm tra",
     level: "N5",
-    order: 19,
+    order: 31,
+    focus: "kiểm tra",
     summary: "Ôn hiragana, từ vựng, trợ từ, kanji số-thời gian trước khi sang N4.",
     sections: [
       {
@@ -454,7 +478,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "語彙 N4",
     stage: "từ vựng",
     level: "N4",
-    order: 20,
+    order: 32,
+    focus: "từ vựng",
     summary: "Động từ trừu tượng hơn: 考える, 決める, 続ける; danh từ công việc và xã hội.",
     sections: [
       {
@@ -477,7 +502,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "漢字 N4",
     stage: "kanji",
     level: "N4",
-    order: 21,
+    order: 33,
+    focus: "kanji",
     summary: "Chữ công việc, trường lớp, thời gian tương đối: 会社発着, 始終, 思考.",
     sections: [
       {
@@ -492,7 +518,7 @@ export const LESSONS: Lesson[] = [
       },
     ],
     practiceIds: ["kj-n4-会", "kj-n4-仕"],
-    unlocks: ["l-n4-grammar"],
+    unlocks: ["l-n4-kanji-work"],
   },
   {
     id: "l-n4-grammar",
@@ -500,7 +526,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "文法 N4",
     stage: "ngữ pháp",
     level: "N4",
-    order: 22,
+    order: 36,
+    focus: "ngữ pháp",
     summary: "Suy đoán ようだ/らしい/そうだ, điều kiện ば/たら/なら, ために/ように, nghĩa vụ.",
     sections: [
       {
@@ -527,7 +554,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "読解 N4",
     stage: "đọc",
     level: "N4",
-    order: 23,
+    order: 37,
+    focus: "đọc",
     summary: "Thư ngắn, thông báo, nhật ký: tìm lý do và quan hệ nhân quả.",
     sections: [
       {
@@ -547,7 +575,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "聴解 N4",
     stage: "nghe",
     level: "N4",
-    order: 24,
+    order: 38,
+    focus: "nghe nói",
     summary: "Hội thoại hai lượt: đổi kế hoạch, xin phép, truyền đạt tin.",
     sections: [
       {
@@ -567,7 +596,8 @@ export const LESSONS: Lesson[] = [
     title_jp: "確認テスト N4",
     stage: "kiểm tra",
     level: "N4",
-    order: 25,
+    order: 39,
+    focus: "kiểm tra",
     summary: "Đo độ chắc của điều kiện, mẫu て, từ vựng công việc và kanji ghép.",
     sections: [
       {
@@ -576,8 +606,11 @@ export const LESSONS: Lesson[] = [
       },
       {
         heading: "Sau N4",
-        body: "N3 sẽ thêm thể bị động, sai khiến, 敬語. Nền N4 vững là câu phức có lý do-mục đích-điều kiện trôi chảy, không phải thuộc thêm 200 chữ rồi quên trợ từ.",
+        body: "N3 sẽ thêm thể bị động, sai khiến, 敬語. Nền N4 vững là câu phức có lý do-mục đích-điều kiện trôi chảy, không phải thuộc thêm 200 chữ rồi quên trợ từ. Bài tiếp theo chỉ đường tự học N3–N1 với từ điển.",
       },
     ],
+    unlocks: ["l-n3-start"],
   },
 ];
+
+export const LESSONS: Lesson[] = [...CORE_LESSONS, ...PATH_LESSONS].sort((a, b) => a.order - b.order);

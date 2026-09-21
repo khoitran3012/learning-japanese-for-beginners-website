@@ -458,6 +458,17 @@ export const KANJI_USAGE: Record<string, KanjiUsage> = {
       { jp: "高校で英語を勉強しました。", kana: "こうこうでえいごをべんきょうしました。", romaji: "Koukou de eigo o benkyou shimashita.", vi: "Tôi học tiếng Anh ở cấp 3." },
     ],
   },
+  本: {
+    tip: "Kun ほん = sách. On ほん trong 日本 (Nhật Bản), 本当.",
+    words: [
+      { word: "日本語", kana: "にほんご", romaji: "nihongo", meaning_vi: "tiếng Nhật", reading: "on", usage: "本 đọc ほん" },
+      { word: "本屋", kana: "ほんや", romaji: "honya", meaning_vi: "hiệu sách", reading: "kun", usage: "本 đọc ほん" },
+    ],
+    sentences: [
+      { jp: "本を読みます。", kana: "ほんをよみます。", romaji: "Hon o yomimasu.", vi: "Tôi đọc sách." },
+      { jp: "日本の本です。", kana: "にほんのほんです。", romaji: "Nihon no hon desu.", vi: "Đây là sách của Nhật." },
+    ],
+  },
   "入": {
     tip: "Kun はい・る / い・れる. On にゅう.",
     words: [

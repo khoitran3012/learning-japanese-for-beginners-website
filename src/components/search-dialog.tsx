@@ -45,10 +45,16 @@ export function SearchDialog({
       if (
         kj.character === query ||
         foldVi(kj.meaning_vi).includes(qFold) ||
+        foldVi(kj.han_viet).includes(qFold) ||
         kj.onyomi.some((x) => x.includes(query)) ||
         kj.kunyomi.some((x) => x.includes(query))
       ) {
-        out.push({ type: "Kanji", title: kj.character, sub: kj.meaning_vi, to: `/kanji/${kj.id}` });
+        out.push({
+          type: "Kanji",
+          title: kj.character,
+          sub: kj.han_viet ? `${kj.han_viet} · ${kj.meaning_vi}` : kj.meaning_vi,
+          to: `/kanji/${kj.id}`,
+        });
       }
     }
     for (const g of [...GRAMMAR_N5, ...GRAMMAR_N4]) {

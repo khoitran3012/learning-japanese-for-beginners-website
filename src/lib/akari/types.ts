@@ -118,6 +118,8 @@ export interface KanjiEntry {
   onyomi: string[];
   kunyomi: string[];
   meaning_vi: string;
+  /** Âm Hán-Việt — neo nghĩa cho người Việt. */
+  han_viet: string;
   meanings?: string[];
   romaji: string;
   level: JlptLevel;
@@ -144,14 +146,18 @@ export interface Lesson {
   title: string;
   title_jp?: string;
   stage: string;
-  level: "0" | "N5" | "N4";
+  level: "0" | "N5" | "N4" | "N3" | "N2" | "N1";
   order: number;
   summary: string;
+  /** Trụ chính của bài — hiện trên lộ trình. */
+  focus?: "chữ" | "từ vựng" | "nghe nói" | "kanji" | "ngữ pháp" | "đọc" | "kiểm tra";
   sections: Array<{
     heading: string;
     body: string;
     jp?: string;
+    kana?: string;
     romaji?: string;
+    hanViet?: string;
   }>;
   practiceIds?: string[];
   unlocks?: string[];

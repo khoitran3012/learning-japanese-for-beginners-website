@@ -237,8 +237,8 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number): QuizQu
       speak,
       options: opts.map((o) => o.meaning_vi),
       answer: opts.findIndex((o) => o.id === c.id),
-      explain: `${c.character} · ${c.meaning_vi}. Kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.map((o) => `${o} (${kanaToRomaji(o)})`).join(" / ")}.`,
-      typedAnswers: meaningParts(c.meaning_vi),
+      explain: `${c.character} · Hán-Việt ${c.han_viet || "—"} · ${c.meaning_vi}. Kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.map((o) => `${o} (${kanaToRomaji(o)})`).join(" / ")}.`,
+      typedAnswers: [...meaningParts(c.meaning_vi), c.han_viet].filter(Boolean),
       typedHint: "Gõ nghĩa tiếng Việt",
     };
   }
@@ -267,7 +267,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number): QuizQu
       speak: reading,
       options: opts.map((o) => o.label),
       answer: opts.findIndex((o) => o.id === c.id),
-      explain: `${c.character} · kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.join(" / ")} (${c.onyomi.map(kanaToRomaji).join(", ")}).`,
+      explain: `${c.character} · Hán-Việt ${c.han_viet || "—"} · kun ${c.kunyomi.join(" / ") || "—"} · on ${c.onyomi.join(" / ")} (${c.onyomi.map(kanaToRomaji).join(", ")}).`,
       typedAnswers: [reading, romaji, ...c.kunyomi, ...c.onyomi.map(toHiragana)].filter(Boolean),
       typedHint: "Gõ hiragana hoặc romaji",
     };
@@ -286,9 +286,9 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number): QuizQu
       sourceId: c.id,
       prompt: "Nghe cách đọc (hiragana), chọn kanji",
       speak,
-      options: opts.map((o) => `${o.character} · ${o.meaning_vi}`),
+      options: opts.map((o) => `${o.character} · ${o.han_viet || o.meaning_vi}`),
       answer: opts.findIndex((o) => o.id === c.id),
-      explain: `Nghe ${speak} (${kanaToRomaji(speak)}) → ${c.character}. On ${c.onyomi.join("/")} · kun ${c.kunyomi.join("/") || "—"}.`,
+      explain: `Nghe ${speak} (${kanaToRomaji(speak)}) → ${c.character} (${c.han_viet || c.meaning_vi}). On ${c.onyomi.join("/")} · kun ${c.kunyomi.join("/") || "—"}.`,
     };
   }
 
@@ -427,7 +427,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number): QuizQu
       speak: reading,
       options: opts,
       answer: opts.findIndex((o) => o === romaji),
-      explain: `${c.character} · ${reading} · ${romaji}`,
+      explain: `${c.character} · Hán-Việt ${c.han_viet || "—"} · ${reading} · ${romaji}`,
       typedAnswers: [romaji, reading, ...c.kunyomi],
       typedHint: "Gõ romaji hoặc hiragana",
     };

@@ -1,4 +1,5 @@
 import type { KanjiEntry } from "@/lib/akari/types";
+import { hanVietOf } from "@/data/han-viet";
 
 function k(
   character: string,
@@ -15,6 +16,7 @@ function k(
     onyomi,
     kunyomi,
     meaning_vi,
+    han_viet: hanVietOf(character),
     romaji,
     level: "N5",
     stroke_count,
@@ -186,6 +188,10 @@ export const KANJI_N5: KanjiEntry[] = [
   k("校", ["コウ"], [], "trường", "kou", 10, [
     { word: "学校", kana: "がっこう", romaji: "gakkou", meaning_vi: "trường học" },
     { word: "高校", kana: "こうこう", romaji: "koukou", meaning_vi: "trung học phổ thông" },
+  ]),
+  k("本", ["ホン"], ["もと"], "sách / gốc", "hon", 5, [
+    { word: "本", kana: "ほん", romaji: "hon", meaning_vi: "sách" },
+    { word: "日本", kana: "にほん", romaji: "nihon", meaning_vi: "Nhật Bản" },
   ]),
   k("入", ["ニュウ"], ["はい・る", "い・れる"], "vào", "nyuu", 2, [
     { word: "入学", kana: "にゅうがく", romaji: "nyuugaku", meaning_vi: "nhập học" },

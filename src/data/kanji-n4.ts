@@ -1,4 +1,5 @@
 import type { KanjiEntry } from "@/lib/akari/types";
+import { hanVietOf } from "@/data/han-viet";
 
 function k(
   character: string,
@@ -15,6 +16,7 @@ function k(
     onyomi,
     kunyomi,
     meaning_vi,
+    han_viet: hanVietOf(character),
     romaji,
     level: "N4",
     stroke_count,

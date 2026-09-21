@@ -68,11 +68,11 @@ function Page() {
       built = [...KANJI_N5, ...KANJI_N4].map((k) => ({
         id: k.id,
         front: k.character,
-        back: `${k.meaning_vi}\n${k.onyomi.join(" / ")} · ${k.kunyomi.join(" / ")}`,
+        back: `${k.han_viet ? `Hán-Việt: ${k.han_viet}\n` : ""}${k.meaning_vi}\n${k.onyomi.join(" / ")} · ${k.kunyomi.join(" / ")}`,
         speak: k.character,
         type: "kanji" as const,
-        answers: [...meaningParts(k.meaning_vi), k.romaji, ...k.kunyomi, ...k.onyomi],
-        answerHint: "Gõ nghĩa hoặc cách đọc",
+        answers: [...meaningParts(k.meaning_vi), k.han_viet, k.romaji, ...k.kunyomi, ...k.onyomi].filter(Boolean),
+        answerHint: "Gõ nghĩa, Hán-Việt hoặc cách đọc",
       }));
     } else if (deck === "mine") {
       built = [...myWords].map((id) => {

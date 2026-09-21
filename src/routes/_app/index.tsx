@@ -62,7 +62,7 @@ function HomePage() {
       <PageHeader
         kicker="明かり"
         title="Akari"
-        description="Học tiếng Nhật từ số 0 — Hiragana đến N4. Đăng nhập nếu muốn thi đua; không bắt buộc."
+        description="Học tiếng Nhật từ số 0 — trọng tâm từ vựng, nghe nói và kanji Hán-Việt. Hiragana đến N1."
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

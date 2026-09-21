@@ -96,7 +96,7 @@ export const recordPathProgress = createServerFn({ method: "POST" })
       new Set((Array.isArray(input?.lessonIds) ? input.lessonIds : []).map((id) => String(id))),
     )
       .filter((id) => Boolean(LESSON_STAGE[id]))
-      .slice(0, 40),
+      .slice(0, 80),
   }))
   .handler(async ({ context, data }) => {
     if (data.lessonIds.length === 0) return { saved: 0 };
@@ -123,7 +123,7 @@ export const recordPathProgress = createServerFn({ method: "POST" })
       `insert into path_progress (user_id, lesson_id, stage)
        select $1, x.lid, x.stg
        from unnest($2::text[], $3::text[]) as x(lid, stg)
-       on conflict (user_id, lesson_id) do nothing`,
+       on conflict (user_id, lesson_id) do update set stage = excluded.stage`,
       [context.userId, data.lessonIds, stages],
     );
     return { saved: data.lessonIds.length };

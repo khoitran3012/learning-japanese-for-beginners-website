@@ -10,6 +10,7 @@ import { LESSONS } from "@/data/lessons";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { lessonPracticeLinks } from "@/lib/akari/lesson-links";
+import { stageLabel } from "@/lib/akari/path-stages";
 
 export const Route = createFileRoute("/_app/path/$id")({ component: Page });
 
@@ -26,9 +27,10 @@ function Page() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader kicker={lesson.stage} title={lesson.title} description={lesson.summary} />
+      <PageHeader kicker={stageLabel(lesson.stage)} title={lesson.title} description={lesson.summary} />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Badge>{lesson.level === "0" ? "Nhập môn" : lesson.level}</Badge>
+        {lesson.focus ? <Badge variant="muted">{lesson.focus}</Badge> : null}
         {done ? <Badge variant="success">Đã hoàn thành</Badge> : null}
       </div>
 
@@ -58,12 +60,16 @@ function Page() {
               <p className="mt-2 text-sm leading-relaxed text-muted">{s.body}</p>
               {s.jp ? (
                 <div className="mt-3 flex items-start justify-between gap-3">
-                  <p className="font-jp text-2xl text-fg">
-                    {s.jp}
-                    {showRomaji && s.romaji ? <span className="ml-3 text-base text-fg">{s.romaji}</span> : null}
-                  </p>
-                  <SpeakButton text={s.jp} label="Nghe" />
+                  <div>
+                    <p className="font-jp text-2xl text-fg">{s.jp}</p>
+                    {s.kana ? <p className="mt-1 text-sm text-muted">{s.kana}</p> : null}
+                    {showRomaji && s.romaji ? <p className="text-sm text-accent">{s.romaji}</p> : null}
+                    {s.hanViet ? <p className="mt-1 text-sm text-fg">Hán-Việt: {s.hanViet}</p> : null}
+                  </div>
+                  <SpeakButton text={s.jp} kana={s.kana} label="Nghe" />
                 </div>
+              ) : s.hanViet ? (
+                <p className="mt-3 text-sm text-fg">Hán-Việt: {s.hanViet}</p>
               ) : null}
             </CardContent>
           </Card>

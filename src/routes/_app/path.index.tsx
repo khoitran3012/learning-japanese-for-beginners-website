@@ -2,30 +2,36 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, Check, Lock } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { DynamicLink } from "@/components/dynamic-link";
-import { LESSONS } from "@/data/lessons";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { primaryLessonHref } from "@/lib/akari/lesson-links";
-import { PATH_STAGES } from "@/lib/akari/path-stages";
+import { journeyGroups, stageHint, stageKicker, stageLabel } from "@/lib/akari/path-stages";
 import { cn } from "@/lib/utils";
+import type { Lesson } from "@/lib/akari/types";
 
 export const Route = createFileRoute("/_app/path/")({ component: Page });
+
+function focusBadge(focus: Lesson["focus"]) {
+  if (!focus) return null;
+  return <Badge variant="muted">{focus}</Badge>;
+}
 
 function Page() {
   const completed = useProgress((s) => s.completedLessonIds);
   const freeMode = useSettings((s) => s.freeMode);
   const set = useSettings((s) => s.set);
-  const sorted = [...LESSONS].sort((a, b) => a.order - b.order);
+  const { sorted, groups } = journeyGroups();
 
   return (
     <div>
       <PageHeader
         kicker="道"
         title="Lộ trình học"
-        description="Từ số 0: làm quen → hiragana → katakana → từ vựng → ngữ pháp → kanji → đọc, nghe, quiz N5 rồi N4. Bấm Vào bài học để chuyển thẳng tới phần luyện."
+        description="Cách lớp Việt hay đi: kana → nói & từ vựng → kanji kèm Hán-Việt → ngữ pháp → đọc nghe. Ba trụ cho người mới: từ vựng, nghe nói, kanji."
         actions={
           <div className="flex items-center gap-2">
             <Label htmlFor="free">Chế độ tự do</Label>
@@ -33,19 +39,36 @@ function Page() {
           </div>
         }
       />
+
+      <ol className="mb-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          "1. Hiragana + katakana — đọc được mới nghe nói được",
+          "2. Nói & từ N5 — chào, số, nhà, trường, ăn, đi",
+          "3. Kanji + Hán-Việt — nghĩa trước, on/kun sau",
+          "4. Ngữ pháp, đọc, nghe N5 — nhét từ vào câu",
+          "5. N4 cùng ba trụ: từ, nói, kanji",
+          "6. N3 → N1 tự học với từ điển",
+        ].map((line) => (
+          <li key={line} className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-muted">
+            {line}
+          </li>
+        ))}
+      </ol>
+
       <div className="space-y-8">
-        {PATH_STAGES.map((stage) => {
-          const items = sorted.filter((l) => l.stage === stage.id);
-          if (items.length === 0) return null;
+        {groups.map((group) => {
+          const items = group.items;
           const doneCount = items.filter((l) => completed.has(l.id)).length;
+          const hint = stageHint(group.stage);
           return (
-            <section key={stage.id}>
+            <section key={`${group.stage}-${items[0]?.id}`}>
               <header className="mb-3 flex items-end justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
-                    {stage.kicker}
+                    {stageKicker(group.stage)}
                   </p>
-                  <h2 className="font-display text-xl font-semibold">{stage.label}</h2>
+                  <h2 className="font-display text-xl font-semibold">{stageLabel(group.stage)}</h2>
+                  {hint ? <p className="mt-1 max-w-xl text-sm text-muted">{hint}</p> : null}
                 </div>
                 <p className="text-sm tabular-nums text-muted">
                   {doneCount}/{items.length}
@@ -78,7 +101,10 @@ function Page() {
                             )}
                           </span>
                           <div className="min-w-0">
-                            <p className="text-xs text-subtle">{l.level === "0" ? "Nhập môn" : l.level}</p>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <p className="text-xs text-subtle">{l.level === "0" ? "Nhập môn" : l.level}</p>
+                              {focusBadge(l.focus)}
+                            </div>
                             <h3 className="font-medium">{l.title}</h3>
                             <p className="text-sm text-muted">{l.summary}</p>
                           </div>

@@ -42,7 +42,8 @@ function Page() {
         <CardContent className="flex flex-col items-center py-10">
           <Badge>{k.level}</Badge>
           <p className="text-kana mt-3 text-[8rem] leading-none">{k.character}</p>
-          <p className="mt-3 text-lg">{k.meaning_vi}</p>
+          <p className="mt-3 text-xl font-medium">{k.han_viet ? `Hán-Việt: ${k.han_viet}` : null}</p>
+          <p className="mt-1 text-lg">{k.meaning_vi}</p>
           <p className="mt-2 font-jp text-xl text-muted">
             {primary}
             {showRomaji ? <span className="ml-2 text-accent">{kanaToRomaji(primary)}</span> : null}
@@ -59,10 +60,10 @@ function Page() {
       {usage.tip ? (
         <Card>
           <CardContent className="space-y-2">
-            <h2 className="text-sm text-muted">Cách dùng chữ {k.character}</h2>
+            <h2 className="text-sm text-muted">Cách dùng chữ {k.character}{k.han_viet ? ` · ${k.han_viet}` : ""}</h2>
             <p className="text-sm leading-relaxed">{usage.tip}</p>
             <p className="text-xs text-subtle">
-              Onyomi (âm Hán, katakana) thường trong từ ghép. Kunyomi (âm Nhật, hiragana) khi chữ đứng một mình hoặc có okurigana.
+              Hán-Việt neo nghĩa. Onyomi (âm Hán, katakana) thường trong từ ghép. Kunyomi (âm Nhật, hiragana) khi chữ đứng một mình hoặc có okurigana.
             </p>
           </CardContent>
         </Card>
@@ -158,7 +159,7 @@ function Page() {
         </CardContent>
       </Card>
 
-      <AiTutor seed={`Giải thích kanji ${k.character} (${k.meaning_vi}): onyomi ${k.onyomi.join("/")} = ${onRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}, kunyomi ${kunRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}. Cách dùng: ${usage.tip}`} />
+      <AiTutor seed={`Giải thích kanji ${k.character} (Hán-Việt: ${k.han_viet || "—"}; nghĩa Việt: ${k.meaning_vi}): onyomi ${k.onyomi.join("/")} = ${onRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}, kunyomi ${kunRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}. Cách dùng: ${usage.tip}`} />
 
       <div className="flex gap-2">
         <Button variant="secondary" onClick={() => void forgot(k.id, "kanji")}>

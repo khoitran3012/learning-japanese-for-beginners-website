@@ -21,6 +21,7 @@ function Page() {
     const s = q.toLowerCase();
     return (
       k.character.includes(q) ||
+      k.han_viet.toLowerCase().includes(s) ||
       k.meaning_vi.toLowerCase().includes(s) ||
       k.onyomi.some((x) => x.toLowerCase().includes(s)) ||
       k.kunyomi.some((x) => x.toLowerCase().includes(s)) ||
@@ -30,9 +31,9 @@ function Page() {
 
   return (
     <div>
-      <PageHeader kicker="漢字" title="Kanji" description="Nghĩa tiếng Việt, onyomi, kunyomi, số nét và từ ghép — dữ liệu tự biên soạn." />
+      <PageHeader kicker="漢字" title="Kanji" description="Hán-Việt neo nghĩa, rồi onyomi / kunyomi, số nét và từ ghép." />
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm kanji, nghĩa, âm..." />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm kanji, Hán-Việt, nghĩa, âm..." />
         <div className="flex gap-2">
           {(["all", "N5", "N4"] as const).map((x) => (
             <button
@@ -58,7 +59,8 @@ function Page() {
             )}
           >
             <span className="text-kana text-4xl">{k.character}</span>
-            <span className="mt-1 line-clamp-1 text-xs text-muted">{k.meaning_vi}</span>
+            <span className="mt-1 text-xs font-medium">{k.han_viet || k.meaning_vi}</span>
+            <span className="line-clamp-1 text-[11px] text-muted">{k.meaning_vi}</span>
             <Badge variant="muted" className="mt-1">{k.level}</Badge>
           </Link>
         ))}
