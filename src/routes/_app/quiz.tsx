@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizCard } from "@/components/quiz-card";
 import { nextQuestion, type KanjiQuizLevel, type QuizKind, type QuizQuestion } from "@/lib/akari/quiz-engine";
+import { questionsClash } from "@/lib/akari/question-unique";
 import { addQuizResult } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { uid } from "@/lib/utils";
@@ -57,6 +58,7 @@ function Page() {
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
   const usedRef = useRef(new Set<string>());
+  const lastQ = useRef<QuizQuestion | null>(null);
   const scoreRef = useRef(0);
   const countRef = useRef(0);
   const savedRef = useRef({ score: 0, count: 0 });
@@ -66,13 +68,20 @@ function Page() {
   const user = useCurrentUser();
 
   function spawn(nextKind = kind) {
-    const next = nextQuestion(nextKind, usedRef.current, Math.random, kanjiLv);
+    const used = usedRef.current;
+    let next = nextQuestion(nextKind, used, Math.random, kanjiLv);
+    let tries = 0;
+    while (next && lastQ.current && questionsClash(lastQ.current, next) && tries++ < 12) {
+      next = nextQuestion(nextKind, used, Math.random, kanjiLv);
+    }
+    lastQ.current = next;
     setQ(next);
     return next;
   }
 
   useEffect(() => {
     usedRef.current = new Set();
+    lastQ.current = null;
     scoreRef.current = 0;
     countRef.current = 0;
     savedRef.current = { score: 0, count: 0 };
@@ -121,7 +130,7 @@ function Page() {
       <PageHeader
         kicker="試験"
         title="Trắc nghiệm"
-        description="Câu hỏi mới liên tục, không lặp ngay. Gõ đáp án hoặc chọn. Kết thúc khi bạn muốn — điểm tự lưu mỗi 10 câu."
+        description="Mỗi câu random, không trùng từ/chữ vừa hỏi. Gõ hoặc chọn — điểm lưu mỗi 10 câu."
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {KINDS.map((k) => (
@@ -155,6 +164,7 @@ function Page() {
               className="mt-4"
               onClick={() => {
                 usedRef.current = new Set();
+                lastQ.current = null;
                 scoreRef.current = 0;
                 countRef.current = 0;
                 savedRef.current = { score: 0, count: 0 };

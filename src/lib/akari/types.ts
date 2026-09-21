@@ -216,6 +216,7 @@ export interface AppSettings {
   theme: ThemeMode;
   fontSize: "sm" | "md" | "lg";
   showRomaji: boolean;
+  showMeaning: boolean;
   autoPlayAudio: boolean;
   ttsRate: number;
   dailyGoal: number;
@@ -236,6 +237,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
   fontSize: "md",
   showRomaji: true,
+  showMeaning: true,
   autoPlayAudio: false,
   ttsRate: 0.9,
   dailyGoal: 15,

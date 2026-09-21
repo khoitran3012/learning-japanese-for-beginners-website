@@ -75,6 +75,7 @@ function Page() {
       theme: settings.theme,
       fontSize: settings.fontSize,
       showRomaji: settings.showRomaji,
+      showMeaning: settings.showMeaning,
       autoPlayAudio: settings.autoPlayAudio,
       ttsRate: settings.ttsRate,
       dailyGoal: settings.dailyGoal,
@@ -284,6 +285,14 @@ function Page() {
                 id="romaji"
                 checked={settings.showRomaji}
                 onCheckedChange={(v) => settings.set({ showRomaji: v })}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="meaning">Hiện nghĩa (đáp án quiz)</Label>
+              <Switch
+                id="meaning"
+                checked={settings.showMeaning}
+                onCheckedChange={(v) => settings.set({ showMeaning: v })}
               />
             </div>
             <div className="flex items-center justify-between gap-4">

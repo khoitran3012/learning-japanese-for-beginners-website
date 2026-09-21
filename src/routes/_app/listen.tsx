@@ -128,7 +128,7 @@ function Page() {
       <PageHeader
         kicker="聴"
         title="Luyện nghe"
-        description="Nghe bình thường hoặc chậm. Sau khi nghe, bấm vào kanji để xem hiragana và Hán-Việt."
+        description="Nghe bình thường hoặc chậm. Mỗi vòng 12 câu random, không trùng từ/câu. Bấm kanji để xem hiragana và Hán-Việt."
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {(["all", "N5", "N4"] as const).map((lv) => (

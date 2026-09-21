@@ -2,6 +2,7 @@ import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
 import { LISTEN_SENTENCES } from "@/data/listening";
 import { isSpeakableKana, ttsKana } from "./kana-speak";
+import { similarAnswer, uniqueShuffle } from "./question-unique";
 import type { JlptLevel, VocabEntry } from "./types";
 
 export type ListenKind = "word" | "sentence";
@@ -22,12 +23,7 @@ export interface ListenQuestion {
 }
 
 function shuffle<T>(arr: T[], rand: () => number) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [a[i], a[j]] = [a[j]!, a[i]!];
-  }
-  return a;
+  return uniqueShuffle(arr, rand);
 }
 
 function uniqueStrings(values: string[], keep: string, n: number, rand: () => number) {
@@ -35,10 +31,20 @@ function uniqueStrings(values: string[], keep: string, n: number, rand: () => nu
   const out: string[] = [];
   for (const raw of shuffle(values, rand)) {
     const v = raw.trim();
-    if (!v || seen.has(v)) continue;
+    if (!v || seen.has(v) || similarAnswer(v, keep)) continue;
+    if (out.some((o) => similarAnswer(o, v))) continue;
     seen.add(v);
     out.push(v);
     if (out.length >= n) break;
+  }
+  if (out.length < n) {
+    for (const raw of shuffle(values, rand)) {
+      const v = raw.trim();
+      if (!v || seen.has(v)) continue;
+      seen.add(v);
+      out.push(v);
+      if (out.length >= n) break;
+    }
   }
   return out;
 }
@@ -69,16 +75,19 @@ export function makeListenRound(
   const out: ListenQuestion[] = [];
   const meanings = vocab.map((v) => v.meaning_vi);
 
+  const usedSpeak = new Set<string>();
+  const usedVi = new Set<string>();
   let guard = 0;
-  while (out.length < n && guard++ < n * 10) {
+  while (out.length < n && guard++ < n * 12) {
     const preferSentence =
-      sentences.length > 0 && rand() < 0.4 && usedSent.size < sentences.length;
+      sentences.length > 0 && rand() < 0.45 && usedSent.size < sentences.length;
     if (preferSentence) {
-      const fresh = sentences.filter((s) => !usedSent.has(s.id));
+      const fresh = sentences.filter((s) => !usedSent.has(s.id) && !usedSpeak.has(s.kana) && !usedVi.has(s.vi));
       const item = fresh[Math.floor(rand() * fresh.length)];
       if (!item) continue;
+      if ([...usedVi].some((v) => similarAnswer(v, item.vi))) continue;
       const speak = ttsKana(item.kana, item.jp);
-      if (!speak) continue;
+      if (!speak || usedSpeak.has(speak)) continue;
       const sentMeanings = sentences.filter((s) => s.id !== item.id).map((s) => s.vi);
       let others = uniqueStrings(sentMeanings, item.vi, 3, rand);
       if (others.length < 3) {
@@ -91,6 +100,8 @@ export function makeListenRound(
       const answerIndex = options.indexOf(item.vi);
       if (answerIndex < 0) continue;
       usedSent.add(item.id);
+      usedSpeak.add(speak);
+      usedVi.add(item.vi);
       out.push({
         id: `${item.id}-${out.length}`,
         kind: "sentence",
@@ -107,12 +118,12 @@ export function makeListenRound(
       continue;
     }
 
-    const fresh = vocab.filter((v) => !usedVocab.has(v.id));
-    const pool = fresh.length ? fresh : vocab;
-    const c = pool[Math.floor(rand() * pool.length)];
+    const fresh = vocab.filter((v) => !usedVocab.has(v.id) && !usedSpeak.has(v.kana) && !usedVi.has(v.meaning_vi));
+    const c = fresh[Math.floor(rand() * fresh.length)];
     if (!c) continue;
+    if ([...usedVi].some((v) => similarAnswer(v, c.meaning_vi))) continue;
     const speak = ttsKana(c.kana, c.word);
-    if (!speak) continue;
+    if (!speak || usedSpeak.has(speak)) continue;
     const others = uniqueStrings(
       uniqueMeaningList(vocab, c.meaning_vi),
       c.meaning_vi,
@@ -124,6 +135,8 @@ export function makeListenRound(
     const answerIndex = options.indexOf(c.meaning_vi);
     if (answerIndex < 0) continue;
     usedVocab.add(c.id);
+    usedSpeak.add(speak);
+    usedVi.add(c.meaning_vi);
     out.push({
       id: `${c.id}-${out.length}`,
       kind: "word",

@@ -2,14 +2,39 @@ import { Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChoiceRow, choiceState } from "@/components/ui/choice-row";
+import { ChoiceKana, ChoiceRomaji, ChoiceRow, choiceState } from "@/components/ui/choice-row";
 import { Input } from "@/components/ui/input";
 import { SpeakButton } from "@/components/speak-button";
 import { answersMatch } from "@/lib/akari/answer-check";
+import { similarAnswer } from "@/lib/akari/question-unique";
 import { speakJapanese, stopSpeaking } from "@/lib/akari/tts";
 import { useSettings } from "@/lib/akari/settings";
 import type { QuizQuestion } from "@/lib/akari/quiz-engine";
 import { cn } from "@/lib/utils";
+
+export function QuizHintToggles({ className }: { className?: string }) {
+  const showRomaji = useSettings((s) => s.showRomaji);
+  const showMeaning = useSettings((s) => s.showMeaning);
+  const set = useSettings((s) => s.set);
+  return (
+    <div className={cn("flex flex-wrap gap-2", className)}>
+      <Button
+        size="sm"
+        variant={showRomaji ? "default" : "secondary"}
+        onClick={() => set({ showRomaji: !showRomaji })}
+      >
+        Romaji
+      </Button>
+      <Button
+        size="sm"
+        variant={showMeaning ? "default" : "secondary"}
+        onClick={() => set({ showMeaning: !showMeaning })}
+      >
+        Nghĩa
+      </Button>
+    </div>
+  );
+}
 
 export function QuizCard({
   q,
@@ -35,6 +60,8 @@ export function QuizCard({
   const [typedOk, setTypedOk] = useState<boolean | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const autoPlay = useSettings((s) => s.autoPlayAudio);
+  const showRomaji = useSettings((s) => s.showRomaji);
+  const showMeaning = useSettings((s) => s.showMeaning);
   const rate = useSettings((s) => s.ttsRate);
   const rateRef = useRef(rate);
   rateRef.current = rate;
@@ -83,9 +110,12 @@ export function QuizCard({
   return (
     <Card className="mx-auto max-w-lg">
       <CardContent className="space-y-4">
-        <p className="text-xs tabular-nums text-muted">
-          {endless ? `Câu ${index + 1} · đúng ${score}` : `Câu ${index + 1}/${total} · đúng ${score}`}
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs tabular-nums text-muted">
+            {endless ? `Câu ${index + 1} · đúng ${score}` : `Câu ${index + 1}/${total} · đúng ${score}`}
+          </p>
+          <QuizHintToggles />
+        </div>
         {listenOnly ? (
           <div className="flex flex-col items-center gap-3 py-4">
             <span className="flex size-16 items-center justify-center rounded-full bg-choice text-accent">
@@ -127,21 +157,32 @@ export function QuizCard({
         {typedOk === true ? <p className="text-sm font-medium text-forest">Đúng — khớp với phần gõ.</p> : null}
         {typedOk === false ? <p className="text-sm font-medium text-seal">Chưa khớp. Đáp án đúng được tô xanh.</p> : null}
         <div className="grid gap-2">
-          {q.options.map((o, idx) => (
-            <ChoiceRow
-              key={o + idx}
-              state={choiceState({
-                revealed,
-                isAnswer: idx === q.answer,
-                picked: picked === idx,
-              })}
-              disabled={revealed}
-              className="font-jp"
-              onClick={() => choose(idx)}
-            >
-              {String.fromCharCode(65 + idx)}. {o}
-            </ChoiceRow>
-          ))}
+          {q.options.map((o, idx) => {
+            const meaning = (q.optionMeanings?.[idx] ?? "").trim();
+            const romaji = (q.optionRomaji?.[idx] ?? "").trim();
+            const showM = showMeaning && meaning && !similarAnswer(meaning, o);
+            const showR = showRomaji && romaji && romaji !== o && !similarAnswer(romaji, o);
+            return (
+              <ChoiceRow
+                key={o + idx}
+                state={choiceState({
+                  revealed,
+                  isAnswer: idx === q.answer,
+                  picked: picked === idx,
+                })}
+                disabled={revealed}
+                onClick={() => choose(idx)}
+              >
+                <span className="flex min-w-0 flex-col items-start gap-0.5">
+                  <ChoiceKana>
+                    {String.fromCharCode(65 + idx)}. {o}
+                  </ChoiceKana>
+                  {showR ? <ChoiceRomaji>{romaji}</ChoiceRomaji> : null}
+                  {showM ? <span className="text-sm font-normal text-muted">{meaning}</span> : null}
+                </span>
+              </ChoiceRow>
+            );
+          })}
         </div>
         {revealed ? (
           <div className="space-y-3">

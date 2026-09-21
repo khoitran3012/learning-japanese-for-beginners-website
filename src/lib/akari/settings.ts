@@ -37,6 +37,7 @@ export const useSettings = create<SettingsState>()(
         theme: s.theme,
         fontSize: s.fontSize,
         showRomaji: s.showRomaji,
+        showMeaning: s.showMeaning,
         autoPlayAudio: s.autoPlayAudio,
         ttsRate: s.ttsRate,
         dailyGoal: s.dailyGoal,

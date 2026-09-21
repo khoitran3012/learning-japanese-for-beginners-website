@@ -77,7 +77,7 @@ function Page() {
         <PageHeader
           kicker="今日"
           title="Bài tập hôm nay"
-          description={`Bộ 15 câu chung cho mọi người ngày ${date}. Mai sẽ có đề mới.`}
+          description={`15 câu random, không trùng nhau. Đề chung ngày ${date}.`}
         />
         <Card className="mx-auto max-w-md">
           <CardContent className="py-10 text-center">
