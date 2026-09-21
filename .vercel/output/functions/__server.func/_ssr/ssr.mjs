@@ -107,7 +107,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-CaFAqnV6.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-CqeEIsSU.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -145,7 +145,7 @@ var manifest = {
 	},
 	"47e1c58a7c69a72073f6a4c1665b164412ed5188bc563dcd7174af389e27a62b": {
 		functionName: "listPathRankings_createServerFn_handler",
-		importer: () => import("./path-rank-fxFCde_r.mjs")
+		importer: () => import("./path-rank-B-ccDTSc.mjs")
 	},
 	"51d9ca9a53678d60c1b6f5d349d4fefb496f76cd5130cd8b5e1047de33e6aa84": {
 		functionName: "issueRecoveryCode_createServerFn_handler",
@@ -157,7 +157,7 @@ var manifest = {
 	},
 	"571ac5899639ec47a089eca70709fdcfcdd775acaa35754cdca9d1378ed40568": {
 		functionName: "saveGardenPlacements_createServerFn_handler",
-		importer: () => import("./api-gIKbl_ut.mjs")
+		importer: () => import("./api-Bjj3_8K0.mjs")
 	},
 	"58bdad00eee37171961c843a0827de66cd01626ae7d9941befbc9456f3a03222": {
 		functionName: "getDbInfo_createServerFn_handler",
@@ -181,11 +181,11 @@ var manifest = {
 	},
 	"bf8ec82550fc18e13b84fb6d1fe7f2dd0af805ca7f69b8cda8d9f0d6c4b08c0e": {
 		functionName: "loadGarden_createServerFn_handler",
-		importer: () => import("./api-gIKbl_ut.mjs")
+		importer: () => import("./api-Bjj3_8K0.mjs")
 	},
 	"c45635681e314c5148f52573cdc6317bc55b71916be059403582e165fc2a0f7a": {
 		functionName: "claimGardenDaily_createServerFn_handler",
-		importer: () => import("./api-gIKbl_ut.mjs")
+		importer: () => import("./api-Bjj3_8K0.mjs")
 	},
 	"c9030a61763885d9527112bfa9bafc3120bd6a4149b9c2ab840482b5e914bc2e": {
 		functionName: "listOnlineUsers_createServerFn_handler",
@@ -197,19 +197,19 @@ var manifest = {
 	},
 	"e90a2b3ae369929e7d4f40ebd6ca7704ab5db2f1f831d8491c563742998bd85e": {
 		functionName: "reportGardenLearning_createServerFn_handler",
-		importer: () => import("./api-gIKbl_ut.mjs")
+		importer: () => import("./api-Bjj3_8K0.mjs")
 	},
 	"ea01e3626d50871b0e27b68fe2793e1efa4c516b9a72c31078cd03fd5eb6d5e8": {
 		functionName: "recordPathProgress_createServerFn_handler",
-		importer: () => import("./path-rank-fxFCde_r.mjs")
+		importer: () => import("./path-rank-B-ccDTSc.mjs")
 	},
 	"ebc307b2eea602c0f070a4e8ae3b54ffe6ec20b98e4f0c4abe447138f26d2860": {
 		functionName: "setGardenSound_createServerFn_handler",
-		importer: () => import("./api-gIKbl_ut.mjs")
+		importer: () => import("./api-Bjj3_8K0.mjs")
 	},
 	"ed0815a32f84567b8b9dbecca4ba0564774d61dbb5ff8e9593bc9068258009e0": {
 		functionName: "acknowledgeGardenUnlocks_createServerFn_handler",
-		importer: () => import("./api-gIKbl_ut.mjs")
+		importer: () => import("./api-Bjj3_8K0.mjs")
 	},
 	"f8d2b2c22fd76be8d886b8bf74b87148f5359c0f43c106318a3a3a6fab3a7cab": {
 		functionName: "updateDisplayName_createServerFn_handler",
@@ -1487,7 +1487,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-C92aJlrP.mjs").then((n) => n.t),
+		import("./router-sIrB-w_Z.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

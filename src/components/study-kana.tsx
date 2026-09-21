@@ -57,7 +57,7 @@ export function StudyKana({
                 {showRomaji ? <p className="text-sm text-fg">{ex.romaji}</p> : null}
                 <p className="text-sm text-fg">{ex.vi}</p>
               </div>
-              <SpeakButton text={ex.jp} label="Nghe" />
+              <SpeakButton text={ex.jp} kana={ex.kana ?? (ex.jp.match(/^[\u3040-\u30ffー]+$/) ? ex.jp : undefined)} label="Nghe" />
             </div>
           ))}
         </CardContent>

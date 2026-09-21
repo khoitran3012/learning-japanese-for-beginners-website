@@ -3,8 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { allKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { LESSONS } from "@/data/lessons";
@@ -41,7 +40,7 @@ export function SearchDialog({
         });
       }
     }
-    for (const kj of [...KANJI_N5, ...KANJI_N4]) {
+    for (const kj of allKanji()) {
       if (
         kj.character === query ||
         foldVi(kj.meaning_vi).includes(qFold) ||

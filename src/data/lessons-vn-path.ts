@@ -299,7 +299,7 @@ export const PATH_LESSONS: Lesson[] = [
       },
     ],
     practiceIds: ["kj-n5-上", "kj-n5-下", "kj-n5-大", "kj-n5-高"],
-    unlocks: ["l-n5-grammar"],
+    unlocks: ["l-n5-kanji-life"],
   },
   {
     id: "l-n4-kanji-work",
@@ -340,7 +340,7 @@ export const PATH_LESSONS: Lesson[] = [
       },
     ],
     practiceIds: ["kj-n4-思", "kj-n4-知", "kj-n4-言", "kj-n4-問"],
-    unlocks: ["l-n4-grammar"],
+    unlocks: ["l-n4-kanji-move"],
   },
   {
     id: "l-n3-start",
@@ -354,11 +354,11 @@ export const PATH_LESSONS: Lesson[] = [
     sections: [
       {
         heading: "Ba việc mỗi ngày",
-        body: "1) Tra 10 từ N3 trong từ điển (lọc cấp N3), đọc Hán-Việt nếu là kanji. 2) Luyện nghe: nghe từ, chọn nghĩa Việt. 3) Một đoạn đọc. Đừng nhảy N2 khi còn は/が lung tung.",
+        body: "1) Tra 10 từ N3 trong từ điển (lọc cấp N3), đọc Hán-Việt nếu là kanji. 2) Kanji N3: mở trang Kanji, chọn cấp N3, học từng bài 20 chữ — đủ bộ để tra, không nhồi cả cấp một lúc. 3) Luyện nghe: nghe từ, chọn nghĩa Việt.",
       },
       {
         heading: "Kính ngữ và bị động",
-        body: "N3 thêm thể bị động, sai khiến, 敬語. Học mẫu kèm 1 câu nói được, không học bảng suông.",
+        body: "N3 thêm thể bị động, sai khiến, 敬語. Học mẫu kèm 1 câu nói được, không học bảng suông. Lộ trình web ưu tiên N5–N4; N3–N1 nằm ở từ điển và kanji tra cứu.",
       },
     ],
     unlocks: ["l-n2-start"],

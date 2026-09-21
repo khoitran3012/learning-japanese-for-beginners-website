@@ -18,6 +18,7 @@ export function Pronunciation({
   className?: string;
 }) {
   const showRomaji = useSettings((s) => s.showRomaji);
+  const spoken = speak || kana;
   return (
     <div className={cn("flex items-center justify-between gap-3", className)}>
       <div className="min-w-0">
@@ -25,7 +26,7 @@ export function Pronunciation({
         <p className={cn("font-jp leading-tight", large ? "text-2xl" : "text-lg")}>{kana}</p>
         {showRomaji && romaji ? <p className="text-sm text-accent">{romaji}</p> : null}
       </div>
-      <SpeakButton text={speak || kana} label="Nghe" />
+      <SpeakButton text={spoken} kana={spoken} label="Nghe" />
     </div>
   );
 }

@@ -381,4 +381,24 @@ export const KANJI_N5: KanjiEntry[] = [
     { word: "長い", kana: "ながい", romaji: "nagai", meaning_vi: "dài" },
     { word: "社長", kana: "しゃちょう", romaji: "shachou", meaning_vi: "giám đốc" },
   ]),
+  k("国", ["コク"], ["くに"], "nước / quốc gia", "koku", 8, [
+    { word: "外国", kana: "がいこく", romaji: "gaikoku", meaning_vi: "nước ngoài" },
+    { word: "中国", kana: "ちゅうごく", romaji: "chuugoku", meaning_vi: "Trung Quốc" },
+  ]),
+  k("間", ["カン", "ケン"], ["あいだ", "ま"], "khoảng / gian", "kan", 12, [
+    { word: "時間", kana: "じかん", romaji: "jikan", meaning_vi: "thời gian" },
+    { word: "人間", kana: "にんげん", romaji: "ningen", meaning_vi: "con người" },
+  ]),
+  k("午", ["ゴ"], [], "ngọ / buổi trưa", "go", 4, [
+    { word: "午前", kana: "ごぜん", romaji: "gozen", meaning_vi: "buổi sáng" },
+    { word: "午後", kana: "ごご", romaji: "gogo", meaning_vi: "buổi chiều" },
+  ]),
+  k("毎", ["マイ"], ["ごと"], "mỗi", "mai", 6, [
+    { word: "毎日", kana: "まいにち", romaji: "mainichi", meaning_vi: "mỗi ngày" },
+    { word: "毎週", kana: "まいしゅう", romaji: "maishuu", meaning_vi: "mỗi tuần" },
+  ]),
+  k("雨", ["ウ"], ["あめ", "あま"], "mưa", "u", 8, [
+    { word: "雨", kana: "あめ", romaji: "ame", meaning_vi: "mưa" },
+    { word: "雨水", kana: "あまみず", romaji: "amamizu", meaning_vi: "nước mưa" },
+  ]),
 ];

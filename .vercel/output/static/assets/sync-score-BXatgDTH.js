@@ -1,0 +1,1 @@
+import{r as e}from"./leaderboard-DQUIJUyW.js";async function t(t){if(!(t.total<=0))try{await e({data:{score:t.score,total:t.total,minutes:t.minutes??0,streak:t.streak??0,dailyScore:t.dailyScore??0,displayName:t.displayName??void 0}})}catch{}}export{t};

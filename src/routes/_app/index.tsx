@@ -8,8 +8,7 @@ import { DynamicLink } from "@/components/dynamic-link";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { practiceKanji } from "@/data/kanji-set";
 import { LESSONS } from "@/data/lessons";
 import { useProgress, learnedCount } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
@@ -35,7 +34,7 @@ function HomePage() {
   const vocab = learnedCount(srs, "v-");
   const kanji = learnedCount(srs, "kj-");
   const vocabTotal = VOCAB_N5.length + VOCAB_N4.length;
-  const kanjiTotal = KANJI_N5.length + KANJI_N4.length;
+  const kanjiTotal = practiceKanji().length;
   const due = Object.values(srs).filter(isDue).length;
   const nextLesson = LESSONS.find((l) => !completed.has(l.id)) ?? LESSONS[LESSONS.length - 1]!;
   const quizPct =

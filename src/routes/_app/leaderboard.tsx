@@ -301,7 +301,7 @@ function Page() {
                 <th className="px-4 py-3 font-medium">#</th>
                 <th className="px-4 py-3 font-medium">Học viên</th>
                 <th className="px-4 py-3 font-medium">XP</th>
-                <th className="px-4 py-3 font-medium">Quiz</th>
+                <th className="px-4 py-3 font-medium">Trắc nghiệm</th>
                 <th className="px-4 py-3 font-medium">Đúng</th>
                 <th className="px-4 py-3 font-medium">Chuỗi</th>
               </tr>

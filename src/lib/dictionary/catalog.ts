@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { allKanji as allKanjiList, kanjiByChar as kanjiByCharLookup } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { DICTIONARY_EXTRA } from "@/data/dictionary-extra";
@@ -36,7 +35,7 @@ export function builtinDictionary(): DictionaryEntry[] {
   if (!builtin) {
     builtin = buildDictionary(
       [...VOCAB_N5, ...VOCAB_N4],
-      [...KANJI_N5, ...KANJI_N4],
+      [],
       [...DICTIONARY_EXTRA, ...DICTIONARY_CORE, ...JLPT_DICTIONARY],
     );
   }
@@ -58,7 +57,7 @@ export function rememberImported(entries: DictionaryEntry[]) {
 export function mergeDictionary(extra: DictionaryEntry[] = []): DictionaryEntry[] {
   return buildDictionary(
     [...VOCAB_N5, ...VOCAB_N4],
-    [...KANJI_N5, ...KANJI_N4],
+    [],
     [...DICTIONARY_EXTRA, ...DICTIONARY_CORE, ...JLPT_DICTIONARY, ...extra],
   );
 }
@@ -93,12 +92,12 @@ export function searchDictionary(dict: DictionaryEntry[], query: SearchQuery) {
   return searchLocal(dict, query);
 }
 
-export function allKanji(): KanjiEntry[] {
-  return [...KANJI_N5, ...KANJI_N4];
+export function allKanji() {
+  return allKanjiList();
 }
 
 export function kanjiByChar(ch: string) {
-  return allKanji().find((k) => k.character === ch);
+  return kanjiByCharLookup(ch);
 }
 
 export function kanjiInWord(word: string, entry?: DictionaryEntry) {
@@ -160,7 +159,7 @@ export function resolveStudyItem(id: string): ResolvedItem | null {
       sub: kj.meaning_vi,
       to: `/kanji/${kj.id}`,
       type: "Kanji",
-      speak: kj.character,
+      speak: kj.kunyomi[0]?.replace(/[-.]/g, "") || kj.onyomi[0] || kj.character,
     };
   }
   const g = [...GRAMMAR_N5, ...GRAMMAR_N4].find((x) => x.id === id);

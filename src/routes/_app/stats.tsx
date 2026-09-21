@@ -5,8 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { practiceKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { useProgress, learnedCount, masteredCount } from "@/lib/akari/progress";
@@ -23,7 +22,7 @@ function Page() {
     { label: "Hiragana", value: learnedCount(srs, "h-"), total: HIRAGANA.length },
     { label: "Katakana", value: learnedCount(srs, "k-"), total: KATAKANA.length },
     { label: "Từ vựng", value: learnedCount(srs, "v-"), total: VOCAB_N5.length + VOCAB_N4.length },
-    { label: "Kanji", value: learnedCount(srs, "kj-"), total: KANJI_N5.length + KANJI_N4.length },
+    { label: "Kanji", value: learnedCount(srs, "kj-"), total: practiceKanji().length },
     { label: "Ngữ pháp", value: learnedCount(srs, "g-"), total: GRAMMAR_N5.length + GRAMMAR_N4.length },
   ];
   const due = Object.values(srs).filter(isDue).length;
@@ -44,7 +43,7 @@ function Page() {
           {rows.map((r) => (
             <Progress key={r.label} label={`${r.label} ${r.value}/${r.total}`} value={(r.value / r.total) * 100} />
           ))}
-          <Progress label={`Quiz ${avg}%`} value={avg} />
+          <Progress label={`Trắc nghiệm ${avg}%`} value={avg} />
         </CardContent>
       </Card>
       <p className="mt-4 text-sm text-muted">Từ đã học: {learnedCount(srs, "v-")} · Hiragana thuộc: {masteredCount(srs, "h-")} · Katakana thuộc: {masteredCount(srs, "k-")}</p>

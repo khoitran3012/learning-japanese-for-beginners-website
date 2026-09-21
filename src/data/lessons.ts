@@ -1,5 +1,6 @@
 import type { Lesson } from "@/lib/akari/types";
 import { PATH_LESSONS } from "./lessons-vn-path";
+import { extraKanjiPathLessons, withKanjiPractice } from "./kanji-path-lessons";
 
 const CORE_LESSONS: Lesson[] = [
   {
@@ -48,7 +49,7 @@ const CORE_LESSONS: Lesson[] = [
       },
       {
         heading: "Cao độ quan trọng hơn trọng âm mạnh",
-        body: "Tiếng Nhật không nhấn mạnh một âm tiết như tiếng Anh. Thay vào đó, cao độ (pitch) lên xuống. Ở giai đoạn đầu, phát âm đều và rõ vẫn tốt hơn cố bắt chước giọng Tokyo quá sớm. Nghe và nhắc lại sẽ tự chỉnh pitch.",
+        body: "Tiếng Nhật không nhấn mạnh một âm tiết như tiếng Anh. Thay vào đó, cao độ lên xuống. Ở giai đoạn đầu, phát âm đều và rõ vẫn tốt hơn cố bắt chước giọng Tokyo quá sớm. Nghe và nhắc lại sẽ tự chỉnh cao độ.",
       },
       {
         heading: "Ba âm hay nhầm",
@@ -613,4 +614,6 @@ const CORE_LESSONS: Lesson[] = [
   },
 ];
 
-export const LESSONS: Lesson[] = [...CORE_LESSONS, ...PATH_LESSONS].sort((a, b) => a.order - b.order);
+export const LESSONS: Lesson[] = withKanjiPractice(
+  [...CORE_LESSONS, ...PATH_LESSONS, ...extraKanjiPathLessons()],
+).sort((a, b) => a.order - b.order);

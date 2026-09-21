@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChoiceRow, choiceState } from "@/components/ui/choice-row";
 import { SpeakButton } from "@/components/speak-button";
 import { makeListenRound, type ListenQuestion } from "@/lib/akari/listen-engine";
-import { speakJapanese } from "@/lib/akari/tts";
+import { speakJapanese, stopSpeaking } from "@/lib/akari/tts";
 import { useProgress } from "@/lib/akari/progress";
 import { addQuizResult } from "@/lib/akari/storage";
 import { uid } from "@/lib/utils";
@@ -30,10 +30,13 @@ function Page() {
   const streak = useProgress((s) => s.streak);
   const showRomaji = useSettings((s) => s.showRomaji);
   const ttsRate = useSettings((s) => s.ttsRate);
+  const rateRef = useRef(ttsRate);
+  rateRef.current = ttsRate;
   const user = useCurrentUser();
   const item = !done && round.length ? round[i] : undefined;
 
   function restart(nextLevel: "all" | JlptLevel = level) {
+    stopSpeaking();
     setLevel(nextLevel);
     setRound(makeListenRound(ROUND, nextLevel));
     setI(0);
@@ -44,12 +47,21 @@ function Page() {
 
   useEffect(() => {
     setRound(makeListenRound(ROUND, "all"));
+    return () => stopSpeaking();
   }, []);
 
   useEffect(() => {
     if (!item) return;
-    void speakJapanese(item.speak, ttsRate);
-  }, [item?.id, item?.speak, ttsRate]);
+    let cancelled = false;
+    const handle = window.setTimeout(() => {
+      if (!cancelled) void speakJapanese(item.speak, rateRef.current);
+    }, 80);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(handle);
+      stopSpeaking();
+    };
+  }, [item?.id]);
 
   if (!round.length && !done) {
     return (
@@ -85,7 +97,7 @@ function Page() {
       <PageHeader
         kicker="聴"
         title="Luyện nghe"
-        description="Nghe từ hoặc câu tiếng Nhật, chọn đúng nghĩa tiếng Việt của chính điều vừa nghe. Romaji hiện khi bật trong Cài đặt."
+        description="Nghe từ hoặc câu tiếng Nhật một lần, chọn đúng nghĩa tiếng Việt. Bấm Nghe lại nếu cần."
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {(["all", "N5", "N4"] as const).map((lv) => (
@@ -104,7 +116,7 @@ function Page() {
           <p className="text-sm text-muted">
             {item.kind === "word" ? "Nghe từ" : item.title} · {item.level} · {i + 1}/{round.length}
           </p>
-          <SpeakButton text={item.speak} label="Nghe lại" />
+          <SpeakButton text={item.speak} kana={item.speak} label="Nghe lại" />
           {revealed ? (
             <div className="rounded-[10px] border border-border bg-choice p-4 text-left">
               <p className="font-jp text-xl leading-relaxed text-fg">{item.jp}</p>
@@ -113,7 +125,7 @@ function Page() {
               <p className="mt-1 text-sm leading-relaxed text-fg">{item.vi}</p>
             </div>
           ) : (
-            <p className="text-sm text-muted">Bấm nghe, rồi chọn nghĩa khớp với từ/câu vừa nghe. Chữ Nhật hiện sau khi trả lời.</p>
+            <p className="text-sm text-muted">Máy đọc một lần. Chọn nghĩa khớp với từ/câu vừa nghe.</p>
           )}
           <div className="grid gap-2">
             {item.options.map((o, idx) => {

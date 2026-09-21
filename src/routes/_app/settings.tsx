@@ -311,7 +311,7 @@ function Page() {
               />
             </div>
             <div>
-              <Label className="mb-2 block">Flashcard mỗi phiên: {settings.flashcardPerDay}</Label>
+              <Label className="mb-2 block">Thẻ từ mỗi phiên: {settings.flashcardPerDay}</Label>
               <Slider
                 min={5}
                 max={40}

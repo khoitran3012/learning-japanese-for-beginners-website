@@ -1,4 +1,5 @@
 import { HIRAGANA, KATAKANA } from "@/data/kana";
+import { kanjiLessonByPath } from "@/data/kanji-lessons";
 import type { Lesson } from "@/lib/akari/types";
 
 export type LessonLink = {
@@ -53,14 +54,17 @@ function stageLink(lesson: Lesson): LessonLink {
       return { to: "/vocabulary", label: "Từ vựng" };
     case "ngữ pháp":
       return { to: "/grammar", label: "Ngữ pháp" };
-    case "kanji":
+    case "kanji": {
+      const kl = kanjiLessonByPath(lesson.id);
+      if (kl) return { to: `/kanji?lesson=${kl.id}`, label: `Kanji: ${kl.title}` };
       return { to: "/kanji", label: "Kanji" };
+    }
     case "đọc":
       return { to: "/read", label: "Luyện đọc" };
     case "nghe":
       return { to: "/listen", label: "Luyện nghe" };
     case "kiểm tra":
-      return { to: "/quiz", label: "Quiz" };
+      return { to: "/quiz", label: "Trắc nghiệm" };
     case "nâng cao":
       return { to: "/dictionary", label: "Từ điển N3–N1" };
     default:
@@ -71,7 +75,17 @@ function stageLink(lesson: Lesson): LessonLink {
 export function lessonPracticeLinks(lesson: Lesson): LessonLink[] {
   const links: LessonLink[] = [stageLink(lesson)];
   const seen = new Set(links.map((l) => l.to));
+  const kanjiIds = (lesson.practiceIds ?? []).filter((id) => id.startsWith("kj-"));
+  if (kanjiIds.length > 4) {
+    const kl = kanjiLessonByPath(lesson.id);
+    const href = kl ? `/kanji?lesson=${kl.id}` : "/kanji";
+    if (!seen.has(href)) {
+      seen.add(href);
+      links.push({ to: href, label: `${kanjiIds.length} chữ kanji` });
+    }
+  }
   for (const id of lesson.practiceIds ?? []) {
+    if (id.startsWith("kj-") && kanjiIds.length > 4) continue;
     const extra = practiceLink(id);
     if (!extra || seen.has(extra.to)) continue;
     seen.add(extra.to);

@@ -46,7 +46,7 @@ export function GardenHud({
           <div className="h-full rounded-full bg-meadow" style={{ width: `${pct}%` }} />
         </div>
         <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-          <span>{garden.xp} Garden XP</span>
+          <span>{garden.xp} XP vườn</span>
           <span>{garden.wordsLearned} từ</span>
           <span>{garden.streak} ngày</span>
           <span>{garden.unlocked.length} vật phẩm</span>

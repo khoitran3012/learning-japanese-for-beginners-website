@@ -118,7 +118,7 @@ function Page() {
     <div>
       <PageHeader
         kicker="試験"
-        title="Quiz"
+        title="Trắc nghiệm"
         description="Câu hỏi mới liên tục, không lặp ngay. Gõ đáp án hoặc chọn. Kết thúc khi bạn muốn — điểm tự lưu mỗi 10 câu."
       />
       <div className="mb-4 flex flex-wrap gap-2">

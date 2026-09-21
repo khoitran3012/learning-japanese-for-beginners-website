@@ -6,14 +6,14 @@ import { FlashcardDeck, type FlashCard } from "@/components/flashcard-deck";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { practiceKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { meaningParts } from "@/lib/akari/answer-check";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
 import { findBuiltin, findEntry, resolveStudyItem, useDictionary } from "@/lib/dictionary/catalog";
+import { toHiragana } from "@/lib/akari/kana-util";
 import { shuffle } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/flashcards")({ component: Page });
@@ -59,17 +59,18 @@ function Page() {
         front: v.word,
         back: `${v.kana}${showRomaji ? " · " + v.romaji : ""}\n${v.meaning_vi}`,
         extra: v.example_sentence,
-        speak: v.word,
+        speak: v.kana,
+        speakExtra: v.example_kana,
         type: "vocab" as const,
         answers: [v.romaji, v.kana, v.word, ...meaningParts(v.meaning_vi)],
         answerHint: "Gõ romaji, kana hoặc nghĩa",
       }));
     } else if (deck === "kanji") {
-      built = [...KANJI_N5, ...KANJI_N4].map((k) => ({
+      built = practiceKanji().map((k) => ({
         id: k.id,
         front: k.character,
         back: `${k.han_viet ? `Hán-Việt: ${k.han_viet}\n` : ""}${k.meaning_vi}\n${k.onyomi.join(" / ")} · ${k.kunyomi.join(" / ")}`,
-        speak: k.character,
+        speak: k.kunyomi[0]?.replace(/[-.・･]/g, "") || toHiragana(k.onyomi[0] ?? "") || k.character,
         type: "kanji" as const,
         answers: [...meaningParts(k.meaning_vi), k.han_viet, k.romaji, ...k.kunyomi, ...k.onyomi].filter(Boolean),
         answerHint: "Gõ nghĩa, Hán-Việt hoặc cách đọc",
@@ -83,7 +84,8 @@ function Page() {
             front: d.kanji,
             back: `${d.kana}${showRomaji ? " · " + d.romaji : ""}\n${d.meanings.join(" · ")}`,
             extra: d.examples[0]?.jp,
-            speak: d.kanji,
+            speak: d.kana,
+            speakExtra: d.examples[0]?.kana,
             type: "vocab" as const,
             answers: [d.romaji, d.kana, d.kanji, ...d.meanings.flatMap(meaningParts)],
             answerHint: "Gõ romaji, kana hoặc nghĩa",
@@ -121,7 +123,7 @@ function Page() {
     <div>
       <PageHeader
         kicker="札"
-        title="Flashcard"
+        title="Thẻ từ"
         description="Gõ đáp án để tự kiểm tra. Nhớ / Dễ hoặc gõ đúng thì lưu ngay. Thẻ quên sẽ quay lại trong phiên."
       />
       <div className="mb-4 flex flex-wrap gap-2">

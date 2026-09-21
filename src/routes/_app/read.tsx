@@ -47,7 +47,7 @@ function Page() {
         <CardContent>
           <div className="flex items-start justify-between gap-3">
             <p className="font-jp text-xl leading-relaxed text-fg">{item.jp}</p>
-            <SpeakButton text={item.jp} />
+            <SpeakButton text={item.jp} kana={item.kana} />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" variant={showKana ? "default" : "secondary"} onClick={() => setShowKana((v) => !v)}>

@@ -7,8 +7,8 @@
       "status": 200,
       "title": "Akari",
       "hasCanvas": false,
-      "bodyTextLen": 711,
-      "bodyTextHash": "55de0717e1826135fabbfd3c79510cbceed970a03b5203059ae32e4f53497351",
+      "bodyTextLen": 718,
+      "bodyTextHash": "5e2fa81d92b0fe5225bd619f6b159cf928de1fe582e1fa7176d6e8a6ae9d2f74",
       "bodyTextPrefix": "明 Akari Học tiếng Nhật Tìm kiếm ⌘K CHÍNH Trang chủ Lộ trình Bài ",
       "horizontalOverflow": false,
       "consoleErrors": [],
@@ -21,9 +21,9 @@
       "status": 200,
       "title": "Akari",
       "hasCanvas": false,
-      "bodyTextLen": 478,
-      "bodyTextHash": "b93bcb17a4831b03cda49827f344d95f0b9f7eb1b3537168712ba92a784eb77b",
-      "bodyTextPrefix": "明 Akari 明かり Akari Học tiếng Nhật từ số 0 — Hiragana đến N4. Đăng",
+      "bodyTextLen": 486,
+      "bodyTextHash": "699c048bdcdb88efd20e6212a0fe5f93429818600503816f0393ad4fa5272037",
+      "bodyTextPrefix": "明 Akari 明かり Akari Học tiếng Nhật từ số 0 — trọng tâm từ vựng, ng",
       "horizontalOverflow": false,
       "consoleErrors": [],
       "pageErrors": [],
@@ -33,6 +33,9 @@
   "brandWarnings": [],
   "authWarnings": [],
   "verdictFile": "/workspace/screenshots/app-builder-built.json",
-  "divergesFromBaseline": false,
-  "baselineReasons": []
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text changed (0 -> 718 chars, hash mismatch)",
+    "mobile: body text changed (0 -> 486 chars, hash mismatch)"
+  ]
 }

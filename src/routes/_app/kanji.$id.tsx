@@ -7,8 +7,8 @@ import { AiTutor } from "@/components/ai-tutor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { kanjiById } from "@/data/kanji-set";
+import { kanjiLessonOf } from "@/data/kanji-lessons";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { kanaToRomaji, toHiragana } from "@/lib/akari/kana-util";
@@ -18,8 +18,7 @@ export const Route = createFileRoute("/_app/kanji/$id")({ component: Page });
 
 function Page() {
   const { id } = Route.useParams();
-  const all = [...KANJI_N5, ...KANJI_N4];
-  const k = all.find((x) => x.id === id);
+  const k = kanjiById(id);
   if (!k) throw notFound();
   const remember = useProgress((s) => s.remember);
   const forgot = useProgress((s) => s.forgot);
@@ -35,12 +34,22 @@ function Page() {
   }));
   const primary = kunRows[0]?.hira || onRows[0]?.hira || k.character;
   const usage = allKanjiExamples(k);
+  const lesson = kanjiLessonOf(k.character);
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <Card>
         <CardContent className="flex flex-col items-center py-10">
           <Badge>{k.level}</Badge>
+          {lesson ? (
+            <Link
+              to="/kanji"
+              search={{ lesson: lesson.id }}
+              className="mt-2 text-xs text-accent hover:underline"
+            >
+              {lesson.kind === "học" ? "Bài học" : "Bài tra cứu"}: {lesson.title}
+            </Link>
+          ) : null}
           <p className="text-kana mt-3 text-[8rem] leading-none">{k.character}</p>
           <p className="mt-3 text-xl font-medium">{k.han_viet ? `Hán-Việt: ${k.han_viet}` : null}</p>
           <p className="mt-1 text-lg">{k.meaning_vi}</p>
@@ -49,7 +58,7 @@ function Page() {
             {showRomaji ? <span className="ml-2 text-accent">{kanaToRomaji(primary)}</span> : null}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <SpeakButton text={primary} label="Nghe cách đọc" />
+            <SpeakButton text={primary} kana={primary} label="Nghe cách đọc" />
           </div>
           <p className="mt-2 max-w-sm text-center text-xs text-subtle">
             Máy đọc hiragana, không đọc trực tiếp chữ kanji — tránh phát âm sai.
@@ -140,7 +149,7 @@ function Page() {
                 <p className="text-xs text-subtle">Câu {i + 1}</p>
                 <div className="mt-1 flex items-start justify-between gap-3">
                   <p className="font-jp text-lg">{ex.jp}</p>
-                  <SpeakButton text={ex.jp} label="Nghe câu" />
+                  <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe câu" />
                 </div>
                 {ex.kana ? <p className="text-sm text-muted">{ex.kana}</p> : null}
                 {showRomaji && ex.romaji ? <p className="text-sm text-accent">{ex.romaji}</p> : null}

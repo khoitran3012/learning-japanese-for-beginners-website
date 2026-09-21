@@ -6,7 +6,7 @@ import { ChoiceRow, choiceState } from "@/components/ui/choice-row";
 import { Input } from "@/components/ui/input";
 import { SpeakButton } from "@/components/speak-button";
 import { answersMatch } from "@/lib/akari/answer-check";
-import { speakJapanese } from "@/lib/akari/tts";
+import { speakJapanese, stopSpeaking } from "@/lib/akari/tts";
 import { useSettings } from "@/lib/akari/settings";
 import type { QuizQuestion } from "@/lib/akari/quiz-engine";
 import { cn } from "@/lib/utils";
@@ -36,14 +36,25 @@ export function QuizCard({
   const inputRef = useRef<HTMLInputElement>(null);
   const autoPlay = useSettings((s) => s.autoPlayAudio);
   const rate = useSettings((s) => s.ttsRate);
+  const rateRef = useRef(rate);
+  rateRef.current = rate;
   const listenOnly = Boolean(q.speak) && !q.promptJp;
   const revealed = picked !== null;
   const canType = Boolean(fillKind || (q.typedAnswers && q.typedAnswers.length));
   const endless = total <= 0;
 
   useEffect(() => {
-    if (autoPlay && q.speak) void speakJapanese(q.speak, rate);
-  }, [autoPlay, q.speak, rate]);
+    if (!autoPlay || !q.speak) return;
+    let cancelled = false;
+    const handle = window.setTimeout(() => {
+      if (!cancelled) void speakJapanese(q.speak!, rateRef.current);
+    }, 80);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(handle);
+      stopSpeaking();
+    };
+  }, [autoPlay, q.id]);
 
   useEffect(() => {
     if (canType) inputRef.current?.focus();
@@ -81,7 +92,7 @@ export function QuizCard({
               <Volume2 className="size-8" />
             </span>
             <p className="text-center text-base font-medium text-fg">{q.prompt}</p>
-            <SpeakButton text={q.speak!} label="Nghe lại" />
+            <SpeakButton text={q.speak!} kana={q.speak} label="Nghe lại" />
           </div>
         ) : (
           <>
@@ -89,7 +100,7 @@ export function QuizCard({
               <p className="font-jp text-5xl leading-none text-fg">{q.promptJp}</p>
             ) : null}
             <p className={cn(q.promptJp ? "text-sm text-muted" : "text-lg font-medium text-fg")}>{q.prompt}</p>
-            {q.speak ? <SpeakButton text={q.speak} /> : null}
+            {q.speak ? <SpeakButton text={q.speak} kana={q.speak} /> : null}
           </>
         )}
         {canType && !revealed ? (

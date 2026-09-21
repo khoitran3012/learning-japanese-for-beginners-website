@@ -49,7 +49,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
           </ul>
           <p className="mt-2 text-sm capitalize text-subtle">{posLabel}</p>
           {entry.pitch_accent != null ? (
-            <p className="mt-1 text-xs text-muted">Pitch accent: {entry.pitch_accent}</p>
+            <p className="mt-1 text-xs text-muted">Cao độ: {entry.pitch_accent}</p>
           ) : null}
           {entry.tags.length > 0 ? (
             <div className="mt-3 flex flex-wrap justify-center gap-1.5">

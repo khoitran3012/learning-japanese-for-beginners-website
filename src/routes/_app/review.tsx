@@ -47,7 +47,7 @@ function Page() {
           empty={
             <EmptyState
               title="Không có mục đến hạn"
-              description="Học thêm chữ hoặc từ, rồi quay lại đây. Flashcard sẽ đưa thẻ mới vào hàng ôn."
+              description="Học thêm chữ hoặc từ, rồi quay lại đây. Thẻ từ sẽ đưa thẻ mới vào hàng ôn."
               action={
                 <Button asChild>
                   <Link to="/flashcards">Mở flashcard</Link>

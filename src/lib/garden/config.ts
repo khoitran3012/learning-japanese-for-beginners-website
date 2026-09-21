@@ -82,7 +82,7 @@ export const GARDEN_CONFIG = {
     { id: "m-pond", itemId: "pond", label: "200 từ — hồ nước", words: 200 },
     { id: "m-bird", itemId: "bird", label: "14 ngày streak", streak: 14 },
     { id: "m-bridge", itemId: "bridge", label: "350 từ — cầu gỗ", words: 350 },
-    { id: "m-pine", itemId: "pine", label: "120 Garden XP", xp: 120 },
+    { id: "m-pine", itemId: "pine", label: "120 XP vườn", xp: 120 },
     { id: "m-frog", itemId: "frog", label: "21 ngày streak", streak: 21 },
     { id: "m-chime", itemId: "chime", label: "10 bài quiz", quizzes: 10 },
     { id: "m-house", itemId: "house", label: "500 từ — nhà nhỏ", words: 500 },

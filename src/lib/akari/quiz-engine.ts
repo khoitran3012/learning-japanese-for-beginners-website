@@ -1,8 +1,7 @@
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { KANJI_N5 } from "@/data/kanji-n5";
-import { KANJI_N4 } from "@/data/kanji-n4";
+import { practiceKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { meaningParts } from "./answer-check";
@@ -83,7 +82,8 @@ function dateSeed(date: string) {
 }
 
 function kanjiSpeak(c: { kunyomi: string[]; onyomi: string[]; character: string }) {
-  return c.kunyomi[0] || toHiragana(c.onyomi[0] ?? "") || c.character;
+  const kun = (c.kunyomi[0] || "").replace(/[-.]/g, "");
+  return kun || toHiragana(c.onyomi[0] ?? "") || c.character;
 }
 
 function qid(kind: string, source: string, rand: () => number) {
@@ -135,7 +135,7 @@ function pools() {
   const hira = HIRAGANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
   const kata = KATAKANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
   const vocab: VocabEntry[] = [...VOCAB_N5, ...VOCAB_N4];
-  const kanji = [...KANJI_N5, ...KANJI_N4];
+  const kanji = practiceKanji();
   const grammar = [...GRAMMAR_N5, ...GRAMMAR_N4];
   return { hira, kata, vocab, kanji, grammar };
 }

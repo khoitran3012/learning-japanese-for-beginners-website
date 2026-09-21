@@ -46,7 +46,7 @@ function Page() {
                 {showRomaji ? <p className="text-sm text-accent">{ex.romaji}</p> : null}
                 <p className="text-sm">{ex.vi}</p>
               </div>
-              <SpeakButton text={ex.jp} label="Nghe" />
+              <SpeakButton text={ex.jp} kana={ex.kana} label="Nghe" />
             </CardContent>
           </Card>
         ))}

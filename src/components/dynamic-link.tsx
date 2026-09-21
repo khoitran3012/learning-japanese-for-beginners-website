@@ -11,7 +11,9 @@ export const DynamicLink = forwardRef<
   function go(e: MouseEvent<HTMLAnchorElement>) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
-    void router.navigate({ to: to as never });
+    const [path, qs] = to.split("?");
+    const search = qs ? Object.fromEntries(new URLSearchParams(qs).entries()) : undefined;
+    void router.navigate({ to: (path || "/") as never, search: search as never });
   }
   return (
     <a ref={ref} href={to} className={cn(className)} onClick={go}>

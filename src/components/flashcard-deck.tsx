@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SpeakButton } from "@/components/speak-button";
 import { answersMatch } from "@/lib/akari/answer-check";
-import { speakJapanese } from "@/lib/akari/tts";
+import { ttsKana } from "@/lib/akari/kana-speak";
+import { speakJapanese, stopSpeaking } from "@/lib/akari/tts";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import type { SrsItem } from "@/lib/akari/types";
@@ -15,6 +16,7 @@ export interface FlashCard {
   back: string;
   extra?: string;
   speak?: string;
+  speakExtra?: string;
   type: SrsItem["itemType"];
   answers?: string[];
   answerHint?: string;
@@ -43,6 +45,8 @@ export function FlashcardDeck({
   const mark = useProgress((s) => s.mark);
   const autoPlay = useSettings((s) => s.autoPlayAudio);
   const ttsRate = useSettings((s) => s.ttsRate);
+  const rateRef = useRef(ttsRate);
+  rateRef.current = ttsRate;
   const card = !done && deck.length ? deck[i] : undefined;
 
   function clearPending() {
@@ -70,10 +74,21 @@ export function FlashcardDeck({
   useEffect(() => () => clearPending(), []);
 
   useEffect(() => {
-    if (!card || !autoPlay) return;
-    const text = card.speak ?? card.front;
-    void speakJapanese(text, ttsRate);
-  }, [card, autoPlay, ttsRate]);
+    if (!card || !autoPlay) {
+      stopSpeaking();
+      return;
+    }
+    const text = ttsKana(card.speak, card.front);
+    let cancelled = false;
+    const handle = window.setTimeout(() => {
+      if (!cancelled) void speakJapanese(text, rateRef.current);
+    }, 80);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(handle);
+      stopSpeaking();
+    };
+  }, [card?.id, autoPlay]);
 
   useEffect(() => {
     if (card && check === "idle") inputRef.current?.focus();
@@ -229,8 +244,8 @@ export function FlashcardDeck({
         )}
       </button>
       <div className="mt-3 flex flex-wrap justify-center gap-2">
-        <SpeakButton text={card.speak ?? card.front} />
-        {card.extra ? <SpeakButton text={card.extra} label="Nghe ví dụ" /> : null}
+        <SpeakButton text={card.speak ?? card.front} kana={card.speak} />
+        {card.extra ? <SpeakButton text={card.extra} kana={card.speakExtra} label="Nghe ví dụ" /> : null}
       </div>
       {canType ? (
         <form
