@@ -1,6 +1,7 @@
 import { Volume2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ttsKana } from "@/lib/akari/kana-speak";
 import { getTts, speakJapanese } from "@/lib/akari/tts";
 import { useSettings } from "@/lib/akari/settings";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ export function SpeakButton({
 }) {
   const rate = useSettings((s) => s.ttsRate);
   const [msg, setMsg] = useState<string | null>(null);
-  const spoken = (kana && kana.trim()) || text;
+  const spoken = ttsKana(kana, text);
 
   return (
     <div className={cn("inline-flex flex-col items-start gap-1", className)}>

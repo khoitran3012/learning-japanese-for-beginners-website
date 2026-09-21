@@ -21,7 +21,7 @@ const ROUND = 12;
 
 function Page() {
   const [level, setLevel] = useState<"all" | JlptLevel>("all");
-  const [round, setRound] = useState<ListenQuestion[]>(() => makeListenRound(ROUND, "all"));
+  const [round, setRound] = useState<ListenQuestion[]>([]);
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -31,7 +31,7 @@ function Page() {
   const showRomaji = useSettings((s) => s.showRomaji);
   const ttsRate = useSettings((s) => s.ttsRate);
   const user = useCurrentUser();
-  const item = done ? undefined : round[i];
+  const item = !done && round.length ? round[i] : undefined;
 
   function restart(nextLevel: "all" | JlptLevel = level) {
     setLevel(nextLevel);
@@ -43,9 +43,26 @@ function Page() {
   }
 
   useEffect(() => {
+    setRound(makeListenRound(ROUND, "all"));
+  }, []);
+
+  useEffect(() => {
     if (!item) return;
     void speakJapanese(item.speak, ttsRate);
   }, [item?.id, item?.speak, ttsRate]);
+
+  if (!round.length && !done) {
+    return (
+      <div>
+        <PageHeader
+          kicker="聴"
+          title="Luyện nghe"
+          description="Nghe từ hoặc câu tiếng Nhật, chọn đúng nghĩa tiếng Việt của chính điều vừa nghe."
+        />
+        <p className="text-sm text-muted">Đang soạn câu hỏi…</p>
+      </div>
+    );
+  }
 
   if (done || !item) {
     return (

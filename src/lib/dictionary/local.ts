@@ -1,5 +1,5 @@
 import { allVocabExamples } from "@/lib/akari/examples";
-import type { DictionaryEntry, KanjiEntry, PartOfSpeech, VocabEntry } from "@/lib/akari/types";
+import type { DictionaryEntry, KanjiEntry, JlptLevel, PartOfSpeech, VocabEntry } from "@/lib/akari/types";
 import type { SearchQuery } from "@/lib/api/data-provider";
 import { hasJapanese, normalizeRomaji, romajiVariants, stripKanaLength } from "@/lib/akari/romaji";
 import { verbAliases, queryStems } from "./conjugate";
@@ -7,6 +7,7 @@ import { fuzzyScore } from "./fuzzy";
 import { foldCompact, foldKana, foldVi, uniqueStrings } from "./text";
 
 const GENERIC_POS = new Set(["danh từ"]);
+const JLPT_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
 
 /** Keep specific POS (adj/verb/…) and drop a leftover default “danh từ”. */
 export function preferPos(tags: string[]): PartOfSpeech[] {
@@ -14,6 +15,37 @@ export function preferPos(tags: string[]): PartOfSpeech[] {
   const specific = uniq.filter((p) => !GENERIC_POS.has(p));
   const picked = specific.length ? specific : uniq.length ? uniq : ["danh từ"];
   return picked as PartOfSpeech[];
+}
+
+/** Vocab POS wins over a guessed JLPT tag so nouns are not reclassified as adj/verb. */
+export function mergePos(primary: string[], extra: string[]): PartOfSpeech[] {
+  const a = preferPos(primary);
+  if (a.some((p) => !GENERIC_POS.has(p))) return a;
+  return preferPos([...primary, ...extra]);
+}
+
+export function easiestJlpt(levels: string[]): JlptLevel[] {
+  const uniq = uniqueStrings(levels);
+  uniq.sort((x, y) => (JLPT_RANK[x] ?? 9) - (JLPT_RANK[y] ?? 9));
+  return (uniq.length ? [uniq[0]] : ["N5"]) as JlptLevel[];
+}
+
+export function looksEnglishGloss(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(t)) {
+    return false;
+  }
+  if (/^(to |the |a |an |\(\d+\)|\(abbr\)|\(n\)|\(v\)|\(adj\))/i.test(t)) return true;
+  if (/\b(the|and|with|from|that|this|used|into|about|which|abbr|lit:|sing)\b/i.test(t)) return true;
+  if (/^[A-Za-z][A-Za-z0-9 '()\-/.,]*$/.test(t) && t.split(/\s+/).length >= 2) return true;
+  return false;
+}
+
+export function preferVietnameseMeanings(list: string[]): string[] {
+  const uniq = uniqueStrings(list);
+  const vi = uniq.filter((s) => !looksEnglishGloss(s));
+  return vi.length ? vi : uniq;
 }
 
 export function vocabToDict(v: VocabEntry): DictionaryEntry {
@@ -51,10 +83,10 @@ export function mergeEntries(a: DictionaryEntry, b: DictionaryEntry): Dictionary
   }
   return {
     ...a,
-    meanings: uniqueStrings([...a.meanings, ...b.meanings]),
-    part_of_speech: preferPos([...a.part_of_speech, ...b.part_of_speech]),
-    jlpt: uniqueStrings([...a.jlpt, ...b.jlpt]) as DictionaryEntry["jlpt"],
-    tags: uniqueStrings([...a.tags, ...b.tags]),
+    meanings: preferVietnameseMeanings([...a.meanings, ...b.meanings]),
+    part_of_speech: mergePos(a.part_of_speech, b.part_of_speech),
+    jlpt: easiestJlpt([...a.jlpt, ...b.jlpt]),
+    tags: uniqueStrings([...(a.tags ?? []), ...(b.tags ?? [])].filter((t) => !/^N[1-5]$/.test(t))),
     related: uniqueStrings([...(a.related ?? []), ...(b.related ?? [])]),
     kanjiChars: uniqueStrings([...(a.kanjiChars ?? []), ...(b.kanjiChars ?? [])]),
     aliases: uniqueStrings([...(a.aliases ?? []), ...(b.aliases ?? [])]),
@@ -63,6 +95,7 @@ export function mergeEntries(a: DictionaryEntry, b: DictionaryEntry): Dictionary
     frequency: Math.min(a.frequency, b.frequency),
     pitch_accent: a.pitch_accent ?? b.pitch_accent,
     romaji: a.romaji || b.romaji,
+    kana: /[\u3040-\u30ff]/.test(a.kana) ? a.kana : b.kana || a.kana,
   };
 }
 

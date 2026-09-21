@@ -1,6 +1,7 @@
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
 import { LISTEN_SENTENCES } from "@/data/listening";
+import { isSpeakableKana, ttsKana } from "./kana-speak";
 import type { JlptLevel, VocabEntry } from "./types";
 
 export type ListenKind = "word" | "sentence";
@@ -10,7 +11,7 @@ export interface ListenQuestion {
   kind: ListenKind;
   title: string;
   level: JlptLevel;
-  /** Hiragana / kana fed to TTS — never bare kanji. */
+  /** Hiragana / kana fed to TTS — never bare kanji or POS notes. */
   speak: string;
   jp: string;
   kana: string;
@@ -29,15 +30,18 @@ function shuffle<T>(arr: T[], rand: () => number) {
   return a;
 }
 
+function cleanVocab(v: VocabEntry): boolean {
+  return isSpeakableKana(v.kana) && Boolean(v.meaning_vi.trim()) && !/^to /i.test(v.meaning_vi);
+}
+
 function vocabPool(level: "all" | JlptLevel): VocabEntry[] {
-  if (level === "N5") return VOCAB_N5;
-  if (level === "N4") return VOCAB_N4;
-  return [...VOCAB_N5, ...VOCAB_N4];
+  const raw = level === "N5" ? VOCAB_N5 : level === "N4" ? VOCAB_N4 : [...VOCAB_N5, ...VOCAB_N4];
+  return raw.filter(cleanVocab);
 }
 
 function sentencePool(level: "all" | JlptLevel) {
-  if (level === "all") return LISTEN_SENTENCES;
-  return LISTEN_SENTENCES.filter((s) => s.level === level);
+  const raw = level === "all" ? LISTEN_SENTENCES : LISTEN_SENTENCES.filter((s) => s.level === level);
+  return raw.filter((s) => isSpeakableKana(s.kana));
 }
 
 function uniqueMeaning(pool: VocabEntry[], meaning: string) {
@@ -57,14 +61,14 @@ export function makeListenRound(
   const out: ListenQuestion[] = [];
 
   for (let i = 0; i < n; i++) {
-    const preferSentence = sentences.length > 0 && rand() < 0.28 && usedSent.size < sentences.length;
+    const preferSentence = sentences.length > 0 && rand() < 0.35 && usedSent.size < sentences.length;
     if (preferSentence) {
       const fresh = sentences.filter((s) => !usedSent.has(s.id));
       const item = fresh[Math.floor(rand() * fresh.length)];
       if (!item) continue;
       usedSent.add(item.id);
       const others = shuffle(
-        sentences.filter((s) => s.vi !== item.vi).map((s) => s.vi),
+        sentences.filter((s) => s.vi !== item.vi && s.id !== item.id).map((s) => s.vi),
         rand,
       ).slice(0, 3);
       if (others.length < 3) {
@@ -74,18 +78,19 @@ export function makeListenRound(
         others.push(...shuffle(extra, rand).slice(0, 3 - others.length));
       }
       const options = shuffle([item.vi, ...others.slice(0, 3)], rand);
+      const speak = ttsKana(item.kana, item.jp);
       out.push({
         id: `${item.id}-${out.length}`,
         kind: "sentence",
         title: item.title,
         level: item.level,
-        speak: item.kana,
+        speak,
         jp: item.jp,
         kana: item.kana,
         romaji: item.romaji,
         vi: item.vi,
         options,
-        answerIndex: options.indexOf(item.vi),
+        answerIndex: Math.max(0, options.indexOf(item.vi)),
       });
       continue;
     }
@@ -99,18 +104,19 @@ export function makeListenRound(
       .filter((v, idx, arr) => arr.findIndex((x) => x.meaning_vi === v.meaning_vi) === idx)
       .slice(0, 3);
     const options = shuffle([c.meaning_vi, ...wrong.map((v) => v.meaning_vi)], rand);
+    const speak = ttsKana(c.kana, c.word);
     out.push({
       id: `${c.id}-${out.length}`,
       kind: "word",
       title: c.word,
       level: c.level,
-      speak: c.kana,
+      speak,
       jp: c.word,
       kana: c.kana,
       romaji: c.romaji,
       vi: c.meaning_vi,
       options,
-      answerIndex: options.indexOf(c.meaning_vi),
+      answerIndex: Math.max(0, options.indexOf(c.meaning_vi)),
     });
   }
   return out;

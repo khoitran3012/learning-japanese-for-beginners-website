@@ -143,7 +143,8 @@ function Page() {
             variant={jlpt === lv ? "default" : "secondary"}
             onClick={() => {
               setJlpt(lv);
-              goPage(1);
+              const value = q.trim();
+              void navigate({ to: "/dictionary", search: value ? { q: value } : {} });
             }}
           >
             {lv === "all" ? "Mọi cấp" : lv}
@@ -155,7 +156,8 @@ function Page() {
           variant={pos === "all" ? "default" : "secondary"}
           onClick={() => {
             setPos("all");
-            goPage(1);
+            const value = q.trim();
+            void navigate({ to: "/dictionary", search: value ? { q: value } : {} });
           }}
         >
           Mọi loại
@@ -167,7 +169,8 @@ function Page() {
             variant={pos === p ? "default" : "secondary"}
             onClick={() => {
               setPos(p);
-              goPage(1);
+              const value = q.trim();
+              void navigate({ to: "/dictionary", search: value ? { q: value } : {} });
             }}
           >
             {p}
@@ -326,7 +329,7 @@ function ResultList({
               {showRomaji ? <span className="ml-1 text-subtle">{e.romaji}</span> : null}
             </span>
             <span className="min-w-0 flex-1 truncate text-sm">{e.meanings[0]}</span>
-            <span className="hidden max-w-28 shrink-0 truncate text-xs text-subtle sm:inline">
+            <span className="hidden max-w-28 shrink-0 truncate text-xs text-muted sm:inline">
               {e.part_of_speech[0]}
             </span>
             <Badge variant="muted">{e.jlpt[0]}</Badge>

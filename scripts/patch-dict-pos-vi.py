@@ -41,6 +41,7 @@ EXPRESSIONS = {
     "もしもし", "じゃあね", "またね", "お疲れ様", "おつかれさま",
     "かもしれない", "かもしれません", "いけない", "くださいませ",
     "いただきます", "かしこまりました", "どういたしまして",
+    "お早う", "おはよう",
 }
 PRONOUNS = {
     "わたし", "あたし", "ぼく", "おれ", "あなた", "きみ", "かれ", "かのじょ",
@@ -113,7 +114,7 @@ NOUN_I = {
     "まちがい", "見舞い", "みまい", "お見舞い", "おみまい", "くらい",
     "ぐらい", "あい", "はい", "ください", "ちょうだい", "うがい",
     "お互い", "おたがい", "いっぱい", "たいてい", "しまい",
-    "お手洗い", "てあらい",
+    "お手洗い", "てあらい", "擦れ違い", "すれちがい",
 }
 
 VI_KEEP = {
@@ -390,11 +391,11 @@ def guess_pos(word: str, reading: str, meanings: list[str], en: list[str] | None
         "clear", "complete", "perfect", "proper", "appropriate", "major",
         "severe", "unique", "equal", "fair", "active", "passive", "eager",
         "careful", "obvious", "complex", "necessary", "possible", "impossible",
-        "safe", "dangerous", "free", "peaceful", "special", "general",
+        "safe", "dangerous", "peaceful", "special",
         "happy", "unhappy", "inconvenient", "reasonable", "enough",
         "famous", "quiet", "convenient", "skillful", "clumsy", "healthy",
         "kind", "polite", "simple", "complicated", "same", "various",
-        "busy", "fine", "okay", "alright", "useless", "capable",
+        "busy", "okay", "alright", "useless", "capable",
     }
     if (adj_tokens & ADJ_HINT) and not w.endswith("い") and not r.endswith("しい"):
         if not meaning_is_verb(en or meanings):
@@ -501,7 +502,14 @@ def looks_english(s: str) -> bool:
     if not tokens:
         return False
     if len(tokens) >= 2:
-        return True
+        func = {"the", "and", "with", "from", "that", "this", "used", "for", "into", "about", "which", "of", "or", "e.g"}
+        if sl.startswith("to "):
+            return True
+        if any(t in func for t in tokens):
+            return True
+        if any(len(t) >= 8 for t in tokens):
+            return True
+        return False
     t = tokens[0]
     if t.endswith(("tion", "sion", "ness", "ment", "ity", "ous", "ive", "ally", "ance", "ence", "able", "ible", "ical")):
         return True
@@ -625,7 +633,10 @@ def translate_meaning(current: str, en_src: list[str], table: dict[str, str], ja
         out.append(v)
 
     for p in parts:
-        if looks_english(p):
+        pl = re.sub(r"[?.!]+$", "", p.lower().strip())
+        if pl in table and table[pl] != p:
+            add(table[pl])
+        elif looks_english(p):
             add(en_to_vi(p, table))
         else:
             add(p)
@@ -653,6 +664,8 @@ def main() -> None:
     builder = (ROOT / "scripts/build-jlpt-dict.py").read_text(encoding="utf-8")
     exec(builder.split("def guess_pos")[0], ns)
     JA_VI: dict[str, list[str]] = ns.get("JA_VI") or {}
+    JA_VI.setdefault("おはよう", ["chào buổi sáng"])
+    JA_VI.setdefault("お早う", ["chào buổi sáng"])
 
     vocab_pos = parse_vocab_pos()
     openjlpt = load_openjlpt()
@@ -667,7 +680,7 @@ def main() -> None:
         word, kana, romaji, meaning, pos, level, jp, kana_ex, rom_ex, vi_ex = r
         en = openjlpt.get(f"{word}::{kana}") or openjlpt.get(word) or []
         key = f"{word}::{kana}"
-        new_pos = vocab_pos.get(key) or vocab_pos.get(word) or vocab_pos.get(kana)
+        new_pos = vocab_pos.get(key) or (vocab_pos.get(word) if word == kana else None)
         if not new_pos:
             new_pos = guess_pos(word, kana, [meaning], en)
         if new_pos != pos:
@@ -685,6 +698,55 @@ def main() -> None:
 
         if looks_english(vi_ex):
             r[9] = en_to_vi(vi_ex, table)
+
+    leftover_vi = {
+        "to surround": "bao quanh",
+        "to encircle": "bao quanh",
+        "participation": "tham gia",
+        "circumference": "chu vi",
+        "pachinko (japanese pinball)": "pachinko",
+        "pachinko": "pachinko",
+        "sumo grand champion": "yokozuna",
+        "carrying something": "mang theo",
+        "income and expenditure": "thu chi",
+        "historic ruins (remains  relics)": "di tích",
+        "fourth sign of chinese zodiac (the hare  5am-7am  east  february)": "mão (địa chi)",
+        "implying (negatively) that something is full of  e.g. mistakes": "ám chỉ đầy (lỗi)",
+    }
+    force_pos = {
+        ("市", "いち"): "danh từ",
+        ("お早う", "おはよう"): "biểu hiện",
+        ("形容動詞", "けいようどうし"): "danh từ",
+        ("形容詞", "けいようし"): "danh từ",
+    }
+    still_en = 0
+    for r in rows:
+        word, kana = r[0], r[1]
+        if (word, kana) in force_pos:
+            r[4] = force_pos[(word, kana)]
+        parts = [p.strip() for p in re.split(r"\s*[·|/]\s*", r[3]) if p.strip()]
+        cleaned = []
+        for p in parts:
+            pl = re.sub(r"[?.!]+$", "", p.lower().strip())
+            if pl in leftover_vi:
+                p = leftover_vi[pl]
+            if looks_english(p):
+                p = leftover_vi.get(pl) or en_to_vi(p, table)
+            if p and not looks_english(p):
+                if p not in cleaned:
+                    cleaned.append(p)
+        if cleaned:
+            r[3] = " · ".join(cleaned[:3])
+        if any(looks_english(p) for p in re.split(r"\s*[·|/]\s*", r[3])):
+            still_en += 1
+        pos_ctr[r[4]] += 1  # recount below
+
+    pos_ctr = Counter(r[4] for r in rows)
+    still_en = sum(
+        1
+        for r in rows
+        if any(looks_english(p) for p in re.split(r"\s*[·|/]\s*", r[3]))
+    )
 
     JSON_PATH.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"rows {len(rows)}")

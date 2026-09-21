@@ -423,7 +423,7 @@ export const LESSONS: Lesson[] = [
       },
       {
         heading: "Đừng chờ hiểu 100%",
-        body: "Nghe một lần để bắt chủ đề, lần hai để chọn đáp án. はい/いいえ, すみません, まだ, もう là tín hiệu cực mạnh. TTS trong app đọc promptJp; hãy nhại lại ngay sau khi nghe.",
+        body: "Nghe một lần để bắt từ khóa, lần hai để chọn đúng nghĩa tiếng Việt của chính câu vừa nghe — không phải câu trả lời hội thoại. TTS đọc kana; hãy nhại lại ngay sau khi nghe.",
       },
     ],
     unlocks: ["l-n5-quiz"],

@@ -107,19 +107,24 @@ def verb_group(reading: str) -> str:
 
 def load_vi() -> dict[str, str]:
     out: dict[str, str] = {}
-    for line in TSV.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "\t" not in line:
+    paths = [TSV, Path("/workspace/scripts/en-vi-remain.tsv")]
+    for path in paths:
+        if not path.exists():
             continue
-        a, b = line.split("\t", 1)
-        key = re.sub(r"[?.!]+$", "", a.strip().lower()).strip()
-        val = b.strip()
-        if key and key not in out:
-            out[key] = val
-        # also store without parenthetical prefix
-        stripped = re.sub(r"^\([^)]+\)\s*", "", key).strip()
-        if stripped and stripped not in out:
-            out[stripped] = re.sub(r"\s*\((khiêm nhường|tôn kính|lịch sự|thân mật)\)\s*$", "", val).strip()
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "\t" not in line:
+                continue
+            a, b = line.split("\t", 1)
+            key = re.sub(r"[?.!]+$", "", a.strip().lower()).strip()
+            val = b.strip()
+            if key and key not in out:
+                out[key] = val
+            stripped = re.sub(r"^\([^)]+\)\s*", "", key).strip()
+            if stripped and stripped not in out:
+                out[stripped] = re.sub(
+                    r"\s*\((khiêm nhường|tôn kính|lịch sự|thân mật)\)\s*$", "", val
+                ).strip()
     return out
 
 
@@ -203,6 +208,22 @@ JA_VI: dict[str, list[str]] = {
     "こと": ["việc", "điều"],
     "うん": ["ừ"],
     "いえ": ["không"],
+    "できる": ["có thể"],
+    "ダイヤ": ["kim cương", "biểu đồ"],
+    "コピー": ["bản sao"],
+    "スープ": ["súp"],
+    "タオル": ["khăn"],
+    "トランプ": ["bài tây"],
+    "ホーム": ["sân ga"],
+    "まあ": ["thôi nào"],
+    "しまう": ["làm xong", "cất"],
+    "賛成": ["tán thành"],
+    "ヶ月": ["tháng"],
+    "歳": ["tuổi"],
+    "畳": ["chiếu tatami"],
+    "おまえ": ["cậu (thân mật)"],
+    "軽い": ["nhẹ"],
+    "厚い": ["dày"],
 }
 
 
@@ -252,6 +273,7 @@ def guess_pos(word: str, reading: str, meanings: list[str]) -> str:
         "匂い", "におい", "勢い", "思い", "違い", "向かい", "出会い", "住まい",
         "願い", "祝い", "お祝い", "笑い", "戦い", "手伝い", "間違い", "見舞い",
         "お見舞い", "くらい", "ぐらい", "あい", "はい", "ください", "ちょうだい",
+        "勢い", "向かい", "扱い", "疑い", "支払", "支払い", "度合い",
     }
     expressions = {
         "こんにちは", "こんばんは", "おはよう", "おはようございます", "さようなら",
@@ -267,18 +289,18 @@ def guess_pos(word: str, reading: str, meanings: list[str]) -> str:
         return "biểu hiện"
     if word in adverbs or base in adverbs:
         return "trạng từ"
-    if word.endswith("しい") or base.endswith("しい"):
-        if word not in noun_i and base not in noun_i:
-            return "tính từ -i"
-    if word.endswith("い") and word not in noun_i and base not in noun_i and word not in expressions:
-        if "to " not in joined:
-            return "tính từ -i"
-    if word[-1:] in set("うくぐすつぬぶむる") and re.search(r"[\u4e00-\u9fff]", word):
-        return verb_group(base)
     first = re.sub(r"^to be ", "", (meanings[0] if meanings else "").lower().strip(" ?.!"))
     tokens = set(re.findall(r"[a-z']+", first))
     is_adj = bool(tokens & ADJ_EN) or first in ADJ_EN
-    base = reading or word
+    if word.endswith("しい") or base.endswith("しい"):
+        if word not in noun_i and base not in noun_i:
+            return "tính từ -i"
+    # Only treat 〜い as i-adj when the English gloss looks adjectival.
+    if word.endswith("い") and word not in noun_i and base not in noun_i and word not in expressions:
+        if "to " not in joined and (is_adj or "i-adjective" in joined or first in ADJ_EN):
+            return "tính từ -i"
+    if word[-1:] in set("うくぐすつぬぶむる") and re.search(r"[\u4e00-\u9fff]", word):
+        return verb_group(base)
     if is_adj:
         if word in NA_DESPITE_I or reading in NA_DESPITE_I:
             return "tính từ -na"
@@ -293,11 +315,76 @@ def guess_pos(word: str, reading: str, meanings: list[str]) -> str:
 
 def looks_english(s: str) -> bool:
     sl = s.lower()
+    if re.search(r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", s, re.I):
+        return False
     if re.search(r"\b(the|and|with|from|that|this|used|for|into|about|which)\b", sl) or sl.startswith("to "):
         return True
     if " " in s.strip() and re.fullmatch(r"[A-Za-z][A-Za-z0-9 '()\-/.,]*", s.strip()):
         return True
     return False
+
+
+NOTE_RE = re.compile(r"[（(][^）)]*[）)]")
+KANA_RE = re.compile(r"^[\u3040-\u30ffー・/ ]+$")
+
+READING_FIX = {
+    "できる": "できる",
+    "うん": "うん",
+    "はい": "はい",
+    "しまう": "しまう",
+    "しまった": "しまった",
+    "すみません": "すみません",
+    "それ": "それ",
+    "どう": "どう",
+    "ね": "ね",
+    "ふと": "ふと",
+    "よろしく": "よろしく",
+    "しまい": "しまい",
+    "賛成": "さんせい",
+    "暖かい": "あたたかい",
+    "しいんと": "しいんと",
+    "じゅうたん": "じゅうたん",
+    "だいいち": "だいいち",
+    "ミリ": "ミリ",
+    "とん": "とん",
+    "ヶ月": "かげつ",
+    "歳": "さい",
+    "畳": "じょう",
+}
+
+
+def is_kana(s: str) -> bool:
+    t = s.replace(" ", "").replace("・", "").replace("/", "")
+    return bool(t) and bool(KANA_RE.match(s.replace("・", "").replace("/", " ")))
+
+
+def clean_reading(word: str, reading: str) -> str:
+    if word in READING_FIX:
+        return READING_FIX[word]
+    r = (reading or "").strip()
+    r = r.replace("＝", "=")
+    r = re.sub(r"（する）", "", r)
+    r = re.sub(r"\(([\u3040-\u30ff]+)\)", r"\1", r)
+    r = NOTE_RE.sub("", r)
+    r = re.sub(r"\s*=.*$", "", r)
+    r = r.replace("、", "/").replace("#NAME?", "").strip(" /")
+    if is_kana(r):
+        return r.split("/")[0].strip() or r
+    if is_kana(word):
+        return word.split("/")[0].strip()
+    if word in READING_FIX:
+        return READING_FIX[word]
+    return r or word
+
+
+def normalize_en_key(raw: str) -> str:
+    s = re.sub(r"[?.!]+$", "", raw.lower()).strip()
+    s = re.sub(r"^\(\d+\)\s*", "", s)
+    s = re.sub(r"^1\.\s*", "", s)
+    s = re.sub(r"^\([^)]*\)\s*", "", s)
+    s = re.sub(r"\s*\([^)]*\)", "", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
 
 def en_to_vi(text: str, table: dict[str, str]) -> str:
@@ -314,13 +401,12 @@ def en_to_vi(text: str, table: dict[str, str]) -> str:
                 out.append(v)
         return " / ".join(out)
 
-    s = re.sub(r"[?.!]+$", "", raw.lower()).strip()
-    s = re.sub(r"^\(\d+\)\s*", "", s)
+    s = normalize_en_key(raw)
     if s in table:
         return table[s]
 
     prefix = ""
-    m = re.match(r"^\((honorable|humble|polite|honorific|respectful|informal)\)\s*", s)
+    m = re.match(r"^\((honorable|humble|polite|honorific|respectful|informal)\)\s*", raw.lower())
     if m:
         kind = m.group(1)
         prefix = {
@@ -331,7 +417,7 @@ def en_to_vi(text: str, table: dict[str, str]) -> str:
             "polite": " (lịch sự)",
             "informal": " (thân mật)",
         }[kind]
-        s = s[m.end() :].strip()
+        s = normalize_en_key(raw[m.end() :])
         if s in table:
             return table[s] + prefix
 
@@ -431,7 +517,7 @@ def main() -> None:
             word = (it.get("word") or "").strip()
             if not word:
                 continue
-            reading = (it.get("reading") or "").strip() or word
+            reading = clean_reading(word, (it.get("reading") or "").strip() or word)
             meanings = [m.strip() for m in (it.get("meanings") or []) if str(m).strip()]
             head = f"{word}::{reading}"
             if head in seen_head:
