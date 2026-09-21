@@ -1,5 +1,5 @@
 import { HIRAGANA, KATAKANA } from "@/data/kana";
-import { kanjiLessonByPath } from "@/data/kanji-lessons";
+import { kanjiLessonByPath, kanjiLessonsByPath } from "@/data/kanji-lessons";
 import type { Lesson } from "@/lib/akari/types";
 
 export type LessonLink = {
@@ -56,7 +56,11 @@ function stageLink(lesson: Lesson): LessonLink {
       return { to: "/grammar", label: "Ngữ pháp" };
     case "kanji": {
       const kl = kanjiLessonByPath(lesson.id);
-      if (kl) return { to: `/kanji?lesson=${kl.id}`, label: `Kanji: ${kl.title}` };
+      if (kl) {
+        const many = kanjiLessonsByPath(lesson.id);
+        if (many.length > 1) return { to: `/kanji?path=${lesson.id}`, label: `Kanji ${lesson.level}: ${many.length} bài` };
+        return { to: `/kanji?lesson=${kl.id}`, label: `Kanji: ${kl.title}` };
+      }
       return { to: "/kanji", label: "Kanji" };
     }
     case "đọc":
@@ -66,6 +70,16 @@ function stageLink(lesson: Lesson): LessonLink {
     case "kiểm tra":
       return { to: "/quiz", label: "Trắc nghiệm" };
     case "nâng cao":
+      if (lesson.focus === "kanji") {
+        const kl = kanjiLessonByPath(lesson.id);
+        if (kl) {
+          const many = kanjiLessonsByPath(lesson.id);
+          if (many.length > 1) return { to: `/kanji?path=${lesson.id}`, label: `Kanji ${lesson.level}` };
+          return { to: `/kanji?lesson=${kl.id}`, label: `Kanji ${lesson.level}` };
+        }
+        const lv = lesson.level === "0" ? "N5" : lesson.level;
+        return { to: "/kanji", label: `Kanji ${lv}` };
+      }
       return { to: "/dictionary", label: "Từ điển N3–N1" };
     default:
       return { to: "/daily", label: "Bài hôm nay" };

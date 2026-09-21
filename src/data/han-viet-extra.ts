@@ -1,4 +1,4 @@
-/** Hán-Việt bổ sung N3–N1 (tra cứu). N5–N4 ưu tiên han-viet.ts. */
+/** Hán-Việt bổ sung N3–N1. N5–N4 ưu tiên han-viet.ts. */
 export const HAN_VIET_EXTRA: Record<string, string> = {
   政: "Chính",
   議: "Nghị",

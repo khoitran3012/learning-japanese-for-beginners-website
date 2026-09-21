@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SpeakButton } from "@/components/speak-button";
 import { Pronunciation } from "@/components/pronunciation";
 import { WriteCanvas } from "@/components/write-canvas";
@@ -7,7 +8,7 @@ import { AiTutor } from "@/components/ai-tutor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { kanjiById } from "@/data/kanji-set";
+import { allKanji, kanjiById, kanjiByLevel, kanjiNeighbors } from "@/data/kanji-set";
 import { kanjiLessonOf } from "@/data/kanji-lessons";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
@@ -35,6 +36,11 @@ function Page() {
   const primary = kunRows[0]?.hira || onRows[0]?.hira || k.character;
   const usage = allKanjiExamples(k);
   const lesson = kanjiLessonOf(k.character);
+  const levelPool = kanjiByLevel(k.level);
+  const inLevel = kanjiNeighbors(k.id, levelPool);
+  const inAll = kanjiNeighbors(k.id, allKanji());
+  const prev = inAll.prev;
+  const next = inAll.next;
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -47,9 +53,13 @@ function Page() {
               search={{ lesson: lesson.id }}
               className="mt-2 text-xs text-accent hover:underline"
             >
-              {lesson.kind === "học" ? "Bài học" : "Bài tra cứu"}: {lesson.title}
+              Bài {lesson.seq}: {lesson.title}
             </Link>
           ) : null}
+          <p className="mt-1 text-xs tabular-nums text-subtle">
+            {k.level} · chữ {inLevel.index + 1}/{inLevel.total}
+            {inAll.index >= 0 ? ` · cả lộ trình ${inAll.index + 1}/${inAll.total}` : ""}
+          </p>
           <p className="text-kana mt-3 text-[8rem] leading-none">{k.character}</p>
           <p className="mt-3 text-xl font-medium">{k.han_viet ? `Hán-Việt: ${k.han_viet}` : null}</p>
           <p className="mt-1 text-lg">{k.meaning_vi}</p>
@@ -170,13 +180,33 @@ function Page() {
 
       <AiTutor seed={`Giải thích kanji ${k.character} (Hán-Việt: ${k.han_viet || "—"}; nghĩa Việt: ${k.meaning_vi}): onyomi ${k.onyomi.join("/")} = ${onRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}, kunyomi ${kunRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}. Cách dùng: ${usage.tip}`} />
 
-      <div className="flex gap-2">
-        <Button variant="secondary" onClick={() => void forgot(k.id, "kanji")}>
-          Cần ôn
-        </Button>
-        <Button variant="success" onClick={() => void remember(k.id, "kanji")}>
-          Đã nhớ
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {prev ? (
+          <Button asChild variant="secondary">
+            <Link to="/kanji/$id" params={{ id: prev.id }}>
+              <ChevronLeft /> {prev.character}
+            </Link>
+          </Button>
+        ) : (
+          <span />
+        )}
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => void forgot(k.id, "kanji")}>
+            Cần ôn
+          </Button>
+          <Button variant="success" onClick={() => void remember(k.id, "kanji")}>
+            Đã nhớ
+          </Button>
+        </div>
+        {next ? (
+          <Button asChild>
+            <Link to="/kanji/$id" params={{ id: next.id }}>
+              {next.character} <ChevronRight />
+            </Link>
+          </Button>
+        ) : (
+          <span />
+        )}
       </div>
     </div>
   );

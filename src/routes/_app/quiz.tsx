@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizCard } from "@/components/quiz-card";
-import { nextQuestion, type QuizKind, type QuizQuestion } from "@/lib/akari/quiz-engine";
+import { nextQuestion, type KanjiQuizLevel, type QuizKind, type QuizQuestion } from "@/lib/akari/quiz-engine";
 import { addQuizResult } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { uid } from "@/lib/utils";
@@ -50,6 +50,7 @@ function srsOf(q: QuizQuestion): { id: string; type: SrsItem["itemType"] } {
 
 function Page() {
   const [kind, setKind] = useState<QuizKind>("mix");
+  const [kanjiLv, setKanjiLv] = useState<KanjiQuizLevel>("N5");
   const [q, setQ] = useState<QuizQuestion | null>(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -64,7 +65,7 @@ function Page() {
   const user = useCurrentUser();
 
   function spawn(nextKind = kind) {
-    const next = nextQuestion(nextKind, usedRef.current);
+    const next = nextQuestion(nextKind, usedRef.current, Math.random, kanjiLv);
     setQ(next);
     return next;
   }
@@ -79,7 +80,7 @@ function Page() {
     setDone(false);
     spawn(kind);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind]);
+  }, [kind, kanjiLv]);
 
   async function persistDelta(minutes: number) {
     const dCount = countRef.current - savedRef.current.count;
@@ -128,6 +129,15 @@ function Page() {
           </Button>
         ))}
       </div>
+      {kind === "kanji" || kind === "kanji-read" || kind === "listen-kanji" ? (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(["N5", "N4", "N3", "N2", "N1", "core", "all"] as const).map((x) => (
+            <Button key={x} size="sm" variant={kanjiLv === x ? "default" : "secondary"} onClick={() => setKanjiLv(x)}>
+              {x === "core" ? "N5+N4" : x === "all" ? "N5→N1" : x}
+            </Button>
+          ))}
+        </div>
+      ) : null}
       {done ? (
         <Card className="mx-auto max-w-md">
           <CardContent className="py-10 text-center">

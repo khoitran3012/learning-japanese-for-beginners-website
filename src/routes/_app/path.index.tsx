@@ -31,7 +31,7 @@ function Page() {
       <PageHeader
         kicker="道"
         title="Lộ trình học"
-        description="Cách lớp Việt hay đi: kana → nói & từ vựng → kanji kèm Hán-Việt → ngữ pháp → đọc nghe. Ba trụ cho người mới: từ vựng, nghe nói, kanji."
+        description="Cách lớp Việt hay đi: kana → nói & từ vựng → kanji kèm Hán-Việt (N5→N1) → ngữ pháp → đọc nghe. Ba trụ: từ vựng, nghe nói, kanji."
         actions={
           <div className="flex items-center gap-2">
             <Label htmlFor="free">Chế độ tự do</Label>
@@ -47,7 +47,7 @@ function Page() {
           "3. Kanji + Hán-Việt — nghĩa trước, on/kun sau",
           "4. Ngữ pháp, đọc, nghe N5 — nhét từ vào câu",
           "5. N4 cùng ba trụ: từ, nói, kanji",
-          "6. N3 → N1 tự học với từ điển",
+          "6. N3 → N1: kanji theo bài, dễ trước khó sau",
         ].map((line) => (
           <li key={line} className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-muted">
             {line}

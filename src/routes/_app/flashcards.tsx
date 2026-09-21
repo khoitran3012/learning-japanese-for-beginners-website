@@ -6,7 +6,7 @@ import { FlashcardDeck, type FlashCard } from "@/components/flashcard-deck";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { practiceKanji } from "@/data/kanji-set";
+import { practiceKanji, kanjiByLevel, allKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { meaningParts } from "@/lib/akari/answer-check";
 import { useProgress } from "@/lib/akari/progress";
@@ -15,13 +15,16 @@ import { isDue } from "@/lib/akari/srs";
 import { findBuiltin, findEntry, resolveStudyItem, useDictionary } from "@/lib/dictionary/catalog";
 import { toHiragana } from "@/lib/akari/kana-util";
 import { shuffle } from "@/lib/utils";
+import type { JlptLevel } from "@/lib/akari/types";
 
 export const Route = createFileRoute("/_app/flashcards")({ component: Page });
 
 type Deck = "hiragana" | "katakana" | "vocab" | "kanji" | "grammar" | "mine";
+type KanjiLv = JlptLevel | "core" | "all";
 
 function Page() {
   const [deck, setDeck] = useState<Deck>("hiragana");
+  const [kanjiLv, setKanjiLv] = useState<KanjiLv>("N5");
   const myWords = useProgress((s) => s.myWords);
   const srs = useProgress((s) => s.srs);
   const ready = useProgress((s) => s.ready);
@@ -66,7 +69,13 @@ function Page() {
         answerHint: "Gõ romaji, kana hoặc nghĩa",
       }));
     } else if (deck === "kanji") {
-      built = practiceKanji().map((k) => ({
+      const pool =
+        kanjiLv === "all"
+          ? allKanji()
+          : kanjiLv === "core"
+            ? practiceKanji()
+            : kanjiByLevel(kanjiLv);
+      built = pool.map((k) => ({
         id: k.id,
         front: k.character,
         back: `${k.han_viet ? `Hán-Việt: ${k.han_viet}\n` : ""}${k.meaning_vi}\n${k.onyomi.join(" / ")} · ${k.kunyomi.join(" / ")}`,
@@ -117,7 +126,7 @@ function Page() {
     const due = built.filter((c) => !srs[c.id] || isDue(srs[c.id]!));
     const rest = built.filter((c) => srs[c.id] && !isDue(srs[c.id]!));
     return [...shuffle(due), ...shuffle(rest)].slice(0, perDay);
-  }, [deck, perDay, showRomaji, myWords, srs, dict]);
+  }, [deck, kanjiLv, perDay, showRomaji, myWords, srs, dict]);
 
   return (
     <div>
@@ -146,9 +155,18 @@ function Page() {
           </Button>
         ))}
       </div>
+      {deck === "kanji" ? (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(["N5", "N4", "N3", "N2", "N1", "core", "all"] as const).map((x) => (
+            <Button key={x} size="sm" variant={kanjiLv === x ? "default" : "secondary"} onClick={() => setKanjiLv(x)}>
+              {x === "core" ? "N5+N4" : x === "all" ? "N5→N1" : x}
+            </Button>
+          ))}
+        </div>
+      ) : null}
       <FlashcardDeck
         cards={cards}
-        sessionKey={`${deck}-${perDay}-${showRomaji}-${ready ? "1" : "0"}`}
+        sessionKey={`${deck}-${kanjiLv}-${perDay}-${showRomaji}-${ready ? "1" : "0"}`}
         empty={<p className="text-sm text-muted">Bộ thẻ trống. Thêm từ vào danh sách học trước.</p>}
       />
     </div>

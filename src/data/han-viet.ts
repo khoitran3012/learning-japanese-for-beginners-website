@@ -268,6 +268,6 @@ export function hanVietLabel(character: string) {
 
 /** Hán-Việt từng chữ trong từ ghép: 日本語 → Nhật Bản Ngữ. */
 export function hanVietOfWord(word: string) {
-  const parts = [...word].map((c) => HAN_VIET[c]).filter(Boolean);
+  const parts = [...word].map((c) => HAN_VIET[c] ?? HAN_VIET_EXTRA[c]).filter(Boolean);
   return parts.join(" ");
 }

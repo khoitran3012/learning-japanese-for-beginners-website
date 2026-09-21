@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { practiceKanji } from "@/data/kanji-set";
+import { allKanji, practiceKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { useProgress, learnedCount, masteredCount } from "@/lib/akari/progress";
@@ -18,11 +18,13 @@ function Page() {
   const streak = useProgress((s) => s.streak);
   const today = useProgress((s) => s.today);
   const quiz = useProgress((s) => s.quizScores);
+  const kanjiAll = allKanji();
   const rows = [
     { label: "Hiragana", value: learnedCount(srs, "h-"), total: HIRAGANA.length },
     { label: "Katakana", value: learnedCount(srs, "k-"), total: KATAKANA.length },
     { label: "Từ vựng", value: learnedCount(srs, "v-"), total: VOCAB_N5.length + VOCAB_N4.length },
-    { label: "Kanji", value: learnedCount(srs, "kj-"), total: practiceKanji().length },
+    { label: "Kanji N5–N4", value: practiceKanji().filter((k) => srs[k.id]?.correct).length, total: practiceKanji().length },
+    { label: "Kanji N5→N1", value: kanjiAll.filter((k) => srs[k.id]?.correct).length, total: kanjiAll.length },
     { label: "Ngữ pháp", value: learnedCount(srs, "g-"), total: GRAMMAR_N5.length + GRAMMAR_N4.length },
   ];
   const due = Object.values(srs).filter(isDue).length;

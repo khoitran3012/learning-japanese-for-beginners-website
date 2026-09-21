@@ -2,7 +2,7 @@ import { DataProvider, type SearchQuery } from "./data-provider";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
-import { practiceKanji } from "@/data/kanji-set";
+import { allKanji } from "@/data/kanji-set";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { LESSONS } from "@/data/lessons";
@@ -20,7 +20,7 @@ export class LocalDataProvider extends DataProvider {
     return [...VOCAB_N5, ...VOCAB_N4];
   }
   async getKanji() {
-    return practiceKanji();
+    return allKanji();
   }
   async getGrammar() {
     return [...GRAMMAR_N5, ...GRAMMAR_N4];
@@ -33,7 +33,7 @@ export class LocalDataProvider extends DataProvider {
       const extra = await import("@/data/dictionary-extra").then((m) => m.DICTIONARY_EXTRA);
       this.dict = buildDictionary(
         [...VOCAB_N5, ...VOCAB_N4],
-        practiceKanji(),
+        allKanji(),
         extra,
       );
     }

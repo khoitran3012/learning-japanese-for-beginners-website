@@ -13,7 +13,7 @@ export const PATH_STAGES = [
   { id: "đọc", label: "Đọc hiểu", kicker: "読解", hint: "Đoạn ngắn, tìm chủ đề và động từ cuối câu." },
   { id: "nghe", label: "Nghe nói", kicker: "聴解", hint: "Nghe từ/câu, chọn đúng nghĩa — rồi nhại lại." },
   { id: "kiểm tra", label: "Kiểm tra", kicker: "確認", hint: "Chốt N5 rồi N4 trước khi lên cấp." },
-  { id: "nâng cao", label: "N3 → N1", kicker: "上級", hint: "Tự học với từ điển N3–N1, nghe và kanji ghép." },
+  { id: "nâng cao", label: "N3 → N1", kicker: "上級", hint: "Kanji N3–N1 theo bài, từ hay gặp đến khó. Hán-Việt vẫn là neo." },
 ] as const;
 
 export type PathStageId = (typeof PATH_STAGES)[number]["id"];

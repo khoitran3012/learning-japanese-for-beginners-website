@@ -403,8 +403,8 @@ const CORE_LESSONS: Lesson[] = [
         hanViet: "日本 Nhật Bản · 日本語 Nhật Bản Ngữ",
       },
       {
-        heading: "Sáu nhóm N5",
-        body: "Số & lịch → ngũ hành → người → trường → hành động → chỗ. Mỗi nhóm vài chữ: nói Hán-Việt, viết nét, flashcard, nghe từ ghép. Xong nhóm này mới sang ngữ pháp.",
+        heading: "Từ N5 đến N1",
+        body: "N5: số & lịch → ngũ hành → người → trường → hành động → chỗ → đời sống. N4: việc làm, nghĩ, động từ, thời gian. N3–N1: chữ hay gặp trước, chia bài nhỏ. Mỗi chữ: Hán-Việt, viết nét, flashcard, nghe từ ghép.",
       },
     ],
     practiceIds: ["kj-n5-日", "kj-n5-学", "kj-n5-人"],
@@ -607,7 +607,7 @@ const CORE_LESSONS: Lesson[] = [
       },
       {
         heading: "Sau N4",
-        body: "N3 sẽ thêm thể bị động, sai khiến, 敬語. Nền N4 vững là câu phức có lý do-mục đích-điều kiện trôi chảy, không phải thuộc thêm 200 chữ rồi quên trợ từ. Bài tiếp theo chỉ đường tự học N3–N1 với từ điển.",
+        body: "N3 thêm thể bị động, sai khiến, 敬語 — và kanji theo bài từ hay gặp đến khó. Nền N4 vững là câu phức có lý do-mục đích-điều kiện trôi chảy. Bài tiếp theo mở kanji N3.",
       },
     ],
     unlocks: ["l-n3-start"],

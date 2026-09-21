@@ -5,40 +5,62 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PagePager } from "@/components/page-pager";
 import { allKanji } from "@/data/kanji-set";
-import { kanjiLessonById, kanjiLessonsFor } from "@/data/kanji-lessons";
+import { KANJI_LESSONS, kanjiLessonById, kanjiLessonsByPath, kanjiLessonsFor } from "@/data/kanji-lessons";
 import { useProgress } from "@/lib/akari/progress";
 import { cn } from "@/lib/utils";
 import type { JlptLevel } from "@/lib/akari/types";
 
-type SearchParams = { lesson?: string };
+type LevelFilter = "all" | JlptLevel;
+type SearchParams = { lesson?: string; path?: string; lv?: LevelFilter };
+
+const LEVELS: LevelFilter[] = ["N5", "N4", "N3", "N2", "N1", "all"];
+
+function parseLv(v: unknown): LevelFilter | undefined {
+  return typeof v === "string" && (LEVELS as string[]).includes(v) ? (v as LevelFilter) : undefined;
+}
 
 export const Route = createFileRoute("/_app/kanji/")({
   validateSearch: (s: Record<string, unknown>): SearchParams => ({
     lesson: typeof s.lesson === "string" ? s.lesson : undefined,
+    path: typeof s.path === "string" ? s.path : undefined,
+    lv: parseLv(s.lv),
   }),
   component: Page,
 });
 
 const PAGE = 60;
+const LEVEL_COUNTS: Record<JlptLevel, number> = { N5: 0, N4: 0, N3: 0, N2: 0, N1: 0 };
 
 function Page() {
-  const { lesson: lessonParam } = Route.useSearch();
+  const { lesson: lessonParam, path: pathParam, lv: lvParam } = Route.useSearch();
   const navigate = useNavigate();
   const selectedLesson = lessonParam ? kanjiLessonById(lessonParam) : undefined;
+  const pathLessons = pathParam ? kanjiLessonsByPath(pathParam) : [];
   const [q, setQ] = useState("");
-  const [lv, setLv] = useState<"all" | JlptLevel>(selectedLesson?.level ?? "N5");
   const [page, setPage] = useState(1);
+  const lv: LevelFilter = selectedLesson
+    ? selectedLesson.level
+    : pathLessons[0]
+      ? pathLessons[0].level
+      : (lvParam ?? "N5");
 
   useEffect(() => {
-    if (selectedLesson) {
-      setLv(selectedLesson.level);
-      setPage(1);
-    }
-  }, [selectedLesson?.id, selectedLesson?.level]);
+    setPage(1);
+  }, [lv, lessonParam, pathParam]);
+
   const srs = useProgress((s) => s.srs);
   const all = useMemo(() => allKanji(), []);
+  const counts = useMemo(() => {
+    const c = { ...LEVEL_COUNTS };
+    for (const k of all) c[k.level] += 1;
+    return c;
+  }, [all]);
   const lessons = kanjiLessonsFor(lv);
-  const lessonChars = selectedLesson ? new Set([...selectedLesson.chars]) : null;
+  const lessonChars = selectedLesson
+    ? new Set([...selectedLesson.chars])
+    : pathLessons.length
+      ? new Set(pathLessons.flatMap((l) => [...l.chars]))
+      : null;
   const list = all.filter((k) => {
     if (lv !== "all" && k.level !== lv) return false;
     if (lessonChars && !lessonChars.has(k.character)) return false;
@@ -56,23 +78,46 @@ function Page() {
   const pageCount = Math.max(1, Math.ceil(list.length / PAGE));
   const safe = Math.min(page, pageCount);
   const slice = list.slice((safe - 1) * PAGE, safe * PAGE);
-  const learning = lv === "N5" || lv === "N4";
 
-  function setLesson(id?: string) {
+  function go(next: { lesson?: string; path?: string; lv?: LevelFilter }) {
     setPage(1);
     void navigate({
       to: "/kanji",
-      search: id ? { lesson: id } : {},
+      search: {
+        lesson: next.lesson,
+        path: next.path,
+        lv: next.lesson || next.path ? undefined : next.lv,
+      },
     });
   }
+
+  const levelLessons = lv === "all" ? KANJI_LESSONS : lessons;
+  const learnedInView = list.filter((k) => srs[k.id]?.correct).length;
 
   return (
     <div>
       <PageHeader
         kicker="漢字"
         title="Kanji"
-        description="Học theo bài N5–N4. N3–N1 đủ bộ để tra cứu — nghe cách đọc chuẩn từng âm."
+        description="Học từ N5 đến N1. Mỗi bài vài chữ — Hán-Việt trước, nét và on/kun sau."
       />
+      <ol className="mb-4 flex flex-wrap items-center gap-1.5 text-sm">
+        {(["N5", "N4", "N3", "N2", "N1"] as const).map((x, i) => (
+          <li key={x} className="flex items-center gap-1.5">
+            {i > 0 ? <span className="text-subtle">→</span> : null}
+            <button
+              type="button"
+              onClick={() => go({ lv: x })}
+              className={cn(
+                "rounded-full border px-2.5 py-1 tabular-nums",
+                lv === x && !selectedLesson && !pathParam ? "border-primary bg-primary text-primary-fg" : "border-border text-muted",
+              )}
+            >
+              {x} · {counts[x]}
+            </button>
+          </li>
+        ))}
+      </ol>
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <Input
           value={q}
@@ -83,18 +128,14 @@ function Page() {
           placeholder="Tìm kanji, Hán-Việt, nghĩa, âm..."
         />
         <div className="flex flex-wrap gap-2">
-          {(["N5", "N4", "N3", "N2", "N1", "all"] as const).map((x) => (
+          {LEVELS.map((x) => (
             <button
               key={x}
               type="button"
-              onClick={() => {
-                setLv(x);
-                setPage(1);
-                setLesson(undefined);
-              }}
+              onClick={() => go({ lv: x })}
               className={cn(
                 "h-11 rounded-[10px] border px-3 text-sm",
-                lv === x && !selectedLesson ? "border-primary bg-primary text-primary-fg" : "border-border",
+                lv === x && !selectedLesson && !pathParam ? "border-primary bg-primary text-primary-fg" : "border-border",
               )}
             >
               {x === "all" ? "Mọi cấp" : x}
@@ -102,74 +143,93 @@ function Page() {
           ))}
         </div>
       </div>
-      {lessons.length ? (
+      {levelLessons.length ? (
         <div className="mb-4">
           <p className="mb-2 text-xs uppercase tracking-[0.14em] text-subtle">
-            {learning ? "Bài học" : "Bài tra cứu"}
+            Bài học · {lv === "all" ? "N5 → N1" : `${lv} · ${levelLessons.length} bài`}
           </p>
-          {lessons.length > 12 ? (
+          {levelLessons.length > 12 ? (
             <select
               className="h-11 w-full rounded-[10px] border border-border bg-bg-elevated px-3 text-sm sm:max-w-md"
               value={selectedLesson?.id ?? ""}
               onChange={(e) => {
                 const id = e.target.value;
                 if (!id) {
-                  setLesson(undefined);
+                  go({ lv });
                   return;
                 }
                 const ls = kanjiLessonById(id);
-                if (ls) setLv(ls.level);
-                setLesson(id);
+                go({ lesson: id, lv: ls?.level ?? lv });
               }}
             >
-              <option value="">Cả cấp {lv === "all" ? "" : lv}</option>
-              {lessons.map((ls) => (
-                <option key={ls.id} value={ls.id}>
-                  {ls.title} · {ls.chars.length} chữ
-                </option>
-              ))}
+              <option value="">{lv === "all" ? "Cả lộ trình N5 → N1" : `Cả cấp ${lv}`}</option>
+              {lv === "all"
+                ? (["N5", "N4", "N3", "N2", "N1"] as const).map((level) => (
+                    <optgroup key={level} label={level}>
+                      {KANJI_LESSONS.filter((ls) => ls.level === level).map((ls, i) => (
+                        <option key={ls.id} value={ls.id}>
+                          {i + 1}. {ls.title} · {ls.chars.length} chữ
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))
+                : levelLessons.map((ls, i) => (
+                    <option key={ls.id} value={ls.id}>
+                      {i + 1}. {ls.title} · {ls.chars.length} chữ
+                    </option>
+                  ))}
             </select>
           ) : (
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => setLesson(undefined)}
+                onClick={() => go({ lv })}
                 className={cn(
                   "h-10 rounded-[10px] border px-3 text-sm",
-                  !selectedLesson ? "border-primary bg-primary text-primary-fg" : "border-border",
+                  !selectedLesson && !pathParam ? "border-primary bg-primary text-primary-fg" : "border-border",
                 )}
               >
                 Cả cấp
               </button>
-              {lessons.map((ls) => (
-                <button
-                  key={ls.id}
-                  type="button"
-                  onClick={() => {
-                    setLv(ls.level);
-                    setLesson(ls.id);
-                  }}
-                  className={cn(
-                    "h-10 max-w-full rounded-[10px] border px-3 text-sm",
-                    selectedLesson?.id === ls.id ? "border-primary bg-primary text-primary-fg" : "border-border",
-                  )}
-                >
-                  {ls.title}{" "}
-                  <span className="text-xs opacity-70">{ls.chars.length}</span>
-                </button>
-              ))}
+              {levelLessons.map((ls, i) => {
+                const done = [...ls.chars].filter((ch) => {
+                  const k = all.find((x) => x.character === ch);
+                  return k && srs[k.id]?.correct;
+                }).length;
+                return (
+                  <button
+                    key={ls.id}
+                    type="button"
+                    onClick={() => go({ lesson: ls.id, lv: ls.level })}
+                    className={cn(
+                      "h-10 max-w-full rounded-[10px] border px-3 text-sm",
+                      selectedLesson?.id === ls.id ? "border-primary bg-primary text-primary-fg" : "border-border",
+                    )}
+                  >
+                    {i + 1}. {ls.title}{" "}
+                    <span className="text-xs opacity-70">
+                      {done}/{ls.chars.length}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
       ) : null}
       {selectedLesson ? <p className="mb-3 text-sm text-muted">{selectedLesson.summary}</p> : null}
+      {pathLessons.length > 1 && !selectedLesson ? (
+        <p className="mb-3 text-sm text-muted">
+          Chặng {pathLessons[0]!.level}: {pathLessons.map((l) => l.title).join(" · ")}
+        </p>
+      ) : null}
       <p className="mb-3 text-sm text-subtle">
-        {list.length} chữ
-        {learning ? " · học" : lv === "all" ? " · học + tra cứu" : " · tra cứu"}
-        {selectedLesson ? ` · ${selectedLesson.title}` : ""}
+        {list.length} chữ · thứ tự học N5 → N1
+        {learnedInView ? ` · đã nhớ ${learnedInView}` : ""}
+        {selectedLesson ? ` · bài ${selectedLesson.seq}: ${selectedLesson.title}` : ""}
       </p>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-        {slice.map((k) => (
+        {slice.map((k, i) => (
           <Link
             key={k.id}
             to="/kanji/$id"
@@ -179,6 +239,7 @@ function Page() {
               srs[k.id]?.correct ? "border-success/40" : "",
             )}
           >
+            <span className="text-[10px] tabular-nums text-subtle">{(safe - 1) * PAGE + i + 1}</span>
             <span className="text-kana text-4xl">{k.character}</span>
             <span className="mt-1 text-xs font-medium">{k.han_viet || k.meaning_vi}</span>
             <span className="line-clamp-1 text-[11px] text-muted">{k.meaning_vi}</span>
