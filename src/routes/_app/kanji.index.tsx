@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { allKanji } from "@/data/kanji-set";
 import { KANJI_LESSONS, kanjiLessonById, kanjiLessonsByPath, kanjiLessonsFor } from "@/data/kanji-lessons";
 import { useProgress } from "@/lib/akari/progress";
+import { kanjiFurigana } from "@/lib/akari/on-kun";
+import { KanjiLearnGuide } from "@/components/kanji-learn-guide";
 import { cn } from "@/lib/utils";
 import type { JlptLevel } from "@/lib/akari/types";
 
@@ -100,13 +102,14 @@ function Page() {
       <PageHeader
         kicker="漢字"
         title="Kanji"
-        description="Học từ N5 đến N1. Mỗi chữ: Hán-Việt, rồi on (ghép chữ) và kun (một mình / có đuôi hiragana)."
+        description="Học N5→N1. Mỗi ô hiện chữ + hiragana (kun · on). Nhớ bằng Hán-Việt, bộ thủ, rồi âm."
         actions={
           <Button asChild variant="secondary">
             <Link to="/radicals">Bộ thủ</Link>
           </Button>
         }
       />
+      <KanjiLearnGuide />
       <ol className="mb-4 flex flex-wrap items-center gap-1.5 text-sm">
         {(["N5", "N4", "N3", "N2", "N1"] as const).map((x, i) => (
           <li key={x} className="flex items-center gap-1.5">
@@ -246,7 +249,10 @@ function Page() {
             )}
           >
             <span className="text-[10px] tabular-nums text-subtle">{(safe - 1) * PAGE + i + 1}</span>
-            <span className="text-kana text-4xl">{k.character}</span>
+            <span className="text-kana text-4xl leading-none">{k.character}</span>
+            <span className="mt-1 font-jp text-[11px] leading-tight text-muted">
+              {kanjiFurigana(k).line || "—"}
+            </span>
             <span className="mt-1 text-xs font-medium">{k.han_viet || k.meaning_vi}</span>
             <span className="line-clamp-1 text-[11px] text-muted">{k.meaning_vi}</span>
             <Badge variant="muted" className="mt-1">

@@ -16,7 +16,7 @@ import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { kanaToRomaji } from "@/lib/akari/kana-util";
 import { allKanjiExamples } from "@/lib/akari/examples";
-import { kunReadings, onReadings } from "@/lib/akari/on-kun";
+import { kanjiFurigana, kunReadings, onReadings } from "@/lib/akari/on-kun";
 import { JpText } from "@/components/jp-text";
 
 export const Route = createFileRoute("/_app/kanji/$id")({ component: Page });
@@ -31,7 +31,8 @@ function Page() {
 
   const onRows = onReadings(k);
   const kunRows = kunReadings(k);
-  const primary = kunRows[0]?.kana || onRows[0]?.hira || k.character;
+  const yomi = kanjiFurigana(k);
+  const primary = yomi.kun || yomi.on || k.character;
   const usage = allKanjiExamples(k);
   const lesson = kanjiLessonOf(k.character);
   const radical = radicalOfKanji(k.character);
@@ -69,12 +70,12 @@ function Page() {
             {inAll.index >= 0 ? ` · cả lộ trình ${inAll.index + 1}/${inAll.total}` : ""}
           </p>
           <p className="text-kana mt-3 text-[8rem] leading-none">{k.character}</p>
-          <p className="mt-3 text-xl font-medium">{k.han_viet ? `Hán-Việt: ${k.han_viet}` : null}</p>
-          <p className="mt-1 text-lg">{k.meaning_vi}</p>
           <p className="mt-2 font-jp text-xl text-muted">
-            {primary}
+            {yomi.line || primary}
             {showRomaji ? <span className="ml-2 text-accent">{kanaToRomaji(primary)}</span> : null}
           </p>
+          <p className="mt-3 text-xl font-medium">{k.han_viet ? `Hán-Việt: ${k.han_viet}` : null}</p>
+          <p className="mt-1 text-lg">{k.meaning_vi}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <SpeakButton text={primary} kana={primary} label="Nghe cách đọc" />
           </div>
@@ -86,6 +87,26 @@ function Page() {
 
       <OnKunGuide />
       <OnKunForKanji kanji={k} words={usage.words} />
+
+      {radical ? (
+        <Card>
+          <CardContent className="space-y-2">
+            <h2 className="text-sm text-muted">Ghi nhớ chữ này</h2>
+            <p className="text-sm leading-relaxed">
+              Bộ {radical.char} · {radical.han_viet}: {radical.hint} Hán-Việt{" "}
+              <span className="font-medium">{k.han_viet || "—"}</span> neo nghĩa «{k.meaning_vi}». Kun{" "}
+              <span className="font-jp">{yomi.kun || "—"}</span>
+              {yomi.on ? (
+                <>
+                  {" "}
+                  · on <span className="font-jp">{yomi.on}</span>
+                </>
+              ) : null}
+              .
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {usage.tip ? (
         <Card>

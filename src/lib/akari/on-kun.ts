@@ -29,6 +29,15 @@ export function kunReadings(k: KanjiEntry) {
   });
 }
 
+/** Hiragana hiện trên ô lưới: kun trước, on sau. */
+export function kanjiFurigana(k: KanjiEntry) {
+  const kun = kunReadings(k)[0]?.kana ?? "";
+  const on = onReadings(k)[0]?.hira ?? "";
+  const parts = [kun, on].filter(Boolean);
+  const unique = parts.filter((x, i) => parts.indexOf(x) === i);
+  return { kun, on, line: unique.join(" · ") };
+}
+
 const HAS_KANJI = /[\u4e00-\u9fff々]/;
 
 export function classifyExample(k: KanjiEntry, ex: KanjiExample): ReadingKind | "mixed" {

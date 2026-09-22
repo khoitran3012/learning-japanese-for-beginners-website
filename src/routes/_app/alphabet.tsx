@@ -32,15 +32,6 @@ function Page() {
             </CardContent>
           </Card>
         </Link>
-        <Link to="/romaji">
-          <Card className="h-full transition-colors hover:border-accent">
-            <CardContent>
-              <p className="text-kana text-5xl">A</p>
-              <h2 className="mt-3 font-display text-2xl">Romaji</h2>
-              <p className="mt-1 text-sm text-muted">Luyện chuyển đổi chữ Nhật ↔ Latin</p>
-            </CardContent>
-          </Card>
-        </Link>
         <Link to="/radicals">
           <Card className="h-full transition-colors hover:border-accent">
             <CardContent>

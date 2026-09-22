@@ -42,7 +42,7 @@ function stageLink(lesson: Lesson): LessonLink {
   switch (lesson.stage) {
     case "nền tảng":
       if (lesson.id === "l0-1") return { to: "/alphabet", label: "Bảng chữ cái" };
-      if (lesson.id === "l0-2") return { to: "/romaji", label: "Romaji" };
+      if (lesson.id === "l0-2") return { to: "/hiragana", label: "Hiragana" };
       return { to: kanaHref("hiragana", "a"), label: "Nguyên âm" };
     case "hiragana":
       return { to: "/hiragana", label: "Hiragana" };
