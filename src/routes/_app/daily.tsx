@@ -102,6 +102,7 @@ function Page() {
   const [round, setRound] = useState(0);
   const [i, setI] = useState(0);
   const [score, setScore] = useState(0);
+  const [qs, setQs] = useState<QuizQuestion[]>([]);
   const scoreRef = useRef(0);
   const [saved, setSaved] = useState(() => loadJson(dailyKey(date)));
   const [done, setDone] = useState<SavedScore | null>(null);
@@ -133,18 +134,18 @@ function Page() {
     [vocabPack, showRomaji],
   );
 
-  const qs = useMemo(() => {
-    if (!track) return [] as QuizQuestion[];
-    if (track.id === "daily") return dailyQs;
-    if (track.id === "vocab-learn") return [];
-    if (track.id === "vocab-test") return makeDailyVocabQuiz(vocabPack.map((v) => v.id), date);
-    return makePathReview(track.stage, track.kanjiLevel);
-  }, [track, dailyQs, round, vocabPack, date]);
-
   const q = qs[i];
+
+  function questionsFor(next: Track): QuizQuestion[] {
+    if (next.id === "daily") return dailyQs;
+    if (next.id === "vocab-learn") return [];
+    if (next.id === "vocab-test") return makeDailyVocabQuiz(vocabPack.map((v) => v.id), date);
+    return makePathReview(next.stage, next.kanjiLevel);
+  }
 
   function start(next: Track) {
     scoreRef.current = 0;
+    setQs(questionsFor(next));
     setTrack(next);
     setRound((n) => n + 1);
     setI(0);
@@ -271,7 +272,7 @@ function Page() {
           </Button>
         </div>
         <QuizCard
-          key={q.id + (track.id === "path" ? track.stage : "daily") + String(round)}
+          key={`${round}-${i}`}
           q={q}
           index={i}
           total={qs.length}
