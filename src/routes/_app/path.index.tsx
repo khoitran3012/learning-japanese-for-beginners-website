@@ -31,7 +31,7 @@ function Page() {
       <PageHeader
         kicker="道"
         title="Lộ trình học"
-        description="Cách lớp Việt hay đi: kana → nói & từ vựng → kanji kèm Hán-Việt (N5→N1) → ngữ pháp → đọc nghe. Ba trụ: từ vựng, nghe nói, kanji."
+        description="Cách lớp Việt hay đi: kana → nói & từ vựng → kanji kèm Hán-Việt (N5→N1) → ngữ pháp → đọc nghe. Bài tự hoàn thành khi bạn đã học chữ/từ trong bài."
         actions={
           <div className="flex items-center gap-2">
             <Label htmlFor="free">Chế độ tự do</Label>

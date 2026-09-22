@@ -45,7 +45,9 @@ function pgliteBootstrapPlugin(): Plugin {
         }
       } catch (err) {
         console.error("[app-builder] DB bootstrap failed:", err);
-        throw err;
+        console.error(
+          "[app-builder] Tiếp tục chạy không SQL — học vẫn dùng được; đăng nhập/bảng xếp hạng tạm tắt.",
+        );
       }
     },
   };

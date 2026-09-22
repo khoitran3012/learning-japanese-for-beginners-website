@@ -98,10 +98,24 @@ Double-click `start-akari.bat`. File tự:
 
 Nếu cửa sổ báo `'set' is not recognized` / `package.json not found`: dùng đúng file `start-akari.bat` mới trong thư mục project (không copy nội dung vào Notepad rồi lưu Unicode).
 
-Chưa có Node? Cài bản LTS tại [nodejs.org](https://nodejs.org) (file `.msi`, giữ mục Add to PATH), rồi bấm lại `start-akari.bat` — không cần restart máy.
-
+Chưa có Node? Cài bản **22 LTS** tại [nodejs.org](https://nodejs.org) (file `.msi`, giữ mục Add to PATH), rồi bấm lại `start-akari.bat` — không cần restart máy. Tránh Node 24 nếu PGLite báo lỗi khởi tạo.
 
 Khi hiện sẵn sàng, mở địa chỉ trong `akari-host.json` (mặc định http://khoitran3012.ddns.net:8080 hoặc http://localhost:8080).
+
+### Lỗi `PGlite failed to initialize properly`
+
+PGLite (Postgres nhúng) hay hỏng trên Windows khi:
+
+- Node 24 (WASM) — dùng **Node 22 LTS**
+- Thư mục `data\pglite` bị dở dang từ lần chạy trước
+
+Cách xử lý:
+
+1. Đóng cửa sổ npm, xóa hẳn thư mục `data\pglite` (và `data\pglite.broken-*` nếu có)
+2. Cài [Node 22 LTS](https://nodejs.org) rồi chạy lại `start-akari.bat`
+3. App tự thử lại: đĩa → thư mục mới → in-memory, **không còn tắt cả web** nếu SQL lỗi
+4. Muốn bỏ qua đĩa: trong `akari-host.json` thêm `"pgliteMemory": true` (tài khoản mất khi tắt máy)
+5. Hoặc cài Postgres và điền `databaseUrl` (mục Database SQL bên dưới)
 
 
 ## Host trên khoitran3012.ddns.net (sửa lỗi đăng nhập)

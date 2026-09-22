@@ -66,6 +66,7 @@ echo/
 echo  Starting Akari...
 echo  Open http://khoitran3012.ddns.net:8080  or  http://localhost:8080
 echo  Press Ctrl+C to stop.
+echo  Tip: Node 22 LTS. If PGLite fails, delete the data\pglite folder and retry.
 echo/
 node scripts\self-host.mjs
 set "ERR=%ERRORLEVEL%"

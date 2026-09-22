@@ -26,10 +26,12 @@ export function FlashcardDeck({
   cards,
   empty,
   sessionKey,
+  doneExtra,
 }: {
   cards: FlashCard[];
   empty?: ReactNode;
   sessionKey?: string;
+  doneExtra?: ReactNode;
 }) {
   const [deck, setDeck] = useState<FlashCard[]>(() => shuffle(cards));
   const [i, setI] = useState(0);
@@ -184,22 +186,24 @@ export function FlashcardDeck({
         <p className="text-sm text-muted">Phiên ôn xong</p>
         <p className="mt-2 text-4xl font-semibold tabular-nums">{rated}</p>
         <p className="text-sm text-muted">{saved} thẻ đã lưu là nhớ</p>
-        <Button
-          className="mt-5"
-          onClick={() => {
-            clearPending();
-            setDeck(shuffle(cards));
-            setI(0);
-            setDone(false);
-            setRated(0);
-            setSaved(0);
-            setFlip(false);
-            setTyped("");
-            setCheck("idle");
-          }}
-        >
-          Ôn lại bộ này
-        </Button>
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          <Button
+            onClick={() => {
+              clearPending();
+              setDeck(shuffle(cards));
+              setI(0);
+              setDone(false);
+              setRated(0);
+              setSaved(0);
+              setFlip(false);
+              setTyped("");
+              setCheck("idle");
+            }}
+          >
+            Ôn lại bộ này
+          </Button>
+          {doneExtra}
+        </div>
       </div>
     );
   }

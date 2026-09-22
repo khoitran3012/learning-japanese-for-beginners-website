@@ -1,3 +1,5 @@
+import { existsSync, mkdirSync, renameSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { pendingMigrations } from "../../scripts/migration-plan.mjs";
 
 /** Which database backend is active. */
@@ -48,6 +50,7 @@ const globalRef = globalThis as typeof globalThis & {
   __pgSqlPromise__?: Promise<Sql>;
   __pgliteInstance__?: Promise<import("@electric-sql/pglite").PGlite>;
   __pgliteMigrateChain__?: Promise<void>;
+  __pgUnavailable__?: boolean;
 };
 
 /**
@@ -105,37 +108,96 @@ function createNeonSql(): Promise<Sql> {
   return globalRef.__pgSqlPromise__;
 }
 
+function pgliteParsers() {
+  return {
+    [OID_INT8]: Number,
+    [OID_DATE]: identity,
+    [OID_INTERVAL]: identity,
+  };
+}
+
+/** Windows `D:\foo\bar` breaks Emscripten NODEFS — use file:// + POSIX slashes. */
+function toPgliteDataDir(raw: string) {
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("file:")) return trimmed;
+  try {
+    return pathToFileURL(trimmed).href;
+  } catch {
+    return trimmed.replace(/\\/g, "/");
+  }
+}
+
+function quarantinePgliteDir(dir: string) {
+  if (!existsSync(dir)) return;
+  const dest = `${dir.replace(/[\\/]+$/, "")}.broken-${Date.now()}`;
+  try {
+    renameSync(dir, dest);
+    console.warn("[db] Đã dời thư mục PGLite hỏng →", dest);
+  } catch (err) {
+    console.warn("[db] Không dời được thư mục PGLite:", err);
+  }
+}
+
+async function instantiatePglite(dataDir?: string) {
+  const { PGlite } = await import("@electric-sql/pglite");
+  const options = { parsers: pgliteParsers(), relaxedDurability: true as const };
+  const pg = dataDir ? await PGlite.create(dataDir, options) : await PGlite.create(options);
+  await pg.exec(
+    "create table if not exists _migrations (name text primary key, applied_at timestamptz not null default now())",
+  );
+  return pg;
+}
+
+/**
+ * Open PGLite: disk first (self-host), then a fresh folder if the previous
+ * run left a poisoned data dir (common on Windows), then in-memory so the
+ * study app still boots when WASM/disk cannot start.
+ */
+async function openPglite() {
+  const raw =
+    typeof process !== "undefined" ? process.env.AKARI_PGLITE_DIR?.trim() : undefined;
+  const memoryOnly =
+    typeof process !== "undefined" && process.env.AKARI_PGLITE_MEMORY === "1";
+
+  if (!raw || memoryOnly) {
+    const pg = await instantiatePglite();
+    console.log("[db] PGLite in-memory" + (memoryOnly ? " (AKARI_PGLITE_MEMORY=1)" : ""));
+    return pg;
+  }
+
+  const tries = [toPgliteDataDir(raw), raw.replace(/\\/g, "/")];
+  let lastErr: unknown;
+  for (const dir of tries) {
+    try {
+      const pg = await instantiatePglite(dir);
+      console.log("[db] PGLite sẵn sàng, lưu tại", raw);
+      return pg;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  console.warn("[db] Mở data/pglite thất bại, thử thư mục mới:", lastErr);
+  quarantinePgliteDir(raw);
+  mkdirSync(raw, { recursive: true });
+  try {
+    const pg = await instantiatePglite(toPgliteDataDir(raw));
+    console.log("[db] PGLite mở được trên thư mục mới", raw);
+    return pg;
+  } catch (err) {
+    console.warn(
+      "[db] PGLite đĩa vẫn lỗi — chuyển in-memory. Tài khoản không giữ sau khi tắt máy.",
+      err,
+    );
+    return instantiatePglite();
+  }
+}
+
 async function createPgliteSql(): Promise<Sql> {
   // Embedded Postgres, imported on demand so it never loads on the Neon path.
   // One in-memory instance per process, shared across HMR module instances, so
   // data survives source edits (it resets on dev-server restart).
-  globalRef.__pgliteInstance__ ??= (async () => {
-    const { PGlite } = await import("@electric-sql/pglite");
-    // Self-host: persist Postgres (PGLite) to disk so accounts survive restart.
-    // Preview / unset: in-memory (wiped when the process exits).
-    const dataDir =
-      (typeof process !== "undefined" && process.env.AKARI_PGLITE_DIR?.trim()) || undefined;
-    const pg = dataDir
-      ? new PGlite(dataDir, {
-          parsers: {
-            [OID_INT8]: Number,
-            [OID_DATE]: identity,
-            [OID_INTERVAL]: identity,
-          },
-        })
-      : new PGlite({
-          parsers: {
-            [OID_INT8]: Number,
-            [OID_DATE]: identity,
-            [OID_INTERVAL]: identity,
-          },
-        });
-    await pg.waitReady;
-    await pg.exec(
-      "create table if not exists _migrations (name text primary key, applied_at timestamptz not null default now())",
-    );
-    return pg;
-  })().catch((err) => {
+  globalRef.__pgliteInstance__ ??= openPglite().catch((err) => {
     globalRef.__pgliteInstance__ = undefined;
     throw err;
   });
@@ -233,7 +295,15 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
  */
 export function ensureDbReady(): Promise<void> {
   if (dbSource !== "pglite") return Promise.resolve();
-  return getSql().then(() => undefined);
+  return getSql()
+    .then(() => undefined)
+    .catch((err) => {
+      globalRef.__pgUnavailable__ = true;
+      console.error(
+        "[db] PGLite không khởi động được — vẫn mở web để học. Đăng nhập / bảng xếp hạng tạm tắt.",
+        err,
+      );
+    });
 }
 
 // Server-only eager start: kick PGLite bootstrap as soon as this module loads in
@@ -242,9 +312,5 @@ const globalBoot = globalThis as typeof globalThis & {
   __pgBootstrapPromise__?: Promise<void>;
 };
 if (typeof window === "undefined" && dbSource === "pglite") {
-  globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
-    globalBoot.__pgBootstrapPromise__ = undefined;
-    console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
-  });
+  globalBoot.__pgBootstrapPromise__ ??= ensureDbReady();
 }

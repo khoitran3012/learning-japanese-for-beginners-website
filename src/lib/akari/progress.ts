@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   addMyWord,
+  addQuizResult,
   allDayStats,
   allFavorites,
   allMyWords,
@@ -17,8 +18,9 @@ import {
   type DayStats,
 } from "./storage";
 import { newSrsItem, reviewSrs, qualityFromLabel } from "./srs";
-import type { SrsItem } from "./types";
+import type { QuizResult, SrsItem } from "./types";
 import { todayKey } from "@/lib/utils";
+import { lessonsReadyToComplete } from "./path-progress";
 
 type QualityLabel = "forgot" | "hard" | "good" | "easy";
 
@@ -39,6 +41,8 @@ interface ProgressState {
   forgot: (id: string, itemType: SrsItem["itemType"]) => Promise<void>;
   logStudy: (items?: number, minutes?: number) => Promise<void>;
   completeLesson: (id: string) => Promise<void>;
+  recordQuiz: (result: QuizResult) => Promise<void>;
+  syncPathFromStudy: () => Promise<void>;
   refreshSets: () => Promise<void>;
   toggleFav: (id: string, itemType: string) => Promise<boolean>;
   addToStudy: (id: string, itemType: SrsItem["itemType"]) => Promise<void>;
@@ -101,6 +105,7 @@ export const useProgress = create<ProgressState>((set, get) => ({
         days,
         quizScores: quizzes.map((q) => ({ score: q.score, total: q.total })),
       });
+      await get().syncPathFromStudy();
     } catch {
       set({ ready: true });
     }
@@ -111,6 +116,7 @@ export const useProgress = create<ProgressState>((set, get) => ({
     await putSrs(next);
     set((s) => ({ srs: { ...s.srs, [id]: next } }));
     await get().logStudy(1, 0.4);
+    void get().syncPathFromStudy();
   },
   remember: async (id, itemType) => get().mark(id, itemType, "good"),
   forgot: async (id, itemType) => get().mark(id, itemType, "forgot"),
@@ -160,6 +166,27 @@ export const useProgress = create<ProgressState>((set, get) => ({
     );
     void import("@/lib/garden/events").then(({ gardenEvents }) =>
       gardenEvents.emit("lessonCompleted", { lessonId: id }),
+    );
+  },
+  recordQuiz: async (result) => {
+    await addQuizResult(result);
+    set((s) => ({ quizScores: [...s.quizScores, { score: result.score, total: result.total }] }));
+  },
+  /** Đánh dấu bài lộ trình hoàn thành khi đã học đủ chữ/từ trong bài — không cộng thêm phút. */
+  syncPathFromStudy: async () => {
+    const ready = lessonsReadyToComplete(get().srs, get().completedLessonIds);
+    if (!ready.length) return;
+    for (const id of ready) await persistLesson(id);
+    set((s) => {
+      const next = new Set(s.completedLessonIds);
+      for (const id of ready) next.add(id);
+      return { completedLessonIds: next };
+    });
+    void import("./sync-path").then(({ syncPathProgress }) =>
+      syncPathProgress([...get().completedLessonIds]),
+    );
+    void import("@/lib/garden/events").then(({ gardenEvents }) =>
+      gardenEvents.emit("lessonCompleted", { lessonId: ready[0]! }),
     );
   },
   refreshSets: async () => {

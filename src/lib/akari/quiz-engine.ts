@@ -30,6 +30,17 @@ export type QuizKind =
   | "mix";
 
 export type KanjiQuizLevel = JlptLevel | "core" | "all";
+export type VocabQuizLevel = "N5" | "N4" | "both";
+export type GrammarQuizLevel = "N5" | "N4" | "both";
+export type KanaGroupFilter = "gojuon" | "all";
+
+export interface QuizPoolOpts {
+  vocabLevel?: VocabQuizLevel;
+  grammarLevel?: GrammarQuizLevel;
+  kanaGroup?: KanaGroupFilter;
+  /** Đáp án đúng lấy từ các id này; đáp án nhiễu vẫn lấy cả pool. */
+  focusIds?: string[];
+}
 
 export interface QuizQuestion {
   id: string;
@@ -107,7 +118,7 @@ export function mulberry32(seed: number) {
   };
 }
 
-function dateSeed(date: string) {
+export function dateSeed(date: string) {
   let h = 2166136261;
   for (const ch of date) {
     h ^= ch.charCodeAt(0);
@@ -197,10 +208,21 @@ const MIX_KINDS: QuizKind[] = [
   "cloze",
 ];
 
-function pools(kanjiLevel: KanjiQuizLevel = "core") {
-  const hira = HIRAGANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
-  const kata = KATAKANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
-  const vocab: VocabEntry[] = [...VOCAB_N5, ...VOCAB_N4];
+const KANA_BOTH_KINDS: QuizKind[] = ["hira-romaji", "romaji-hira", "kata-romaji", "listen"];
+const KANA_HIRA_KINDS: QuizKind[] = ["hira-romaji", "romaji-hira", "listen"];
+const KANA_KATA_KINDS: QuizKind[] = ["kata-romaji"];
+const KANJI_CORE_KINDS: QuizKind[] = ["kanji", "kanji-read", "listen-kanji", "radical"];
+const KANJI_ADV_KINDS: QuizKind[] = ["kanji", "kanji-read", "listen-kanji"];
+
+export type KanaReviewScope = "hira" | "kata" | "both";
+
+function pools(kanjiLevel: KanjiQuizLevel = "core", opts: QuizPoolOpts = {}) {
+  const hiraAll = HIRAGANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
+  const kataAll = KATAKANA.filter((k) => k.group === "gojuon" || k.group === "dakuten" || k.group === "handakuten" || k.group === "yoon");
+  const hira = opts.kanaGroup === "gojuon" ? hiraAll.filter((k) => k.group === "gojuon") : hiraAll;
+  const kata = opts.kanaGroup === "gojuon" ? kataAll.filter((k) => k.group === "gojuon") : kataAll;
+  const vocab: VocabEntry[] =
+    opts.vocabLevel === "N5" ? [...VOCAB_N5] : opts.vocabLevel === "N4" ? [...VOCAB_N4] : [...VOCAB_N5, ...VOCAB_N4];
   const all = allKanji();
   const kanji =
     kanjiLevel === "all"
@@ -208,12 +230,25 @@ function pools(kanjiLevel: KanjiQuizLevel = "core") {
       : kanjiLevel === "core"
         ? practiceKanji()
         : all.filter((k) => k.level === kanjiLevel);
-  const grammar = [...GRAMMAR_N5, ...GRAMMAR_N4];
+  const grammar =
+    opts.grammarLevel === "N5" ? [...GRAMMAR_N5] : opts.grammarLevel === "N4" ? [...GRAMMAR_N4] : [...GRAMMAR_N5, ...GRAMMAR_N4];
   return { hira, kata, vocab, kanji, grammar };
 }
 
-function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLevel: KanjiQuizLevel = "core"): QuizQuestion | null {
-  const { hira, kata, vocab, kanji, grammar } = pools(kind === "mix" ? "core" : kanjiLevel);
+function buildOne(
+  kind: QuizKind,
+  used: Set<string>,
+  rand: () => number,
+  kanjiLevel: KanjiQuizLevel = "core",
+  poolOpts: QuizPoolOpts = {},
+): QuizQuestion | null {
+  const { hira, kata, vocab, kanji, grammar } = pools(kind === "mix" ? "core" : kanjiLevel, poolOpts);
+  const vocabFocus = (() => {
+    if (!poolOpts.focusIds?.length) return vocab;
+    const set = new Set(poolOpts.focusIds);
+    const hit = vocab.filter((v) => set.has(v.id));
+    return hit.length ? hit : vocab;
+  })();
   const mark = (sourceId: string) => {
     used.add(`${kind}:${sourceId}`);
     used.add(`src:${sourceId}`);
@@ -278,11 +313,10 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
   }
 
   if (kind === "listen-vocab") {
-    const pool = vocab;
-    const c = pickOne(pool, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(vocabFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
-    const wrong = pickWrong(pool, c, 3, (x) => x.meaning_vi, rand);
+    const wrong = pickWrong(vocab, c, 3, (x) => x.meaning_vi, rand);
     const opts = shuffle([c, ...wrong], rand);
     return {
       id: qid(kind, c.id, rand),
@@ -430,7 +464,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
   }
 
   if (kind === "meaning-vocab") {
-    const c = pickOne(vocab, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(vocabFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
     const wrong = pickWrong(vocab, c, 3, (x) => x.word, rand);
@@ -453,7 +487,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
   }
 
   if (kind === "vocab-kana") {
-    const c = pickOne(vocab, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(vocabFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
     const wrong = pickWrong(vocab, c, 3, (x) => x.kana, rand);
@@ -499,7 +533,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
       };
     }
     if (bag === vocab) {
-      const c = pickOne(vocab, used, (x) => `${kind}:${x.id}`, rand);
+      const c = pickOne(vocabFocus, used, (x) => `${kind}:${x.id}`, rand);
       if (!c) return null;
       mark(c.id);
       const wrong = pickWrong(vocab, c, 3, (x) => x.romaji, rand);
@@ -541,7 +575,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
   }
 
   if (kind === "cloze") {
-    const clozePool = vocab.filter((v) => v.example_sentence.includes(v.word) || v.example_sentence.includes(v.kana));
+    const clozePool = vocabFocus.filter((v) => v.example_sentence.includes(v.word) || v.example_sentence.includes(v.kana));
     const c = pickOne(clozePool, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
@@ -568,7 +602,7 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
     };
   }
 
-  const c = pickOne(vocab, used, (x) => `vocab-meaning:${x.id}`, rand);
+  const c = pickOne(vocabFocus, used, (x) => `vocab-meaning:${x.id}`, rand);
   if (!c) return null;
   used.add(`vocab-meaning:${c.id}`);
   const wrong = pickWrong(vocab, c, 3, (x) => x.meaning_vi, rand);
@@ -588,32 +622,40 @@ function buildOne(kind: QuizKind, used: Set<string>, rand: () => number, kanjiLe
   };
 }
 
+function nextFromKinds(
+  kinds: QuizKind[],
+  used: Set<string>,
+  rand: () => number,
+  kanjiLevel: KanjiQuizLevel,
+  poolOpts: QuizPoolOpts = {},
+): QuizQuestion | null {
+  for (let pass = 0; pass < 2; pass++) {
+    const remaining = kinds.filter((k) => !used.has(`mixkind:${k}`));
+    const order = shuffle(remaining.length ? remaining : kinds, rand);
+    if (!remaining.length) {
+      for (const key of [...used]) if (key.startsWith("mixkind:")) used.delete(key);
+    }
+    for (const k of order) {
+      const q = buildOne(k, used, rand, kanjiLevel, poolOpts);
+      if (q) {
+        used.add(`mixkind:${k}`);
+        return q;
+      }
+    }
+    for (const key of [...used]) {
+      if (key.startsWith("src:") || key.startsWith("mixkind:")) used.delete(key);
+    }
+  }
+  return buildOne(shuffle(kinds, rand)[0] ?? "vocab-meaning", used, rand, kanjiLevel, poolOpts);
+}
+
 export function nextQuestion(
   kind: QuizKind,
   used: Set<string>,
   rand: () => number = Math.random,
   kanjiLevel: KanjiQuizLevel = "core",
 ): QuizQuestion | null {
-  if (kind === "mix") {
-    for (let pass = 0; pass < 2; pass++) {
-      const remaining = MIX_KINDS.filter((k) => !used.has(`mixkind:${k}`));
-      const order = shuffle(remaining.length ? remaining : MIX_KINDS, rand);
-      if (!remaining.length) {
-        for (const key of [...used]) if (key.startsWith("mixkind:")) used.delete(key);
-      }
-      for (const k of order) {
-        const q = buildOne(k, used, rand, "core");
-        if (q) {
-          used.add(`mixkind:${k}`);
-          return q;
-        }
-      }
-      for (const key of [...used]) {
-        if (key.startsWith("src:") || key.startsWith("mixkind:")) used.delete(key);
-      }
-    }
-    return buildOne(shuffle(MIX_KINDS, rand)[0] ?? "vocab-meaning", used, rand, "core");
-  }
+  if (kind === "mix") return nextFromKinds(MIX_KINDS, used, rand, "core");
   const q = buildOne(kind, used, rand, kanjiLevel);
   if (q) return q;
   const stale = [...used].filter((k) => k.startsWith(`${kind}:`) || k.startsWith("src:"));
@@ -627,11 +669,21 @@ export function makeQuiz(
   rand: () => number = Math.random,
   kanjiLevel: KanjiQuizLevel = "core",
 ): QuizQuestion[] {
+  return makeFromKinds(kind === "mix" ? MIX_KINDS : [kind], count, rand, kanjiLevel);
+}
+
+export function makeFromKinds(
+  kinds: QuizKind[],
+  count: number,
+  rand: () => number = Math.random,
+  kanjiLevel: KanjiQuizLevel = "core",
+  poolOpts: QuizPoolOpts = {},
+): QuizQuestion[] {
   const used = new Set<string>();
   const out: QuizQuestion[] = [];
   let guard = 0;
   while (out.length < count && guard++ < count * 20) {
-    const q = nextQuestion(kind, used, rand, kanjiLevel);
+    const q = nextFromKinds(kinds, used, rand, kanjiLevel, poolOpts);
     if (!q) break;
     if (out.some((prev) => questionsClash(prev, q))) continue;
     out.push(q);
@@ -641,4 +693,29 @@ export function makeQuiz(
 
 export function makeDailyQuiz(date: string, count = 15) {
   return makeQuiz("mix", count, mulberry32(dateSeed(date)));
+}
+
+const DAILY_VOCAB_KINDS: QuizKind[] = [
+  "vocab-meaning",
+  "meaning-vocab",
+  "listen-vocab",
+  "vocab-kana",
+  "cloze",
+];
+
+export function makeDailyVocabQuiz(ids: string[], date: string, count = ids.length) {
+  return makeFromKinds(DAILY_VOCAB_KINDS, count, mulberry32(dateSeed(`${date}-vocab`)), "core", {
+    vocabLevel: "both",
+    focusIds: ids,
+  });
+}
+
+export function makeKanaReview(scope: KanaReviewScope, count = 12, rand: () => number = Math.random) {
+  const bag = scope === "hira" ? KANA_HIRA_KINDS : scope === "kata" ? KANA_KATA_KINDS : KANA_BOTH_KINDS;
+  return makeFromKinds(bag, count, rand, "core");
+}
+
+export function makeKanjiReview(level: KanjiQuizLevel = "N5", count = 12, rand: () => number = Math.random) {
+  const bag = level === "N3" || level === "N2" || level === "N1" ? KANJI_ADV_KINDS : KANJI_CORE_KINDS;
+  return makeFromKinds(bag, count, rand, level);
 }

@@ -32,6 +32,7 @@ function loadHostConfig() {
   const defaults = {
     publicOrigin: "http://khoitran3012.ddns.net:8080",
     databaseUrl: "",
+    pgliteMemory: false,
   };
   if (!existsSync(hostFile)) return defaults;
   try {
@@ -44,6 +45,7 @@ function loadHostConfig() {
           : defaults.publicOrigin,
       databaseUrl:
         typeof parsed.databaseUrl === "string" ? parsed.databaseUrl.trim() : "",
+      pgliteMemory: parsed.pgliteMemory === true,
     };
   } catch (err) {
     console.error("Không đọc được akari-host.json:", err instanceof Error ? err.message : err);
@@ -94,12 +96,21 @@ if (httpPublic) env.AKARI_INSECURE_COOKIES = "1";
 if (config.databaseUrl) {
   env.DATABASE_URL = config.databaseUrl;
   console.log("  Database: PostgreSQL (DATABASE_URL)");
+} else if (config.pgliteMemory === true) {
+  env.AKARI_PGLITE_MEMORY = "1";
+  console.log("  Database: PGLite in-memory (pgliteMemory: true)");
 } else {
   const pgliteDir = join(dataDir, "pglite");
   mkdirSync(pgliteDir, { recursive: true });
-  env.AKARI_PGLITE_DIR = pgliteDir;
+  // POSIX slashes — PGLite WASM on Windows aborts on `D:\...` backslashes.
+  env.AKARI_PGLITE_DIR = pgliteDir.replace(/\\/g, "/");
   console.log("  Database: PostgreSQL nhúng (PGLite) lưu tại data/pglite");
   console.log("            Muốn dùng Postgres riêng, điền databaseUrl trong akari-host.json");
+}
+
+const major = Number.parseInt(String(process.versions.node).split(".")[0] || "0", 10);
+if (major >= 24) {
+  console.log("  Lưu ý: Node " + process.version + " — nếu PGLite lỗi, cài Node 22 LTS (nodejs.org).");
 }
 
 console.log("");
