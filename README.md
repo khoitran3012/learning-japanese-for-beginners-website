@@ -1,166 +1,86 @@
-# Akari — học tiếng Nhật từ số 0
+# Akari — học tiếng Nhật online miễn phí (N5, N4)
 
-Ứng dụng web (PWA) học tiếng Nhật cho người Việt mới bắt đầu, ưu tiên **N5 → N4**. Chạy trong trình duyệt, **local-first / offline-first**, không bắt buộc tài khoản hay máy chủ.
+Ứng dụng web học tiếng Nhật miễn phí cho người mới: hiragana, katakana, kanji, từ vựng, ngữ pháp, luyện nghe và từ điển Nhật–Việt. Lộ trình chính là JLPT N5 đến N4. Mã nguồn mở MIT. Build trên Grok.
 
-Luồng chính:
+## Mục lục
 
-Tra từ → xem nghĩa → nghe → ví dụ → kanji → JLPT → thêm vào học → flashcard → quiz → spaced repetition.
+- [Học tiếng Nhật N5–N4](#học-tiếng-nhật-n5n4)
+- [Từ điển Nhật Việt](#từ-điển-nhật-việt)
+- [Miễn phí, không thu phí](#miễn-phí-không-thu-phí)
+- [Mã nguồn mở MIT](#mã-nguồn-mở-mit)
+- [Câu hỏi thường gặp](#câu-hỏi-thường-gặp)
+- [Chạy trên máy](#chạy-trên-máy)
 
-## Tính năng
+## Học tiếng Nhật N5–N4
 
-- Hiragana / Katakana đầy đủ, romaji, luyện viết
-- Từ vựng, kanji, ngữ pháp N5–N4 (nội dung gốc)
-- Từ điển Nhật–Việt: kanji, kana, romaji, tiếng Việt, gợi ý gần đúng
-- Flashcard + SRS (SM-2 / Leitner)
-- Quiz, luyện đọc, luyện nghe (Web Speech API, giọng ja-JP trên máy)
-- Lộ trình, thống kê, yêu thích, từ của tôi
-- Sao lưu / khôi phục JSON trên máy
+Akari dành cho người bắt đầu học tiếng Nhật từ số 0, theo thứ tự người Việt hay học: bảng chữ, từ, kanji, rồi nghe nói.
 
-## Dữ liệu bài học
+- Lộ trình học JLPT N5 và N4
+- Hiragana và katakana, có đánh dấu chữ đã nhớ
+- Kanji kèm Hán-Việt, âm on, âm kun và thứ tự nét
+- Bộ thủ, cách nhớ chữ cho người mới
+- Từ vựng, ngữ pháp, luyện nghe, luyện đọc
+- Bài mỗi ngày: kanji mới, từ mới, bài kiểm tra
+- Thẻ ôn và vườn Sakura (tiến độ lưu trên trình duyệt)
 
-Nằm trong `src/data/`. Tự viết, không sao chép giáo trình thương mại.
+Kanji N3–N1 vẫn tra cứu được. Phần học có lộ trình tập trung N5–N4.
 
-## Dictionary
+## Từ điển Nhật Việt
 
-### Dữ liệu lấy từ đâu
+Có từ điển Nhật–Việt để tra khi học, không cần rời trang.
 
-Bộ từ điển **đi kèm** được ghép từ:
+Tra bằng kanji, hiragana, katakana, romaji hoặc tiếng Việt. Mỗi mục có cách đọc, nghĩa và ví dụ khi dữ liệu có sẵn. Bộ từ đi kèm lấy từ từ vựng N5–N4 trong `src/data/`. Có thể nhập thêm JSON tại `/tools/import-dictionary`.
 
-1. `src/data/vocabulary-n5.ts` và `vocabulary-n4.ts` — từ vựng gốc, nghĩa tiếng Việt, câu ví dụ tự viết
-2. `src/data/dictionary-extra.ts` — biểu hiện / từ katakana bổ sung
-3. (Tùy chọn) mục bạn import, lưu IndexedDB store `dictionary`
+## Miễn phí, không thu phí
 
-**Không** dùng Google Translate, Google Dictionary, hay scraping từ điển thương mại.
+Bản chính thức miễn phí toàn bộ: bài học, từ điển và AI. Không bán khóa học, không khóa tính năng, không thu phí.
 
-### License
+Nếu ai thu tiền để dùng Akari, bán lại bản này, gắn tường phí, hoặc thu phí phần AI: báo tác giả **Khoi Tran**, kèm đường dẫn, ảnh và cách họ thu tiền. Tác giả sẽ yêu cầu gỡ và kiện khi đủ căn cứ (mạo danh hoặc lừa thu phí trên phần mềm miễn phí).
 
-- Mã nguồn: MIT (`LICENSE.md`)
-- Dữ liệu đi kèm: nội dung gốc, phát hành cùng MIT
-- Import thêm: **bạn** chịu trách nhiệm giấy phép file JSON mang vào (ví dụ JMdict là CC-BY-SA — nếu import, tuân thủ copyleft của nguồn đó; Akari không đóng gói JMdict)
+## Mã nguồn mở MIT
 
-### Cách cập nhật
+Giấy phép: [MIT](LICENSE.md). Copyright (c) 2026 Akari.
 
-Sửa file TypeScript trong `src/data/` (`vocabulary-n5.ts`, `vocabulary-n4.ts`, `dictionary-extra.ts`, `dictionary-core.ts`), hoặc import JSON qua **Cài đặt → Import / kiểm tra từ điển**.
+Được xem, sửa và chia sẻ mã nguồn. Phải giữ dòng giấy phép. Không được xóa thông báo miễn phí rồi bán như sản phẩm thu phí chính thức của Akari.
 
-Tra cứu bổ sung (Grok) khi không có kết quả local: nút **Tra cứu bổ sung** trên trang từ điển, hoặc bật *Tự tra cứu bổ sung* trong Cài đặt. Kết quả xem trước rồi mới lưu IndexedDB.
+Bài học trong `src/data/` là nội dung gốc, cùng giấy phép MIT. Không sao chép giáo trình thương mại và không đóng gói JMdict. File từ điển bạn tự nhập thì bạn tự chịu giấy phép của nguồn đó.
 
-Tìm kiếm nhận: kanji, kana, romaji (kể cả thiếu dấu dài / sokuon), nghĩa Việt có/không dấu, và dạng ます / て / ない.
+## Câu hỏi thường gặp
 
-### Cách import dictionary
+### Học tiếng Nhật online trên Akari có mất phí không?
 
-1. Mở `/tools/import-dictionary`
-2. Dán JSON dạng `{ "entries": [ ... ] }` hoặc mảng
-3. **Kiểm tra** — bắt duplicate, JSON lỗi, thiếu kana, JLPT/POS sai, thiếu nghĩa
-4. **Lưu vào IndexedDB** — trộn với bộ đi kèm khi tra cứu
-5. **Chạy acceptance** — `学校`, `がっこう`, `gakkou`, `trường học`, `食べる`, `gakko`
+Không. Ứng dụng, từ điển và AI đều miễn phí.
 
-Trường tối thiểu của một mục:
+### Akari dạy tới trình độ nào?
 
-```json
-{
-  "kanji": "学校",
-  "kana": "がっこう",
-  "romaji": "gakkou",
-  "meanings": ["trường học"],
-  "part_of_speech": ["danh từ"],
-  "jlpt": ["N5"]
-}
-```
+Lộ trình học chính là N5 và N4. Từ điển và kanji cao hơn dùng để tra cứu.
 
-Mẫu: `public/data/dictionary.sample.json`
+### Có từ điển Nhật Việt không?
 
-### Cách build search index
+Có. Tra kanji, kana, romaji và nghĩa tiếng Việt ngay trong ứng dụng.
 
-Index được tạo lúc import (`src/lib/dictionary/import.ts` → `buildSearchIndex`):
+### Akari được làm bằng gì?
 
-- khóa: kanji, kana, romaji (kể cả biến thể `ou`/`o`), nghĩa, tag
-- giá trị: danh sách id
+Build trên Grok. Chạy trên trình duyệt. Tiến độ học lưu trên máy bạn.
 
-Tra cứu runtime dùng `searchLocal` (exact + prefix + fuzzy / Levenshtein), không cần mạng.
+### Ai thu phí thì báo ở đâu?
 
-Xuất toàn bộ catalog: nút **Xuất dictionary.json** trên trang import.
+Báo Khoi Tran kèm link và ảnh chụp để yêu cầu gỡ và kiện nếu đủ căn cứ.
 
-## Lưu trữ
+## Chạy trên máy
 
-- IndexedDB `akari-nihongo`: SRS, yêu thích, từ của tôi, quiz, lịch sử tra, thống kê ngày, từ điển import
-- localStorage `akari-settings`: giao diện và tùy chọn học
+Cần Node.js 22 LTS. Trên Windows, mở `start-akari.bat`, rồi vào địa chỉ máy in ra (thường là `http://localhost:8080`).
 
-Sao lưu trong **Cài đặt**.
-
-## Chạy trên máy (Windows)
-
-Double-click `start-akari.bat`. File tự:
-
-1. Tìm **Node.js** và **npm** (PATH, nvm-windows, `Program Files\nodejs`, Scoop, Volta, Chocolatey, fnm)
-2. Bỏ qua giả Node của Microsoft Store
-3. `npm install` lần đầu nếu chưa có thư viện
-4. Khởi chạy Akari
-
-Nếu cửa sổ báo `'set' is not recognized` / `package.json not found`: dùng đúng file `start-akari.bat` mới trong thư mục project (không copy nội dung vào Notepad rồi lưu Unicode).
-
-Chưa có Node? Cài bản **22 LTS** tại [nodejs.org](https://nodejs.org) (file `.msi`, giữ mục Add to PATH), rồi bấm lại `start-akari.bat` — không cần restart máy. Tránh Node 24 nếu PGLite báo lỗi khởi tạo.
-
-Khi hiện sẵn sàng, mở địa chỉ trong `akari-host.json` (mặc định http://khoitran3012.ddns.net:8080 hoặc http://localhost:8080).
-
-### Lỗi `PGlite failed to initialize properly`
-
-PGLite (Postgres nhúng) hay hỏng trên Windows khi:
-
-- Node 24 (WASM) — dùng **Node 22 LTS**
-- Thư mục `data\pglite` bị dở dang từ lần chạy trước
-
-Cách xử lý:
-
-1. Đóng cửa sổ npm, xóa hẳn thư mục `data\pglite` (và `data\pglite.broken-*` nếu có)
-2. Cài [Node 22 LTS](https://nodejs.org) rồi chạy lại `start-akari.bat`
-3. App tự thử lại: đĩa → thư mục mới → in-memory, **không còn tắt cả web** nếu SQL lỗi
-4. Muốn bỏ qua đĩa: trong `akari-host.json` thêm `"pgliteMemory": true` (tài khoản mất khi tắt máy)
-5. Hoặc cài Postgres và điền `databaseUrl` (mục Database SQL bên dưới)
-
-
-## Host trên khoitran3012.ddns.net (sửa lỗi đăng nhập)
-
-App tự chấp nhận origin cùng domain và đổi cookie sang dạng HTTP (không cần `__Host-` / Secure) khi bạn mở bằng `http://khoitran3012.ddns.net`.
-
-Vẫn nên chạy `start-akari.bat` để:
-
-1. Khớp `publicOrigin` trong `akari-host.json` với địa chỉ bạn mở (kèm cổng `:8080` nếu có)
-2. Lưu tài khoản bằng SQL (file `data/pglite` hoặc Postgres trong `databaseUrl`)
-
-Trên domain riêng, dùng **email + mật khẩu**. Google / X chỉ trên bản Grok. Cho phép cookie trên trình duyệt.
-
-Có HTTPS thì đổi `publicOrigin` sang `https://...`.
-
-## Database SQL
-
-Mặc định khi self-host: **PostgreSQL nhúng (PGLite)** lưu tại `data/pglite` — tài khoản và bảng xếp hạng còn sau khi tắt máy.
-
-Muốn Postgres riêng:
-
-1. Cài PostgreSQL, tạo database `akari`, hoặc `docker compose -f docker-compose.akari.yml up -d`
-2. Trong `akari-host.json`:
+Muốn mở cho nhiều người, tự dùng tên miền công cộng và ghi vào `akari-host.json`:
 
 ```json
 {
-  "publicOrigin": "http://khoitran3012.ddns.net:8080",
-  "databaseUrl": "postgres://akari:akari@127.0.0.1:5432/akari"
+  "publicOrigin": "http://localhost:8080"
 }
 ```
 
-3. Chạy lại `start-akari.bat` — schema (`migrations/*.sql`) tự apply.
+Đổi `publicOrigin` thành đúng địa chỉ người học mở, kể cả cổng. Có HTTPS thì dùng `https://`.
 
-Không tạo file `.env`. Mọi cấu hình host nằm trong `akari-host.json`.
+Nếu báo `PGlite failed to initialize`: dùng Node 22, xóa thư mục `data/pglite`, chạy lại. Lỗi SQL thì ứng dụng vẫn mở ở chế độ bộ nhớ.
 
-## Phát âm
-
-Mặc định Web Speech API (`ja-JP`). Nếu máy chưa có giọng Nhật, app vẫn học được — chỉ không đọc.
-
-## Kiến trúc
-
-```
-src/data/          bài học + từ điển gốc
-src/lib/akari/     SRS, IndexedDB, TTS, cài đặt
-src/lib/dictionary tìm kiếm, import, catalog
-src/lib/api/       DataProvider local-first (API tùy chọn)
-src/routes/_app/   trang học
-```
+Tiến độ nằm trong IndexedDB. Cài đặt nằm trong localStorage. Sao lưu ở mục **Cài đặt**. Giọng đọc dùng tiếng Nhật của trình duyệt (`ja-JP`). Máy không có giọng đó vẫn học được, chỉ không nghe được.
