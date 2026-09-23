@@ -143,7 +143,7 @@ function HomePage() {
           <Link to="/garden">Vườn Sakura</Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link to="/play">Giải trí</Link>
+          <Link to="/songs">Bài hát anime</Link>
         </Button>
         <Button asChild variant="secondary">
           <Link to="/leaderboard">Bảng thi đua</Link>

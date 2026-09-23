@@ -8,6 +8,7 @@ import { RADICALS } from "@/data/radicals";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { LESSONS } from "@/data/lessons";
+import { SONGS } from "@/data/songs";
 import { searchLocal } from "@/lib/dictionary/local";
 import { useDictionary } from "@/lib/dictionary/catalog";
 import { foldVi } from "@/lib/dictionary/text";
@@ -83,6 +84,24 @@ export function SearchDialog({
     for (const l of LESSONS) {
       if (foldVi(l.title).includes(qFold) || foldVi(l.summary).includes(qFold)) {
         out.push({ type: "Bài học", title: l.title, sub: l.summary, to: `/path/${l.id}` });
+      }
+    }
+    for (const song of SONGS) {
+      if (
+        song.title.includes(query) ||
+        song.titleKana.includes(query) ||
+        foldVi(song.romaji).includes(qFold) ||
+        foldVi(song.anime).includes(qFold) ||
+        foldVi(song.series ?? "").includes(qFold) ||
+        foldVi(song.artist).includes(qFold) ||
+        foldVi(song.title).includes(qFold)
+      ) {
+        out.push({
+          type: "Bài hát",
+          title: song.title,
+          sub: `${song.anime} · ${song.artist}`,
+          to: `/songs/${song.id}`,
+        });
       }
     }
     for (const d of searchLocal(dict, { q: query, limit: 8 })) {

@@ -31,8 +31,8 @@ import { Route as AppQuizRouteImport } from './routes/_app/quiz'
 import { Route as AppRadicalsRouteImport } from './routes/_app/radicals'
 import { Route as AppReadRouteImport } from './routes/_app/read'
 import { Route as AppReviewRouteImport } from './routes/_app/review'
-import { Route as AppRomajiRouteImport } from './routes/_app/romaji'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppSongsRouteImport } from './routes/_app/songs'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
 import { Route as AppVocabularyRouteImport } from './routes/_app/vocabulary'
 import { Route as AppDictionaryIndexRouteImport } from './routes/_app/dictionary.index'
@@ -49,6 +49,8 @@ import { Route as AppPathIndexRouteImport } from './routes/_app/path.index'
 import { Route as AppPathIdRouteImport } from './routes/_app/path.$id'
 import { Route as AppRadicalsIndexRouteImport } from './routes/_app/radicals.index'
 import { Route as AppRadicalsIdRouteImport } from './routes/_app/radicals.$id'
+import { Route as AppSongsIndexRouteImport } from './routes/_app/songs.index'
+import { Route as AppSongsIdRouteImport } from './routes/_app/songs.$id'
 import { Route as AppToolsImportDictionaryRouteImport } from './routes/_app/tools.import-dictionary'
 import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary.index'
 import { Route as AppVocabularyIdRouteImport } from './routes/_app/vocabulary.$id'
@@ -163,14 +165,14 @@ const AppReviewRoute = AppReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRomajiRoute = AppRomajiRouteImport.update({
-  id: '/romaji',
-  path: '/romaji',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSongsRoute = AppSongsRouteImport.update({
+  id: '/songs',
+  path: '/songs',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStatsRoute = AppStatsRouteImport.update({
@@ -253,6 +255,16 @@ const AppRadicalsIdRoute = AppRadicalsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppRadicalsRoute,
 } as any)
+const AppSongsIndexRoute = AppSongsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSongsRoute,
+} as any)
+const AppSongsIdRoute = AppSongsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppSongsRoute,
+} as any)
 const AppToolsImportDictionaryRoute =
   AppToolsImportDictionaryRouteImport.update({
     id: '/tools/import-dictionary',
@@ -297,8 +309,8 @@ export interface FileRoutesByFullPath {
   '/radicals': typeof AppRadicalsRouteWithChildren
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
-  '/romaji': typeof AppRomajiRoute
   '/settings': typeof AppSettingsRoute
+  '/songs': typeof AppSongsRouteWithChildren
   '/stats': typeof AppStatsRoute
   '/vocabulary': typeof AppVocabularyRouteWithChildren
   '/dictionary/$id': typeof AppDictionaryIdRoute
@@ -308,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/katakana/$id': typeof AppKatakanaIdRoute
   '/path/$id': typeof AppPathIdRoute
   '/radicals/$id': typeof AppRadicalsIdRoute
+  '/songs/$id': typeof AppSongsIdRoute
   '/tools/import-dictionary': typeof AppToolsImportDictionaryRoute
   '/vocabulary/$id': typeof AppVocabularyIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -318,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/katakana/': typeof AppKatakanaIndexRoute
   '/path/': typeof AppPathIndexRoute
   '/radicals/': typeof AppRadicalsIndexRoute
+  '/songs/': typeof AppSongsIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
 }
 export interface FileRoutesByTo {
@@ -334,7 +348,6 @@ export interface FileRoutesByTo {
   '/quiz': typeof AppQuizRoute
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
-  '/romaji': typeof AppRomajiRoute
   '/settings': typeof AppSettingsRoute
   '/stats': typeof AppStatsRoute
   '/': typeof AppIndexRoute
@@ -345,6 +358,7 @@ export interface FileRoutesByTo {
   '/katakana/$id': typeof AppKatakanaIdRoute
   '/path/$id': typeof AppPathIdRoute
   '/radicals/$id': typeof AppRadicalsIdRoute
+  '/songs/$id': typeof AppSongsIdRoute
   '/tools/import-dictionary': typeof AppToolsImportDictionaryRoute
   '/vocabulary/$id': typeof AppVocabularyIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -355,6 +369,7 @@ export interface FileRoutesByTo {
   '/katakana': typeof AppKatakanaIndexRoute
   '/path': typeof AppPathIndexRoute
   '/radicals': typeof AppRadicalsIndexRoute
+  '/songs': typeof AppSongsIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
 }
 export interface FileRoutesById {
@@ -380,8 +395,8 @@ export interface FileRoutesById {
   '/_app/radicals': typeof AppRadicalsRouteWithChildren
   '/_app/read': typeof AppReadRoute
   '/_app/review': typeof AppReviewRoute
-  '/_app/romaji': typeof AppRomajiRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/songs': typeof AppSongsRouteWithChildren
   '/_app/stats': typeof AppStatsRoute
   '/_app/vocabulary': typeof AppVocabularyRouteWithChildren
   '/_app/': typeof AppIndexRoute
@@ -392,6 +407,7 @@ export interface FileRoutesById {
   '/_app/katakana/$id': typeof AppKatakanaIdRoute
   '/_app/path/$id': typeof AppPathIdRoute
   '/_app/radicals/$id': typeof AppRadicalsIdRoute
+  '/_app/songs/$id': typeof AppSongsIdRoute
   '/_app/tools/import-dictionary': typeof AppToolsImportDictionaryRoute
   '/_app/vocabulary/$id': typeof AppVocabularyIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -402,6 +418,7 @@ export interface FileRoutesById {
   '/_app/katakana/': typeof AppKatakanaIndexRoute
   '/_app/path/': typeof AppPathIndexRoute
   '/_app/radicals/': typeof AppRadicalsIndexRoute
+  '/_app/songs/': typeof AppSongsIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
 }
 export interface FileRouteTypes {
@@ -428,8 +445,8 @@ export interface FileRouteTypes {
     | '/radicals'
     | '/read'
     | '/review'
-    | '/romaji'
     | '/settings'
+    | '/songs'
     | '/stats'
     | '/vocabulary'
     | '/dictionary/$id'
@@ -439,6 +456,7 @@ export interface FileRouteTypes {
     | '/katakana/$id'
     | '/path/$id'
     | '/radicals/$id'
+    | '/songs/$id'
     | '/tools/import-dictionary'
     | '/vocabulary/$id'
     | '/api/auth/$'
@@ -449,6 +467,7 @@ export interface FileRouteTypes {
     | '/katakana/'
     | '/path/'
     | '/radicals/'
+    | '/songs/'
     | '/vocabulary/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -465,7 +484,6 @@ export interface FileRouteTypes {
     | '/quiz'
     | '/read'
     | '/review'
-    | '/romaji'
     | '/settings'
     | '/stats'
     | '/'
@@ -476,6 +494,7 @@ export interface FileRouteTypes {
     | '/katakana/$id'
     | '/path/$id'
     | '/radicals/$id'
+    | '/songs/$id'
     | '/tools/import-dictionary'
     | '/vocabulary/$id'
     | '/api/auth/$'
@@ -486,6 +505,7 @@ export interface FileRouteTypes {
     | '/katakana'
     | '/path'
     | '/radicals'
+    | '/songs'
     | '/vocabulary'
   id:
     | '__root__'
@@ -510,8 +530,8 @@ export interface FileRouteTypes {
     | '/_app/radicals'
     | '/_app/read'
     | '/_app/review'
-    | '/_app/romaji'
     | '/_app/settings'
+    | '/_app/songs'
     | '/_app/stats'
     | '/_app/vocabulary'
     | '/_app/'
@@ -522,6 +542,7 @@ export interface FileRouteTypes {
     | '/_app/katakana/$id'
     | '/_app/path/$id'
     | '/_app/radicals/$id'
+    | '/_app/songs/$id'
     | '/_app/tools/import-dictionary'
     | '/_app/vocabulary/$id'
     | '/api/auth/$'
@@ -532,6 +553,7 @@ export interface FileRouteTypes {
     | '/_app/katakana/'
     | '/_app/path/'
     | '/_app/radicals/'
+    | '/_app/songs/'
     | '/_app/vocabulary/'
   fileRoutesById: FileRoutesById
 }
@@ -697,18 +719,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReviewRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/romaji': {
-      id: '/_app/romaji'
-      path: '/romaji'
-      fullPath: '/romaji'
-      preLoaderRoute: typeof AppRomajiRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/songs': {
+      id: '/_app/songs'
+      path: '/songs'
+      fullPath: '/songs'
+      preLoaderRoute: typeof AppSongsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/stats': {
@@ -822,6 +844,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/radicals/$id'
       preLoaderRoute: typeof AppRadicalsIdRouteImport
       parentRoute: typeof AppRadicalsRoute
+    }
+    '/_app/songs/': {
+      id: '/_app/songs/'
+      path: '/'
+      fullPath: '/songs/'
+      preLoaderRoute: typeof AppSongsIndexRouteImport
+      parentRoute: typeof AppSongsRoute
+    }
+    '/_app/songs/$id': {
+      id: '/_app/songs/$id'
+      path: '/$id'
+      fullPath: '/songs/$id'
+      preLoaderRoute: typeof AppSongsIdRouteImport
+      parentRoute: typeof AppSongsRoute
     }
     '/_app/tools/import-dictionary': {
       id: '/_app/tools/import-dictionary'
@@ -951,6 +987,20 @@ const AppRadicalsRouteWithChildren = AppRadicalsRoute._addFileChildren(
   AppRadicalsRouteChildren,
 )
 
+interface AppSongsRouteChildren {
+  AppSongsIdRoute: typeof AppSongsIdRoute
+  AppSongsIndexRoute: typeof AppSongsIndexRoute
+}
+
+const AppSongsRouteChildren: AppSongsRouteChildren = {
+  AppSongsIdRoute: AppSongsIdRoute,
+  AppSongsIndexRoute: AppSongsIndexRoute,
+}
+
+const AppSongsRouteWithChildren = AppSongsRoute._addFileChildren(
+  AppSongsRouteChildren,
+)
+
 interface AppVocabularyRouteChildren {
   AppVocabularyIdRoute: typeof AppVocabularyIdRoute
   AppVocabularyIndexRoute: typeof AppVocabularyIndexRoute
@@ -985,8 +1035,8 @@ interface AppRouteChildren {
   AppRadicalsRoute: typeof AppRadicalsRouteWithChildren
   AppReadRoute: typeof AppReadRoute
   AppReviewRoute: typeof AppReviewRoute
-  AppRomajiRoute: typeof AppRomajiRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppSongsRoute: typeof AppSongsRouteWithChildren
   AppStatsRoute: typeof AppStatsRoute
   AppVocabularyRoute: typeof AppVocabularyRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
@@ -1013,8 +1063,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppRadicalsRoute: AppRadicalsRouteWithChildren,
   AppReadRoute: AppReadRoute,
   AppReviewRoute: AppReviewRoute,
-  AppRomajiRoute: AppRomajiRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppSongsRoute: AppSongsRouteWithChildren,
   AppStatsRoute: AppStatsRoute,
   AppVocabularyRoute: AppVocabularyRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
