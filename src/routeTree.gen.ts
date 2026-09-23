@@ -31,6 +31,7 @@ import { Route as AppQuizRouteImport } from './routes/_app/quiz'
 import { Route as AppRadicalsRouteImport } from './routes/_app/radicals'
 import { Route as AppReadRouteImport } from './routes/_app/read'
 import { Route as AppReviewRouteImport } from './routes/_app/review'
+import { Route as AppRomajiRouteImport } from './routes/_app/romaji'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSongsRouteImport } from './routes/_app/songs'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
@@ -163,6 +164,11 @@ const AppReadRoute = AppReadRouteImport.update({
 const AppReviewRoute = AppReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRomajiRoute = AppRomajiRouteImport.update({
+  id: '/romaji',
+  path: '/romaji',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/radicals': typeof AppRadicalsRouteWithChildren
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
+  '/romaji': typeof AppRomajiRoute
   '/settings': typeof AppSettingsRoute
   '/songs': typeof AppSongsRouteWithChildren
   '/stats': typeof AppStatsRoute
@@ -348,6 +355,7 @@ export interface FileRoutesByTo {
   '/quiz': typeof AppQuizRoute
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
+  '/romaji': typeof AppRomajiRoute
   '/settings': typeof AppSettingsRoute
   '/stats': typeof AppStatsRoute
   '/': typeof AppIndexRoute
@@ -395,6 +403,7 @@ export interface FileRoutesById {
   '/_app/radicals': typeof AppRadicalsRouteWithChildren
   '/_app/read': typeof AppReadRoute
   '/_app/review': typeof AppReviewRoute
+  '/_app/romaji': typeof AppRomajiRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/songs': typeof AppSongsRouteWithChildren
   '/_app/stats': typeof AppStatsRoute
@@ -445,6 +454,7 @@ export interface FileRouteTypes {
     | '/radicals'
     | '/read'
     | '/review'
+    | '/romaji'
     | '/settings'
     | '/songs'
     | '/stats'
@@ -484,6 +494,7 @@ export interface FileRouteTypes {
     | '/quiz'
     | '/read'
     | '/review'
+    | '/romaji'
     | '/settings'
     | '/stats'
     | '/'
@@ -530,6 +541,7 @@ export interface FileRouteTypes {
     | '/_app/radicals'
     | '/_app/read'
     | '/_app/review'
+    | '/_app/romaji'
     | '/_app/settings'
     | '/_app/songs'
     | '/_app/stats'
@@ -717,6 +729,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof AppReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/romaji': {
+      id: '/_app/romaji'
+      path: '/romaji'
+      fullPath: '/romaji'
+      preLoaderRoute: typeof AppRomajiRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -1035,6 +1054,7 @@ interface AppRouteChildren {
   AppRadicalsRoute: typeof AppRadicalsRouteWithChildren
   AppReadRoute: typeof AppReadRoute
   AppReviewRoute: typeof AppReviewRoute
+  AppRomajiRoute: typeof AppRomajiRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSongsRoute: typeof AppSongsRouteWithChildren
   AppStatsRoute: typeof AppStatsRoute
@@ -1063,6 +1083,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRadicalsRoute: AppRadicalsRouteWithChildren,
   AppReadRoute: AppReadRoute,
   AppReviewRoute: AppReviewRoute,
+  AppRomajiRoute: AppRomajiRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSongsRoute: AppSongsRouteWithChildren,
   AppStatsRoute: AppStatsRoute,
