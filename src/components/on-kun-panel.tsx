@@ -96,12 +96,27 @@ export function OnKunGuide() {
     <Card>
       <CardContent className="space-y-4">
         <div>
-          <h2 className="font-medium">Onyomi và Kunyomi khác nhau chỗ nào?</h2>
+          <h2 className="font-medium">On và Kun là gì?</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted">
-            Một kanji có hai họ âm. <span className="text-fg">On</span> gần Hán-Việt, dùng khi{" "}
-            <span className="text-fg">ghép chữ</span>. <span className="text-fg">Kun</span> là âm Nhật, dùng khi chữ{" "}
-            <span className="text-fg">đứng một mình</span> hoặc có <span className="text-fg">đuôi hiragana</span>.
+            Mỗi kanji thường có <span className="text-fg">hai cách đọc</span>. Không phải “một chữ một âm”.
           </p>
+          <ol className="mt-3 space-y-2 text-sm leading-relaxed text-muted">
+            <li>
+              <span className="font-medium text-fg">On (音・onyomi) = âm Hán.</span> Âm Nhật vay từ tiếng Hán, nên gần
+              Hán-Việt. Dùng khi <span className="text-fg">hai kanji ghép lại</span>, không có hiragana chen giữa. Từ điển
+              viết on bằng katakana: 食 → ショク. Ví dụ 食堂 đọc しょくどう (Thực Đường, nhà ăn).
+            </li>
+            <li>
+              <span className="font-medium text-fg">Kun (訓・kunyomi) = âm Nhật.</span> Cách người Nhật gọi sự vật trước
+              khi có chữ Hán. Dùng khi chữ <span className="text-fg">đứng một mình</span> hoặc có{" "}
+              <span className="text-fg">đuôi hiragana</span> (okurigana). Từ điển viết kun bằng hiragana, dấu ・ chỗ cắt
+              đuôi: た・べる. Ví dụ 食べる đọc たべる (ăn), 山 đọc やま (núi).
+            </li>
+            <li>
+              <span className="font-medium text-fg">Cách chọn nhanh.</span> Thấy kanji + kanji → thử on. Thấy kanji +
+              hiragana hoặc chữ lẻ → thử kun. Không chắc thì bấm nghe, đừng đoán từ Hán-Việt thành cách đọc.
+            </li>
+          </ol>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <ExampleBlock

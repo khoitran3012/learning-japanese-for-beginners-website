@@ -10,7 +10,28 @@ const SOUND_ROWS: Array<{ label: string; jp: string; speak: string; note: string
 
 export function KanjiLearnGuide() {
   return (
-    <div className="mb-6 grid gap-3 lg:grid-cols-2">
+    <div className="mb-6 space-y-3">
+      <Card>
+        <CardContent className="space-y-2 py-5">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">読み</p>
+          <h2 className="font-medium text-fg">On là gì, Kun là gì?</h2>
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="rounded-[10px] border border-primary/25 bg-choice px-3 py-3">
+              <p className="text-sm font-medium text-fg">On · âm Hán</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">
+                Gần Hán-Việt. Hai chữ dính nhau thì đọc on. 食堂 = しょく + どう = しょくどう (nhà ăn). Từ điển ghi katakana.
+              </p>
+            </div>
+            <div className="rounded-[10px] border border-forest/30 bg-mist px-3 py-3">
+              <p className="text-sm font-medium text-fg">Kun · âm Nhật</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">
+                Tên đồ vật, hoặc chữ có đuôi hiragana. 食べる = た + べる = たべる (ăn). 山 một mình = やま. Từ điển ghi hiragana.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <div className="grid gap-3 lg:grid-cols-2">
       <Card>
         <CardContent className="space-y-3 py-5">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">音韻</p>
@@ -73,6 +94,7 @@ export function KanjiLearnGuide() {
           </ol>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

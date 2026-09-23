@@ -12,12 +12,12 @@ import { OnKunForKanji, OnKunGuide, ReadingTag, classifyExample, exampleKindLabe
 import { allKanji, kanjiById, kanjiByLevel, kanjiNeighbors } from "@/data/kanji-set";
 import { kanjiLessonOf } from "@/data/kanji-lessons";
 import { radicalOfKanji } from "@/data/radicals";
-import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { kanaToRomaji } from "@/lib/akari/kana-util";
 import { allKanjiExamples } from "@/lib/akari/examples";
 import { kanjiFurigana, kunReadings, onReadings } from "@/lib/akari/on-kun";
 import { JpText } from "@/components/jp-text";
+import { RememberActions } from "@/components/remember-actions";
 
 export const Route = createFileRoute("/_app/kanji/$id")({ component: Page });
 
@@ -25,8 +25,6 @@ function Page() {
   const { id } = Route.useParams();
   const k = kanjiById(id);
   if (!k) throw notFound();
-  const remember = useProgress((s) => s.remember);
-  const forgot = useProgress((s) => s.forgot);
   const showRomaji = useSettings((s) => s.showRomaji);
 
   const onRows = onReadings(k);
@@ -82,6 +80,7 @@ function Page() {
           <p className="mt-2 max-w-sm text-center text-xs text-subtle">
             Máy đọc hiragana, không đọc trực tiếp chữ kanji — tránh phát âm sai.
           </p>
+          <RememberActions className="mt-5" id={k.id} itemType="kanji" />
         </CardContent>
       </Card>
 
@@ -176,7 +175,7 @@ function Page() {
 
       <AiTutor seed={`Giải thích kanji ${k.character} (Hán-Việt: ${k.han_viet || "—"}; nghĩa Việt: ${k.meaning_vi}): onyomi ${k.onyomi.join("/")} = ${onRows.map((r) => `${r.hira} ${r.romaji}`).join(", ")}, kunyomi ${kunRows.map((r) => `${r.kana} ${r.romaji}`).join(", ")}. Cách dùng: ${usage.tip}`} />
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-4">
         {prev ? (
           <Button asChild variant="secondary">
             <Link to="/kanji/$id" params={{ id: prev.id }}>
@@ -186,14 +185,7 @@ function Page() {
         ) : (
           <span />
         )}
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => void forgot(k.id, "kanji")}>
-            Cần ôn
-          </Button>
-          <Button variant="success" onClick={() => void remember(k.id, "kanji")}>
-            Đã nhớ
-          </Button>
-        </div>
+        <RememberActions id={k.id} itemType="kanji" />
         {next ? (
           <Button asChild>
             <Link to="/kanji/$id" params={{ id: next.id }}>

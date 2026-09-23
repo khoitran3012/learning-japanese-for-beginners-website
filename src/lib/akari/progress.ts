@@ -113,9 +113,17 @@ export const useProgress = create<ProgressState>((set, get) => ({
   mark: async (id, itemType, label) => {
     const current = get().srs[id] ?? newSrsItem(id, itemType);
     const next = reviewSrs(current, qualityFromLabel(label));
-    await putSrs(next);
     set((s) => ({ srs: { ...s.srs, [id]: next } }));
-    await get().logStudy(1, 0.4);
+    try {
+      await putSrs(next);
+    } catch (err) {
+      console.error("[srs] không ghi được IndexedDB:", err);
+    }
+    try {
+      await get().logStudy(1, 0.4);
+    } catch (err) {
+      console.error("[srs] không ghi được buổi học:", err);
+    }
     void get().syncPathFromStudy();
   },
   remember: async (id, itemType) => get().mark(id, itemType, "good"),

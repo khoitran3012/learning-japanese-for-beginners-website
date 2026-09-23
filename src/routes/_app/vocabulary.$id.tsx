@@ -14,6 +14,8 @@ import { allVocabExamples } from "@/lib/akari/examples";
 import { verbUsageForms } from "@/lib/dictionary/conjugate";
 import { kanjiByChar } from "@/lib/dictionary/catalog";
 import { JpText } from "@/components/jp-text";
+import { StrokeOrder } from "@/components/stroke-order";
+import { WriteCanvas } from "@/components/write-canvas";
 
 export const Route = createFileRoute("/_app/vocabulary/$id")({ component: Page });
 
@@ -135,6 +137,15 @@ function Page() {
               })}
             </div>
             <p className="text-xs text-subtle">Bấm chữ để xem cách đọc on/kun và từ ghép.</p>
+            <div className="space-y-6 pt-2">
+              {kanjiChars.map((ch) => (
+                <div key={`write-${ch}`} className="space-y-3 border-t border-border pt-3">
+                  <p className="font-jp text-2xl">{ch}</p>
+                  <StrokeOrder character={ch} />
+                  <WriteCanvas character={ch} />
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       ) : null}

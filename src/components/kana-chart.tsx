@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { Check } from "lucide-react";
+import { toast } from "sonner";
 import type { KanaChar, KanaGroup, KanaKind } from "@/lib/akari/types";
 import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
@@ -17,6 +19,7 @@ const GROUPS: { id: KanaGroup; label: string }[] = [
 
 export function KanaChart({ kind, chars }: { kind: KanaKind; chars: KanaChar[] }) {
   const srs = useProgress((s) => s.srs);
+  const remember = useProgress((s) => s.remember);
   const showRomaji = useSettings((s) => s.showRomaji);
   const groups = GROUPS.filter((g) => chars.some((c) => c.group === g.id));
 
@@ -34,18 +37,35 @@ export function KanaChart({ kind, chars }: { kind: KanaKind; chars: KanaChar[] }
               {list.map((c) => {
                 const learned = (srs[c.id]?.correct ?? 0) > 0;
                 return (
-                  <Link
+                  <div
                     key={c.id}
-                    to={kind === "hiragana" ? "/hiragana/$id" : "/katakana/$id"}
-                    params={{ id: c.id }}
                     className={cn(
-                      "flex aspect-square flex-col items-center justify-center rounded-lg border border-border bg-surface p-1 text-center transition-colors hover:border-accent",
+                      "relative flex aspect-square flex-col rounded-lg border border-border bg-surface",
                       learned && "border-success/40 bg-success/5",
                     )}
                   >
-                    <span className="text-kana text-2xl sm:text-3xl">{c.char}</span>
-                    {showRomaji ? <span className="mt-0.5 text-[10px] text-muted">{c.romaji}</span> : null}
-                  </Link>
+                    <Link
+                      to={kind === "hiragana" ? "/hiragana/$id" : "/katakana/$id"}
+                      params={{ id: c.id }}
+                      className="flex min-h-0 flex-1 flex-col items-center justify-center px-1 pb-7 pt-1 text-center hover:border-accent"
+                    >
+                      <span className="text-kana text-2xl sm:text-3xl">{c.char}</span>
+                      {showRomaji ? <span className="mt-0.5 text-[10px] text-muted">{c.romaji}</span> : null}
+                    </Link>
+                    <button
+                      type="button"
+                      className={cn(
+                        "absolute inset-x-1 bottom-1 flex h-6 items-center justify-center gap-0.5 rounded text-[10px] font-medium",
+                        learned ? "bg-success/15 text-success" : "bg-choice text-fg hover:bg-choice-hover",
+                      )}
+                      onClick={() => {
+                        void remember(c.id, "kana").then(() => toast.success(`Đã nhớ ${c.char}`));
+                      }}
+                    >
+                      <Check className="size-3" />
+                      {learned ? "Nhớ" : "Đã nhớ"}
+                    </button>
+                  </div>
                 );
               })}
             </div>

@@ -207,6 +207,23 @@
   html.font-md { font-size: 16px; }
   html.font-lg { font-size: 18px; }
 
+  /* Máy tính: chữ và khoảng cách lớn hơn 150% so với điện thoại. */
+  @media (min-width: 1024px) {
+    html,
+    html.font-md {
+      font-size: 24px;
+    }
+    html.font-sm {
+      font-size: 22.5px;
+    }
+    html.font-lg {
+      font-size: 27px;
+    }
+    body {
+      line-height: 1.65;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

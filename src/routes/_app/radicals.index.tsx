@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,6 +84,34 @@ function Page() {
           ) : null
         }
       />
+
+      <Card className="mb-5">
+        <CardContent className="space-y-2 py-5">
+          <h2 className="font-medium text-fg">Cách học bộ thủ khi mới bắt đầu</h2>
+          <ol className="space-y-2 text-sm leading-relaxed text-muted">
+            <li>
+              <span className="font-medium text-fg">1. Học biến thể trước, không học 214 bộ Kangxi.</span> Người mới chỉ
+              cần khoảng 30 bộ hay gặp: 氵 nước, 亻 người, 扌 tay, 口 miệng, 木 cây, 日 mặt trời.
+            </li>
+            <li>
+              <span className="font-medium text-fg">2. Gắn một nghĩa ngắn.</span> Thấy 氵 nghĩ “có nước”. 海 biển, 池 ao,
+              酒 rượu. Không cần nhớ hết chữ, chỉ nhớ bộ báo nghĩa gì.
+            </li>
+            <li>
+              <span className="font-medium text-fg">3. Nhìn vị trí.</span> Bên trái (へん) thường là nghĩa. Bên phải
+              (つくり) thường gợi âm on. Trên đầu (かんむり) như 艹 cỏ, 宀 mái nhà.
+            </li>
+            <li>
+              <span className="font-medium text-fg">4. Học kèm 2 chữ thật.</span> Mỗi bộ bấm vào, xem 2 kanji ví dụ, đọc
+              Hán-Việt rồi hiragana. Bộ không sống một mình.
+            </li>
+            <li>
+              <span className="font-medium text-fg">5. Ôn ít, đều.</span> Mỗi ngày 5 bộ ở mục “Học trước”. Đánh “đã nhớ”
+              khi nhìn bộ là nói được nghĩa.
+            </li>
+          </ol>
+        </CardContent>
+      </Card>
 
       <div className="mb-4">
         <p className="mb-2 text-xs uppercase tracking-[0.14em] text-subtle">Bài học</p>

@@ -1,7 +1,7 @@
 import { Pause, Play, RotateCcw, StepForward } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { strokeGlyphsFor } from "@/lib/akari/strokes";
+import { loadStrokeSet, type StrokeSet } from "@/lib/akari/strokes";
 import { cn } from "@/lib/utils";
 
 export function StrokeOrder({
@@ -13,14 +13,32 @@ export function StrokeOrder({
   strokeCount?: number;
   className?: string;
 }) {
-  const glyphs = useMemo(() => strokeGlyphsFor(character), [character]);
+  const [pack, setPack] = useState<StrokeSet | null>(null);
+  const [loading, setLoading] = useState(true);
+  const glyphs = pack?.glyphs ?? [];
   const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
+  const viewBox = pack?.viewBox ?? "0 0 109 109";
+  const box = viewBox.split(/\s+/).map(Number);
+  const vw = box[2] || 109;
+  const vh = box[3] || 109;
+  const strokeWidth = pack ? 4.6 * (pack.unit / 109) : 4.6;
 
   useEffect(() => {
+    let cancel = false;
+    setLoading(true);
+    setPack(null);
     setShown(0);
     setPlaying(true);
+    void loadStrokeSet(character).then((next) => {
+      if (cancel) return;
+      setPack(next);
+      setLoading(false);
+    });
+    return () => {
+      cancel = true;
+    };
   }, [character]);
 
   useEffect(() => {
@@ -32,6 +50,14 @@ export function StrokeOrder({
     const t = window.setTimeout(() => setShown((n) => n + 1), shown === 0 ? 250 : 720);
     return () => window.clearTimeout(t);
   }, [playing, shown, glyphs.length]);
+
+  if (loading) {
+    return (
+      <div className={cn("rounded-xl border border-border bg-bg-elevated p-4 text-sm text-muted", className)}>
+        Đang tải thứ tự nét cho {character}…
+      </div>
+    );
+  }
 
   if (!glyphs.length) {
     return (
@@ -54,16 +80,14 @@ export function StrokeOrder({
       <div className="relative overflow-hidden rounded-xl border border-border bg-surface">
         <svg
           ref={svgRef}
-          viewBox="0 0 109 109"
+          viewBox={viewBox}
           className="aspect-square w-full text-fg"
           role="img"
           aria-label={`Thứ tự nét chữ ${character}`}
         >
-          <rect x="0" y="0" width="109" height="109" className="fill-[var(--color-bg-elevated)]" />
-          <line x1="54.5" y1="0" x2="54.5" y2="109" stroke="currentColor" strokeOpacity="0.12" />
-          <line x1="0" y1="54.5" x2="109" y2="54.5" stroke="currentColor" strokeOpacity="0.12" />
-          <line x1="0" y1="0" x2="109" y2="109" stroke="currentColor" strokeOpacity="0.06" />
-          <line x1="109" y1="0" x2="0" y2="109" stroke="currentColor" strokeOpacity="0.06" />
+          <rect x="0" y="0" width={vw} height={vh} className="fill-[var(--color-bg-elevated)]" />
+          <line x1={vw / 2} y1="0" x2={vw / 2} y2={vh} stroke="currentColor" strokeOpacity="0.12" />
+          <line x1="0" y1={vh / 2} x2={vw} y2={vh / 2} stroke="currentColor" strokeOpacity="0.12" />
           {glyphs.map((g, i) => (
             <path
               key={`${character}-${i}`}
@@ -71,7 +95,7 @@ export function StrokeOrder({
               transform={g.transform}
               fill="none"
               stroke="currentColor"
-              strokeWidth={4.6 / g.scale}
+              strokeWidth={strokeWidth / g.scale}
               strokeLinecap="round"
               strokeLinejoin="round"
               pathLength={1}

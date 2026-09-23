@@ -10,8 +10,10 @@ import { FlashcardDeck, type FlashCard } from "@/components/flashcard-deck";
 import { SpeakButton } from "@/components/speak-button";
 import { Badge } from "@/components/ui/badge";
 import { DynamicLink } from "@/components/dynamic-link";
-import { makeDailyQuiz, makeDailyVocabQuiz, type KanjiQuizLevel, type QuizQuestion } from "@/lib/akari/quiz-engine";
+import { makeDailyQuiz, makeDailyVocabQuiz, makeDailyKanjiQuiz, type KanjiQuizLevel, type QuizQuestion } from "@/lib/akari/quiz-engine";
 import { dailyVocabPack } from "@/lib/akari/daily-vocab";
+import { dailyKanjiPack } from "@/lib/akari/daily-kanji";
+import { kanjiFurigana } from "@/lib/akari/on-kun";
 import { makePathReview, PATH_REVIEW, pathReviewOf } from "@/lib/akari/path-review";
 import { pathStageAccess } from "@/lib/akari/path-progress";
 import { stageKicker, stageLabel, type PathStageId } from "@/lib/akari/path-stages";
@@ -28,6 +30,8 @@ type Track =
   | { id: "daily"; practice: boolean }
   | { id: "vocab-learn" }
   | { id: "vocab-test" }
+  | { id: "kanji-learn" }
+  | { id: "kanji-test" }
   | { id: "path"; stage: PathStageId; kanjiLevel?: KanjiQuizLevel };
 
 type SavedScore = { score: number; total: number };
@@ -83,6 +87,8 @@ function trackTitle(track: Track) {
   if (track.id === "daily") return track.practice ? "Luyện thêm bài hôm nay" : "Bài tập hôm nay";
   if (track.id === "vocab-learn") return "Từ vựng hôm nay";
   if (track.id === "vocab-test") return "Kiểm tra từ hôm nay";
+  if (track.id === "kanji-learn") return "Kanji hôm nay";
+  if (track.id === "kanji-test") return "Kiểm tra kanji hôm nay";
   const sub = track.kanjiLevel
     ? ` · ${track.kanjiLevel === "core" ? "N5+N4" : track.kanjiLevel === "all" ? "N5→N1" : track.kanjiLevel}`
     : "";
@@ -92,6 +98,7 @@ function trackTitle(track: Track) {
 function persistKey(date: string, track: Track) {
   if (track.id === "daily") return dailyKey(date);
   if (track.id === "vocab-learn" || track.id === "vocab-test") return reviewKey(date, "vocab");
+  if (track.id === "kanji-learn" || track.id === "kanji-test") return reviewKey(date, "kanji");
   return reviewKey(date, track.stage, track.kanjiLevel);
 }
 
@@ -118,7 +125,9 @@ function Page() {
   const user = useCurrentUser();
   const access = useMemo(() => pathStageAccess(completed, freeMode), [completed, freeMode]);
   const vocabPack = useMemo(() => dailyVocabPack(date, srs), [date, srs]);
+  const kanjiPack = useMemo(() => dailyKanjiPack(date, srs), [date, srs]);
   const vocabSaved = loadJson(reviewKey(date, "vocab"));
+  const kanjiSaved = loadJson(reviewKey(date, "kanji"));
   const vocabCards: FlashCard[] = useMemo(
     () =>
       vocabPack.map((v) => ({
@@ -133,13 +142,31 @@ function Page() {
       })),
     [vocabPack, showRomaji],
   );
+  const kanjiCards: FlashCard[] = useMemo(
+    () =>
+      kanjiPack.map((k) => {
+        const yomi = kanjiFurigana(k);
+        return {
+          id: k.id,
+          front: k.character,
+          back: `${k.han_viet ? `${k.han_viet} · ` : ""}${k.meaning_vi}`,
+          extra: `${yomi.line || "—"} · ${k.level}`,
+          speak: yomi.kun || yomi.on || k.character,
+          type: "kanji" as const,
+          answers: [k.meaning_vi, k.han_viet, yomi.kun, yomi.on].filter(Boolean),
+          answerHint: "Gõ nghĩa, Hán-Việt hoặc hiragana",
+        };
+      }),
+    [kanjiPack],
+  );
 
   const q = qs[i];
 
   function questionsFor(next: Track): QuizQuestion[] {
     if (next.id === "daily") return dailyQs;
-    if (next.id === "vocab-learn") return [];
+    if (next.id === "vocab-learn" || next.id === "kanji-learn") return [];
     if (next.id === "vocab-test") return makeDailyVocabQuiz(vocabPack.map((v) => v.id), date);
+    if (next.id === "kanji-test") return makeDailyKanjiQuiz(kanjiPack.map((k) => k.id), date);
     return makePathReview(next.stage, next.kanjiLevel);
   }
 
@@ -161,14 +188,24 @@ function Page() {
     if (track?.id === "daily" && !track.practice) setSaved(result);
     try {
       await recordQuiz({
-        id: uid(track?.id === "path" ? track.stage : track?.id === "vocab-test" ? "vocab" : "daily"),
+        id: uid(
+          track?.id === "path"
+            ? track.stage
+            : track?.id === "vocab-test"
+              ? "vocab"
+              : track?.id === "kanji-test"
+                ? "kanji"
+                : "daily",
+        ),
         at: Date.now(),
         kind:
           track?.id === "daily" && !track.practice
             ? "daily"
             : track?.id === "vocab-test"
               ? "daily-vocab"
-              : track?.id === "path"
+              : track?.id === "kanji-test"
+                ? "daily-kanji"
+                : track?.id === "path"
                 ? `path-${track.stage}`
                 : "daily-practice",
         score: nextScore,
@@ -221,6 +258,35 @@ function Page() {
     );
   }
 
+  if (track?.id === "kanji-learn") {
+    return (
+      <div>
+        <PageHeader
+          kicker="漢字"
+          title="Kanji hôm nay"
+          description={`${kanjiPack.length} chữ mới ngày ${date}. Nhớ Hán-Việt, hiragana, rồi kiểm tra.`}
+        />
+        <div className="mb-3 flex flex-wrap gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setTrack(null)}>
+            Về bài hôm nay
+          </Button>
+          <Button size="sm" onClick={() => start({ id: "kanji-test" })}>
+            Kiểm tra
+          </Button>
+        </div>
+        <FlashcardDeck
+          cards={kanjiCards}
+          sessionKey={`daily-kanji-${date}-${round}`}
+          doneExtra={
+            <Button variant="secondary" onClick={() => start({ id: "kanji-test" })}>
+              Sang kiểm tra
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
   if (track && done) {
     return (
       <div>
@@ -238,6 +304,11 @@ function Page() {
               {track.id === "vocab-test" ? (
                 <Button variant="secondary" onClick={() => start({ id: "vocab-learn" })}>
                   Học lại thẻ
+                </Button>
+              ) : null}
+              {track.id === "kanji-test" ? (
+                <Button variant="secondary" onClick={() => start({ id: "kanji-learn" })}>
+                  Học lại chữ
                 </Button>
               ) : null}
               <Button variant="secondary" onClick={() => setTrack(null)}>
@@ -263,7 +334,9 @@ function Page() {
                 : "15 câu trộn chữ, từ, kanji, nghe, trợ từ, ngữ pháp."
               : track.id === "vocab-test"
                 ? "Kiểm tra đúng 8 từ hôm nay: nghĩa, kana, nghe."
-                : pathReviewOf(track.stage)?.blurb ?? "Câu random theo chặng lộ trình."
+                : track.id === "kanji-test"
+                  ? "Kiểm tra đúng 6 chữ hôm nay: nghĩa, cách đọc, nghe."
+                  : pathReviewOf(track.stage)?.blurb ?? "Câu random theo chặng lộ trình."
           }
         />
         <div className="mb-3">
@@ -284,7 +357,7 @@ function Page() {
               scoreRef.current = n;
               return n;
             });
-            if (track.id === "path" || track.id === "vocab-test") {
+            if (track.id === "path" || track.id === "vocab-test" || track.id === "kanji-test") {
               const srsItem = srsOf(q);
               void mark(srsItem.id, srsItem.type, ok ? "good" : "forgot");
             }
@@ -303,7 +376,7 @@ function Page() {
       <PageHeader
         kicker="今日"
         title="Bài hôm nay"
-        description="Mỗi ngày: từ vựng mới để học + kiểm tra, đề 15 câu, rồi ôn đúng chặng lộ trình."
+        description="Mỗi ngày: kanji mới, từ vựng mới, đề 15 câu, rồi ôn đúng chặng lộ trình."
       />
 
       <Card className="mb-6">
@@ -324,6 +397,52 @@ function Page() {
           ) : (
             <Button onClick={() => start({ id: "daily", practice: false })}>Làm bài hôm nay</Button>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
+        <CardContent className="space-y-4 py-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted">Kanji ngày {date}</p>
+              <h2 className="font-medium text-fg">{kanjiPack.length} chữ mới hôm nay</h2>
+              <p className="text-sm text-muted">Đổi bộ mỗi ngày (N5 trước). Học thẻ rồi kiểm tra đúng những chữ này.</p>
+            </div>
+            {kanjiSaved ? (
+              <p className="text-sm tabular-nums text-muted">
+                Test: {kanjiSaved.score}/{kanjiSaved.total}
+              </p>
+            ) : null}
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {kanjiPack.map((k) => {
+              const yomi = kanjiFurigana(k);
+              return (
+                <li key={k.id} className="flex items-start justify-between gap-2 rounded-[10px] border border-border bg-bg-elevated px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <DynamicLink to={`/kanji/${k.id}`} className="font-jp text-3xl text-fg hover:underline">
+                        {k.character}
+                      </DynamicLink>
+                      <Badge variant="muted">{k.level}</Badge>
+                    </div>
+                    <p className="font-jp text-sm text-muted">{yomi.line || "—"}</p>
+                    <p className="text-sm text-fg">
+                      {k.han_viet ? `${k.han_viet} · ` : ""}
+                      {k.meaning_vi}
+                    </p>
+                  </div>
+                  <SpeakButton text={yomi.kun || yomi.on || k.character} kana={yomi.kun || yomi.on} label="Nghe" />
+                </li>
+              );
+            })}
+          </ul>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => start({ id: "kanji-learn" })}>Học 6 chữ</Button>
+            <Button variant="secondary" onClick={() => start({ id: "kanji-test" })}>
+              Kiểm tra
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

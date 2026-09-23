@@ -40,6 +40,8 @@ export interface QuizPoolOpts {
   kanaGroup?: KanaGroupFilter;
   /** Đáp án đúng lấy từ các id này; đáp án nhiễu vẫn lấy cả pool. */
   focusIds?: string[];
+  /** Giống focusIds nhưng cho kanji. */
+  focusKanjiIds?: string[];
 }
 
 export interface QuizQuestion {
@@ -249,6 +251,12 @@ function buildOne(
     const hit = vocab.filter((v) => set.has(v.id));
     return hit.length ? hit : vocab;
   })();
+  const kanjiFocus = (() => {
+    if (!poolOpts.focusKanjiIds?.length) return kanji;
+    const set = new Set(poolOpts.focusKanjiIds);
+    const hit = kanji.filter((k) => set.has(k.id));
+    return hit.length ? hit : kanji;
+  })();
   const mark = (sourceId: string) => {
     used.add(`${kind}:${sourceId}`);
     used.add(`src:${sourceId}`);
@@ -331,7 +339,7 @@ function buildOne(
   }
 
   if (kind === "kanji") {
-    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(kanjiFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
     const speak = kanjiSpeak(c);
@@ -355,7 +363,7 @@ function buildOne(
   }
 
   if (kind === "kanji-read") {
-    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(kanjiFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
     const reading = kanjiSpeak(c);
@@ -381,7 +389,7 @@ function buildOne(
   }
 
   if (kind === "listen-kanji") {
-    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(kanjiFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
     const speak = kanjiSpeak(c);
@@ -552,7 +560,7 @@ function buildOne(
         typedHint: "Gõ romaji",
       };
     }
-    const c = pickOne(kanji, used, (x) => `${kind}:${x.id}`, rand);
+    const c = pickOne(kanjiFocus, used, (x) => `${kind}:${x.id}`, rand);
     if (!c) return null;
     mark(c.id);
     const reading = kanjiSpeak(c);
@@ -707,6 +715,14 @@ export function makeDailyVocabQuiz(ids: string[], date: string, count = ids.leng
   return makeFromKinds(DAILY_VOCAB_KINDS, count, mulberry32(dateSeed(`${date}-vocab`)), "core", {
     vocabLevel: "both",
     focusIds: ids,
+  });
+}
+
+const DAILY_KANJI_KINDS: QuizKind[] = ["kanji", "kanji-read", "listen-kanji"];
+
+export function makeDailyKanjiQuiz(ids: string[], date: string, count = ids.length) {
+  return makeFromKinds(DAILY_KANJI_KINDS, count, mulberry32(dateSeed(`${date}-kanji`)), "all", {
+    focusKanjiIds: ids,
   });
 }
 

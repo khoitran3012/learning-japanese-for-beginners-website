@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Check } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +54,7 @@ function Page() {
   }, [lv, lessonParam, pathParam]);
 
   const srs = useProgress((s) => s.srs);
+  const remember = useProgress((s) => s.remember);
   const all = useMemo(() => allKanji(), []);
   const counts = useMemo(() => {
     const c = { ...LEVEL_COUNTS };
@@ -238,28 +241,48 @@ function Page() {
         {selectedLesson ? ` · bài ${selectedLesson.seq}: ${selectedLesson.title}` : ""}
       </p>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-        {slice.map((k, i) => (
-          <Link
-            key={k.id}
-            to="/kanji/$id"
-            params={{ id: k.id }}
-            className={cn(
-              "flex flex-col items-center rounded-lg border border-border bg-surface p-3 hover:border-accent",
-              srs[k.id]?.correct ? "border-success/40" : "",
-            )}
-          >
-            <span className="text-[10px] tabular-nums text-subtle">{(safe - 1) * PAGE + i + 1}</span>
-            <span className="text-kana text-4xl leading-none">{k.character}</span>
-            <span className="mt-1 font-jp text-[11px] leading-tight text-muted">
-              {kanjiFurigana(k).line || "—"}
-            </span>
-            <span className="mt-1 text-xs font-medium">{k.han_viet || k.meaning_vi}</span>
-            <span className="line-clamp-1 text-[11px] text-muted">{k.meaning_vi}</span>
-            <Badge variant="muted" className="mt-1">
-              {k.level}
-            </Badge>
-          </Link>
-        ))}
+        {slice.map((k, i) => {
+          const known = Boolean(srs[k.id]?.correct);
+          return (
+            <div
+              key={k.id}
+              className={cn(
+                "relative flex flex-col rounded-lg border border-border bg-surface hover:border-accent",
+                known ? "border-success/40" : "",
+              )}
+            >
+              <Link
+                to="/kanji/$id"
+                params={{ id: k.id }}
+                className="flex flex-col items-center p-3 pb-10"
+              >
+                <span className="text-[10px] tabular-nums text-subtle">{(safe - 1) * PAGE + i + 1}</span>
+                <span className="text-kana text-4xl leading-none">{k.character}</span>
+                <span className="mt-1 font-jp text-[11px] leading-tight text-muted">
+                  {kanjiFurigana(k).line || "—"}
+                </span>
+                <span className="mt-1 text-xs font-medium">{k.han_viet || k.meaning_vi}</span>
+                <span className="line-clamp-1 text-[11px] text-muted">{k.meaning_vi}</span>
+                <Badge variant="muted" className="mt-1">
+                  {k.level}
+                </Badge>
+              </Link>
+              <button
+                type="button"
+                className={cn(
+                  "absolute inset-x-1 bottom-1 flex h-8 items-center justify-center gap-1 rounded-md text-[11px] font-medium",
+                  known ? "bg-success/15 text-success" : "bg-choice text-fg hover:bg-choice-hover",
+                )}
+                onClick={() => {
+                  void remember(k.id, "kanji").then(() => toast.success(`Đã nhớ ${k.character}`));
+                }}
+              >
+                <Check className="size-3.5" />
+                {known ? "Nhớ rồi" : "Đã nhớ"}
+              </button>
+            </div>
+          );
+        })}
       </div>
       <div className="mt-4">
         <PagePager page={safe} pageCount={pageCount} onPage={setPage} />
