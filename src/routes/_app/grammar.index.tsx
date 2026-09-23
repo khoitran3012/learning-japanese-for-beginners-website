@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { GRAMMAR_CATEGORY_BLURB, groupGrammar } from "@/lib/akari/grammar-categories";
+import { RememberMark } from "@/components/remember-actions";
 
 export const Route = createFileRoute("/_app/grammar/")({ component: Page });
 
@@ -43,11 +44,11 @@ function Page() {
               <p className="text-sm text-muted">{GRAMMAR_CATEGORY_BLURB[cat]}</p>
               <ul className="divide-y divide-border overflow-hidden rounded-[10px] border border-border">
                 {items.map((g) => (
-                  <li key={g.id}>
+                  <li key={g.id} className="flex items-center gap-2 pr-2">
                     <Link
                       to="/grammar/$id"
                       params={{ id: g.id }}
-                      className="block px-3 py-2.5 hover:bg-bg-elevated"
+                      className="block min-w-0 flex-1 px-3 py-2.5 hover:bg-bg-elevated"
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-jp text-base">{g.name}</span>
@@ -55,6 +56,7 @@ function Page() {
                       </div>
                       <p className="text-sm text-muted">{g.meaning_vi}</p>
                     </Link>
+                    <RememberMark id={g.id} itemType="grammar" label={g.name} />
                   </li>
                 ))}
               </ul>

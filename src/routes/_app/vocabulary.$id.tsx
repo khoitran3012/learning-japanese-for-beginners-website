@@ -16,6 +16,7 @@ import { kanjiByChar } from "@/lib/dictionary/catalog";
 import { JpText } from "@/components/jp-text";
 import { StrokeOrder } from "@/components/stroke-order";
 import { WriteCanvas } from "@/components/write-canvas";
+import { RememberActions } from "@/components/remember-actions";
 
 export const Route = createFileRoute("/_app/vocabulary/$id")({ component: Page });
 
@@ -49,6 +50,7 @@ function Page() {
             {v.part_of_speech.join(", ")} · {v.category}
           </p>
           <SpeakButton className="mt-4 mx-auto" text={v.word} kana={v.kana} />
+          <RememberActions className="mt-5" id={v.id} itemType="vocab" />
         </CardContent>
       </Card>
 

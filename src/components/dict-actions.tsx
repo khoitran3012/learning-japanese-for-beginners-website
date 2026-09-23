@@ -11,12 +11,15 @@ export function DictActions({
   entry: DictionaryEntry;
   itemType?: SrsItem["itemType"];
 }) {
+  const studyId = entry.vocabId ?? entry.id;
+  const studyType = entry.vocabId ? "vocab" : itemType;
   const fav = useProgress((s) => s.favorites.has(entry.id));
   const mine = useProgress((s) => s.myWords.has(entry.id));
   const toggleFav = useProgress((s) => s.toggleFav);
   const addStudy = useProgress((s) => s.addToStudy);
   const remember = useProgress((s) => s.remember);
   const forgot = useProgress((s) => s.forgot);
+  const known = (useProgress((s) => s.srs[studyId])?.correct ?? 0) > 0;
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -41,20 +44,20 @@ export function DictActions({
       <Button
         variant="secondary"
         onClick={async () => {
-          await forgot(entry.id, itemType);
+          await forgot(studyId, studyType);
           toast("Đánh dấu cần ôn");
         }}
       >
         Cần ôn
       </Button>
       <Button
-        variant="success"
+        variant={known ? "success" : "default"}
         onClick={async () => {
-          await remember(entry.id, itemType);
+          await remember(studyId, studyType);
           toast("Đã nhớ — sẽ ôn sau");
         }}
       >
-        Đã nhớ
+        {known ? "Nhớ rồi" : "Đã nhớ"}
       </Button>
     </div>
   );

@@ -6,6 +6,15 @@ import { useProgress } from "@/lib/akari/progress";
 import type { SrsItem } from "@/lib/akari/types";
 import { cn } from "@/lib/utils";
 
+const NOUN: Record<SrsItem["itemType"], string> = {
+  kana: "chữ này",
+  kanji: "chữ này",
+  radical: "bộ này",
+  vocab: "từ này",
+  grammar: "mẫu này",
+  custom: "mục này",
+};
+
 export function RememberActions({
   id,
   itemType,
@@ -46,7 +55,7 @@ export function RememberActions({
           {known ? "Đã nhớ" : "Đang học"} · đúng {item.correct} · sai {item.incorrect}
         </p>
       ) : (
-        <p className="text-xs text-muted">Chưa đánh dấu chữ này</p>
+        <p className="text-xs text-muted">Chưa đánh dấu {NOUN[itemType]}</p>
       )}
       <div className="flex flex-wrap justify-center gap-2">
         <Button
@@ -67,5 +76,40 @@ export function RememberActions({
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Nút nhỏ trên danh sách. Không điều hướng khi bấm. */
+export function RememberMark({
+  id,
+  itemType,
+  label,
+  className,
+}: {
+  id: string;
+  itemType: SrsItem["itemType"];
+  label: string;
+  className?: string;
+}) {
+  const known = (useProgress((s) => s.srs[id])?.correct ?? 0) > 0;
+  const remember = useProgress((s) => s.remember);
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "flex h-8 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-medium",
+        known ? "bg-success/15 text-success" : "bg-choice text-fg hover:bg-choice-hover",
+        className,
+      )}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        void remember(id, itemType).then(() => toast.success(`Đã nhớ ${label}`));
+      }}
+    >
+      <Check className="size-3.5" />
+      {known ? "Nhớ rồi" : "Đã nhớ"}
+    </button>
   );
 }

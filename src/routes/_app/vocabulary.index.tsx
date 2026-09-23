@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { PagePager } from "@/components/page-pager";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { RememberMark } from "@/components/remember-actions";
 import { VOCAB_N5 } from "@/data/vocabulary-n5";
 import { VOCAB_N4 } from "@/data/vocabulary-n4";
 import { useProgress } from "@/lib/akari/progress";
@@ -85,17 +86,18 @@ function Page() {
       </p>
       <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
         {slice.map((v) => (
-          <li key={v.id}>
+          <li key={v.id} className="flex items-center gap-2 pr-3">
             <Link
               to="/vocabulary/$id"
               params={{ id: v.id }}
-              className={cn("flex min-h-12 items-center gap-3 px-4 py-3 hover:bg-bg-elevated", srs[v.id]?.correct && "bg-success/5")}
+              className={cn("flex min-h-12 min-w-0 flex-1 items-center gap-3 px-4 py-3 hover:bg-bg-elevated", srs[v.id]?.correct && "bg-success/5")}
             >
               <span className="w-28 font-jp text-lg">{v.word}</span>
               <span className="hidden w-28 text-sm text-accent sm:block">{showRomaji ? v.romaji : v.kana}</span>
               <span className="flex-1 text-sm">{v.meaning_vi}</span>
               <Badge variant="muted">{v.level}</Badge>
             </Link>
+            <RememberMark id={v.id} itemType="vocab" label={v.word} />
           </li>
         ))}
       </ul>

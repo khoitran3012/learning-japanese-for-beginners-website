@@ -184,7 +184,7 @@ export interface DictionaryEntry {
 
 export interface SrsItem {
   id: string;
-  itemType: "kana" | "vocab" | "kanji" | "grammar" | "custom";
+  itemType: "kana" | "vocab" | "kanji" | "grammar" | "radical" | "custom";
   lastStudied: number;
   correct: number;
   incorrect: number;

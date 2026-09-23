@@ -14,6 +14,7 @@ import { lookupDictionaryAi } from "@/lib/dictionary/ai-lookup";
 import { pushSearch, searchHistory, clearSearchHistory, putImportedEntries } from "@/lib/akari/storage";
 import { useSettings } from "@/lib/akari/settings";
 import { cn } from "@/lib/utils";
+import { RememberMark } from "@/components/remember-actions";
 import type { DictionaryEntry, JlptLevel } from "@/lib/akari/types";
 
 const PAGE_SIZE = 50;
@@ -316,12 +317,12 @@ function ResultList({
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
       {results.map((e) => (
-        <li key={e.id}>
+        <li key={e.id} className="flex items-center gap-2 pr-3">
           <Link
             to="/dictionary/$id"
             params={{ id: e.id }}
             onClick={() => onPick?.(e.kanji)}
-            className={cn("flex min-h-12 items-center gap-3 px-4 py-3 hover:bg-bg-elevated")}
+            className={cn("flex min-h-12 min-w-0 flex-1 items-center gap-3 px-4 py-3 hover:bg-bg-elevated")}
           >
             <span className="w-28 shrink-0 font-jp text-lg">{e.kanji}</span>
             <span className="hidden min-w-0 shrink-0 text-sm text-accent sm:block sm:w-36">
@@ -334,6 +335,11 @@ function ResultList({
             </span>
             <Badge variant="muted">{e.jlpt[0]}</Badge>
           </Link>
+          <RememberMark
+            id={e.vocabId ?? e.id}
+            itemType={e.vocabId ? "vocab" : "custom"}
+            label={e.kanji}
+          />
         </li>
       ))}
     </ul>

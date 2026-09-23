@@ -1,12 +1,11 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { SpeakButton } from "@/components/speak-button";
 import { AiTutor } from "@/components/ai-tutor";
-import { Button } from "@/components/ui/button";
+import { RememberActions } from "@/components/remember-actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
-import { useProgress } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { grammarCategory } from "@/lib/akari/grammar-categories";
 
@@ -16,7 +15,6 @@ function Page() {
   const { id } = Route.useParams();
   const g = [...GRAMMAR_N5, ...GRAMMAR_N4].find((x) => x.id === id);
   if (!g) throw notFound();
-  const remember = useProgress((s) => s.remember);
   const showRomaji = useSettings((s) => s.showRomaji);
 
   return (
@@ -29,6 +27,7 @@ function Page() {
         <h1 className="mt-2 font-display text-4xl">{g.name}</h1>
         <p className="mt-1 font-jp text-lg text-muted">{g.structure}</p>
         <p className="mt-2">{g.meaning_vi}</p>
+        <RememberActions className="mt-4 items-start" id={g.id} itemType="grammar" />
       </div>
       <Card>
         <CardContent>
@@ -62,7 +61,6 @@ function Page() {
         </CardContent>
       </Card>
       <AiTutor seed={`Giải thích ngữ pháp ${g.name} (${g.structure}): ${g.meaning_vi}.`} />
-      <Button variant="success" onClick={() => void remember(g.id, "grammar")}>Đã hiểu</Button>
     </div>
   );
 }

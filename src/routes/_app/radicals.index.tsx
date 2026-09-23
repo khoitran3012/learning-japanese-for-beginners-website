@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { RememberMark } from "@/components/remember-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -203,25 +204,38 @@ function Page() {
       </p>
 
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-        {list.map((x) => (
-          <Link
-            key={x.id}
-            to="/radicals/$id"
-            params={{ id: x.id }}
-            className={cn(
-              "flex flex-col items-center rounded-lg border border-border bg-surface p-3 hover:border-accent",
-              srs[x.id]?.correct ? "border-success/40" : "",
-            )}
-          >
-            <span className="text-kana text-4xl leading-none">{x.char}</span>
-            {x.parent && x.parent !== x.char ? (
-              <span className="mt-1 font-jp text-xs text-muted">← {x.parent}</span>
-            ) : null}
-            <span className="mt-1 text-xs font-medium">{x.han_viet}</span>
-            <span className="line-clamp-1 text-[11px] text-muted">{x.meaning_vi}</span>
-            <span className="mt-1 font-jp text-[11px] text-subtle">{x.name_kana}</span>
-          </Link>
-        ))}
+        {list.map((x) => {
+          const known = Boolean(srs[x.id]?.correct);
+          return (
+            <div
+              key={x.id}
+              className={cn(
+                "relative flex flex-col rounded-lg border border-border bg-surface",
+                known && "border-success/40",
+              )}
+            >
+              <Link
+                to="/radicals/$id"
+                params={{ id: x.id }}
+                className="flex flex-col items-center p-3 pb-10 hover:border-accent"
+              >
+                <span className="text-kana text-4xl leading-none">{x.char}</span>
+                {x.parent && x.parent !== x.char ? (
+                  <span className="mt-1 font-jp text-xs text-muted">← {x.parent}</span>
+                ) : null}
+                <span className="mt-1 text-xs font-medium">{x.han_viet}</span>
+                <span className="line-clamp-1 text-[11px] text-muted">{x.meaning_vi}</span>
+                <span className="mt-1 font-jp text-[11px] text-subtle">{x.name_kana}</span>
+              </Link>
+              <RememberMark
+                className="absolute inset-x-1 bottom-1"
+                id={x.id}
+                itemType="radical"
+                label={x.char}
+              />
+            </div>
+          );
+        })}
       </div>
       {list.length === 0 ? (
         <p className="text-sm text-muted">Không thấy bộ thủ khớp. Thử Hán-Việt hoặc tên Nhật (さんずい).</p>
