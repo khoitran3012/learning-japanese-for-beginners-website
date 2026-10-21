@@ -33,6 +33,7 @@ import { Route as AppReadRouteImport } from './routes/_app/read'
 import { Route as AppReviewRouteImport } from './routes/_app/review'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSongsRouteImport } from './routes/_app/songs'
+import { Route as AppSpeakRouteImport } from './routes/_app/speak'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
 import { Route as AppVocabularyRouteImport } from './routes/_app/vocabulary'
 import { Route as AppDictionaryIndexRouteImport } from './routes/_app/dictionary.index'
@@ -175,6 +176,11 @@ const AppSongsRoute = AppSongsRouteImport.update({
   path: '/songs',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSpeakRoute = AppSpeakRouteImport.update({
+  id: '/speak',
+  path: '/speak',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStatsRoute = AppStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/review': typeof AppReviewRoute
   '/settings': typeof AppSettingsRoute
   '/songs': typeof AppSongsRouteWithChildren
+  '/speak': typeof AppSpeakRoute
   '/stats': typeof AppStatsRoute
   '/vocabulary': typeof AppVocabularyRouteWithChildren
   '/dictionary/$id': typeof AppDictionaryIdRoute
@@ -349,6 +356,7 @@ export interface FileRoutesByTo {
   '/read': typeof AppReadRoute
   '/review': typeof AppReviewRoute
   '/settings': typeof AppSettingsRoute
+  '/speak': typeof AppSpeakRoute
   '/stats': typeof AppStatsRoute
   '/': typeof AppIndexRoute
   '/dictionary/$id': typeof AppDictionaryIdRoute
@@ -397,6 +405,7 @@ export interface FileRoutesById {
   '/_app/review': typeof AppReviewRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/songs': typeof AppSongsRouteWithChildren
+  '/_app/speak': typeof AppSpeakRoute
   '/_app/stats': typeof AppStatsRoute
   '/_app/vocabulary': typeof AppVocabularyRouteWithChildren
   '/_app/': typeof AppIndexRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/songs'
+    | '/speak'
     | '/stats'
     | '/vocabulary'
     | '/dictionary/$id'
@@ -485,6 +495,7 @@ export interface FileRouteTypes {
     | '/read'
     | '/review'
     | '/settings'
+    | '/speak'
     | '/stats'
     | '/'
     | '/dictionary/$id'
@@ -532,6 +543,7 @@ export interface FileRouteTypes {
     | '/_app/review'
     | '/_app/settings'
     | '/_app/songs'
+    | '/_app/speak'
     | '/_app/stats'
     | '/_app/vocabulary'
     | '/_app/'
@@ -731,6 +743,13 @@ declare module '@tanstack/react-router' {
       path: '/songs'
       fullPath: '/songs'
       preLoaderRoute: typeof AppSongsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/speak': {
+      id: '/_app/speak'
+      path: '/speak'
+      fullPath: '/speak'
+      preLoaderRoute: typeof AppSpeakRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/stats': {
@@ -1037,6 +1056,7 @@ interface AppRouteChildren {
   AppReviewRoute: typeof AppReviewRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSongsRoute: typeof AppSongsRouteWithChildren
+  AppSpeakRoute: typeof AppSpeakRoute
   AppStatsRoute: typeof AppStatsRoute
   AppVocabularyRoute: typeof AppVocabularyRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
@@ -1065,6 +1085,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReviewRoute: AppReviewRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSongsRoute: AppSongsRouteWithChildren,
+  AppSpeakRoute: AppSpeakRoute,
   AppStatsRoute: AppStatsRoute,
   AppVocabularyRoute: AppVocabularyRouteWithChildren,
   AppIndexRoute: AppIndexRoute,

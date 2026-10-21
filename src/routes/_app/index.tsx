@@ -139,6 +139,9 @@ function HomePage() {
         <Button asChild>
           <Link to="/daily">Bài tập hôm nay</Link>
         </Button>
+        <Button asChild>
+          <Link to="/speak" search={{ set: "mix" }}>Luyện nói</Link>
+        </Button>
         <Button asChild variant="secondary">
           <Link to="/garden">Vườn Sakura</Link>
         </Button>

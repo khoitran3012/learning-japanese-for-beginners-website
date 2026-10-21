@@ -483,6 +483,11 @@ function Page() {
             <Button variant="secondary" onClick={() => start({ id: "vocab-test" })}>
               Kiểm tra
             </Button>
+            <Button asChild variant="secondary">
+              <Link to="/speak" search={{ set: "today" }}>
+                Nói 8 từ này
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
