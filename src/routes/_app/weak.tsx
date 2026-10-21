@@ -22,7 +22,7 @@ function Page() {
   const mark = useProgress((s) => s.mark);
 
   const ranked = useMemo(() => weakItems(srs, 12), [srs]);
-  const drillableItems = useMemo(() => ranked.filter((w) => drillable(w.item.itemType)), [ranked]);
+  const drillableItems = useMemo(() => ranked.filter((w) => drillable(w.item)), [ranked]);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [queue, setQueue] = useState<QuizQuestion[]>([]);

@@ -1,5 +1,5 @@
 import { shuffle } from "@/lib/utils";
-import { makeFromKinds, type QuizKind, type QuizQuestion } from "./quiz-engine";
+import { drillKindOf, makeFromKinds, type QuizKind, type QuizQuestion } from "./quiz-engine";
 import type { SrsItem } from "./types";
 
 /**
@@ -26,9 +26,9 @@ export interface WeakItem {
   weight: number;
 }
 
-/** Mục có thể dựng thành câu hỏi trắc nghiệm. Hiện hỗ trợ từ vựng và kanji. */
-export function drillable(itemType: SrsItem["itemType"]): boolean {
-  return itemType === "vocab" || itemType === "custom" || itemType === "kanji";
+/** Mục có thể dựng thành câu hỏi trắc nghiệm (id phải có trong kho từ vựng / kanji). */
+export function drillable(item: SrsItem): boolean {
+  return drillKindOf(item.id) !== null;
 }
 
 export function weakItems(srs: Record<string, SrsItem>, limit = 12, now = Date.now()): WeakItem[] {
@@ -63,9 +63,9 @@ export function buildWeakQuiz(
   const vocabIds: string[] = [];
   const kanjiIds: string[] = [];
   for (const { item } of ranked) {
-    if (!drillable(item.itemType)) continue;
-    if (item.itemType === "kanji") kanjiIds.push(item.id);
-    else vocabIds.push(item.id);
+    const kind = drillKindOf(item.id);
+    if (kind === "kanji") kanjiIds.push(item.id);
+    else if (kind === "vocab") vocabIds.push(item.id);
   }
 
   const total = vocabIds.length + kanjiIds.length;

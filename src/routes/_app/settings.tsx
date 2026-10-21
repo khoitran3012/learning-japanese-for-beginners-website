@@ -23,7 +23,7 @@ import {
 import { useSettings } from "@/lib/akari/settings";
 import { applyLocalAiFromSettings } from "@/lib/ai/provider";
 import { probeLocalAi } from "@/lib/ai/local-rpc";
-import { exportAll, importAll, validateBackup, wipeUserData } from "@/lib/akari/storage";
+import { exportAll, importAll, validateBackup, wipeUserData, type BackupPayload } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { preferLocalFirst } from "@/lib/api/api-client";
 import type { ThemeMode } from "@/lib/akari/types";
@@ -39,6 +39,7 @@ function Page() {
   const load = useProgress((s) => s.load);
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<BackupPayload | null>(null);
   const [dbInfo, setDbInfo] = useState<DbInfo | null>(null);
   const [aiModels, setAiModels] = useState<string[]>([]);
   const [aiProbe, setAiProbe] = useState<string | null>(null);
@@ -102,7 +103,6 @@ function Page() {
   }
 
   async function onImport(file: File) {
-    setBusy(true);
     try {
       const text = await file.text();
       const data: unknown = JSON.parse(text);
@@ -110,14 +110,25 @@ function Page() {
         toast.error("File sao lưu không hợp lệ");
         return;
       }
+      // Khôi phục sẽ ghi đè toàn bộ dữ liệu đang có — hỏi lại trước khi xoá.
+      setPending(data);
+    } catch {
+      toast.error("Không đọc được file");
+    }
+  }
+
+  async function applyRestore(data: BackupPayload) {
+    setBusy(true);
+    try {
       await importAll(data);
       if (data.settings && typeof data.settings === "object") {
         settings.set(data.settings as Parameters<typeof settings.set>[0]);
       }
       await load();
+      setPending(null);
       toast("Đã khôi phục dữ liệu");
     } catch {
-      toast.error("Không đọc được file");
+      toast.error("Không khôi phục được dữ liệu");
     } finally {
       setBusy(false);
     }
@@ -572,6 +583,30 @@ function Page() {
                 }}
               />
             </div>
+            <AlertDialog open={Boolean(pending)} onOpenChange={(open) => (open ? undefined : setPending(null))}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Khôi phục bản sao lưu?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tiến độ hiện có trên máy này sẽ được thay bằng file sao lưu
+                    {pending ? ` (${pending.srs.length} thẻ, ${pending.dayStats.length} ngày hoạt động)` : ""}. Nếu
+                    chưa chắc, hãy tải sao lưu hiện tại trước.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={busy}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (pending) void applyRestore(pending);
+                    }}
+                  >
+                    {busy ? "Đang khôi phục…" : "Khôi phục"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="danger">Xóa dữ liệu trên máy</Button>

@@ -73,7 +73,7 @@ function Page() {
   const graded = srsItems.reduce((acc, x) => acc + x.correct + x.incorrect, 0);
   const recalled = srsItems.reduce((acc, x) => acc + x.correct, 0);
   const recallPct = graded ? Math.round((recalled / graded) * 100) : 0;
-  const weak = weakItems(srs, 12).filter((w) => drillable(w.item.itemType));
+  const weak = weakItems(srs, 12).filter((w) => drillable(w.item));
 
   const quizPcts = quiz.map((q) => (q.total ? Math.round((q.score / q.total) * 100) : 0));
   const quizAvg = quizPcts.length ? Math.round(quizPcts.reduce((a, b) => a + b, 0) / quizPcts.length) : 0;

@@ -182,6 +182,17 @@ export function resolveStudyItem(id: string): ResolvedItem | null {
       type: "Ngữ pháp",
     };
   }
+  const song = /^song:([^:]+):(.+)$/.exec(id);
+  if (song) {
+    return {
+      id,
+      title: song[2]!,
+      sub: "Từ trong bài hát",
+      to: `/songs/${song[1]}`,
+      type: "Bài hát",
+      speak: song[2],
+    };
+  }
   const d = findEntry(id);
   if (d) {
     return {
@@ -197,7 +208,7 @@ export function resolveStudyItem(id: string): ResolvedItem | null {
     id,
     title: id,
     sub: "Mục tùy chọn",
-    to: `/dictionary/${id}`,
+    to: "/dictionary",
     type: "Khác",
   };
 }

@@ -1,5 +1,8 @@
 import type { DictionaryEntry, QuizResult, SearchHistoryItem, SrsItem } from "./types";
+import { applyDayDelta, type DayDelta, type DayStats } from "./day-stats";
 import { isBrowser, todayKey } from "@/lib/utils";
+
+export type { DayStats } from "./day-stats";
 
 const DB_NAME = "akari-nihongo";
 const DB_VERSION = 2;
@@ -14,14 +17,6 @@ export interface MyWordRecord {
   id: string;
   addedAt: number;
   source: "dictionary" | "vocab" | "custom";
-}
-
-export interface DayStats {
-  id?: string;
-  date: string;
-  minutes: number;
-  items: number;
-  quizzes: number;
 }
 
 export interface LessonProgress {
@@ -199,23 +194,22 @@ export async function completedLessons() {
   return idbGetAll<LessonProgress>("lessons");
 }
 
-export async function bumpDayStats(delta: { minutes?: number; items?: number; quizzes?: number }, date: string) {
-  const current = (await idbGet<DayStats>("dayStats", date)) ?? {
-    id: date,
-    date,
-    minutes: 0,
-    items: 0,
-    quizzes: 0,
-  };
-  const next = {
-    ...current,
-    id: date,
-    minutes: current.minutes + (delta.minutes ?? 0),
-    items: current.items + (delta.items ?? 0),
-    quizzes: current.quizzes + (delta.quizzes ?? 0),
-  };
-  await idbPut("dayStats", next);
-  return next;
+/**
+ * Đọc–sửa–ghi trên IndexedDB: nhiều lượt trả lời có thể gọi cùng lúc
+ * (`mark()` bắn `logStudy` không chờ), nên nếu chạy song song thì lượt sau đọc
+ * số cũ và ghi đè, làm mất phút/mục của lượt trước. Xếp hàng từng lượt một.
+ */
+let dayStatsQueue: Promise<unknown> = Promise.resolve();
+
+export function bumpDayStats(delta: DayDelta, date: string): Promise<DayStats> {
+  const run = dayStatsQueue.then(async () => {
+    const current = await idbGet<DayStats>("dayStats", date);
+    const next = applyDayDelta(current, delta, date);
+    await idbPut("dayStats", next);
+    return next;
+  });
+  dayStatsQueue = run.catch(() => undefined);
+  return run;
 }
 
 export async function allDayStats() {
@@ -288,10 +282,26 @@ export async function exportAll(settings?: unknown): Promise<BackupPayload> {
   };
 }
 
+const BACKUP_ARRAYS = ["srs", "favorites", "myWords", "quiz", "searchHistory", "dayStats", "lessons"] as const;
+
+/**
+ * Chỉ nhận đúng file do `exportAll` tạo ra.
+ *
+ * Trước đây chỉ cần `version: 1` + `srs` là mảng, nên một file JSON bất kỳ có
+ * thể qua vòng kiểm tra rồi `importAll` xoá sạch mọi store. Giờ yêu cầu đủ các
+ * mảng bắt buộc và mỗi thẻ SRS phải có id chuỗi (nếu không sẽ bị bỏ qua im lặng).
+ */
 export function validateBackup(data: unknown): data is BackupPayload {
   if (!data || typeof data !== "object") return false;
   const d = data as Record<string, unknown>;
-  return d.version === 1 && Array.isArray(d.srs);
+  if (d.version !== 1 || typeof d.exportedAt !== "number") return false;
+  for (const key of BACKUP_ARRAYS) {
+    if (!Array.isArray(d[key])) return false;
+  }
+  return (d.srs as unknown[]).every((row) => {
+    if (!row || typeof row !== "object") return false;
+    return typeof (row as { id?: unknown }).id === "string";
+  });
 }
 
 export async function importAll(payload: BackupPayload) {

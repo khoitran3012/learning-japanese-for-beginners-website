@@ -13,6 +13,7 @@ import { LESSONS } from "@/data/lessons";
 import { useProgress, learnedCount } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
+import { drillable, weakItems } from "@/lib/akari/weak";
 import { primaryLessonHref } from "@/lib/akari/lesson-links";
 import { HomeGardenCard } from "@/components/garden/GardenChrome";
 import { useGarden } from "@/lib/garden/use-garden";
@@ -50,6 +51,7 @@ function HomePage() {
   );
   const minutes = today?.minutes ?? 0;
   const goalPct = Math.min(100, (minutes / dailyGoal) * 100);
+  const weakCount = weakItems(srs, 12).filter((w) => drillable(w.item)).length;
   const { garden } = useGarden();
 
   const stats = [
@@ -139,6 +141,14 @@ function HomePage() {
         <Button asChild>
           <Link to="/daily">Bài tập hôm nay</Link>
         </Button>
+        <Button asChild variant="secondary">
+          <Link to="/listen">Luyện nghe</Link>
+        </Button>
+        {weakCount > 0 ? (
+          <Button asChild variant="secondary">
+            <Link to="/weak">Luyện chỗ yếu ({weakCount})</Link>
+          </Button>
+        ) : null}
         <Button asChild>
           <Link to="/speak" search={{ set: "mix" }}>Luyện nói</Link>
         </Button>
@@ -162,6 +172,9 @@ function HomePage() {
         </Button>
         <Button asChild variant="secondary">
           <Link to="/dictionary">Mở từ điển</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link to="/stats">Thống kê</Link>
         </Button>
       </div>
 

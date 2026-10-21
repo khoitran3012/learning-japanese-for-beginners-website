@@ -731,6 +731,28 @@ export function makeKanaReview(scope: KanaReviewScope, count = 12, rand: () => n
   return makeFromKinds(bag, count, rand, "core");
 }
 
+const VOCAB_IDS = new Set([...VOCAB_N5, ...VOCAB_N4].map((v) => v.id));
+let kanjiIdSet: Set<string> | null = null;
+
+function kanjiIds() {
+  kanjiIdSet ??= new Set(allKanji().map((k) => k.id));
+  return kanjiIdSet;
+}
+
+/**
+ * Id này có dựng được câu hỏi trắc nghiệm không?
+ *
+ * `focusIds` / `focusKanjiIds` chỉ có tác dụng khi id nằm trong kho tương ứng;
+ * gặp id lạ (từ trong bài hát, câu luyện trợ từ, mục từ điển tự thêm…) quiz-engine
+ * lặng lẽ rơi về cả kho — buổi "luyện chỗ yếu" sẽ hỏi mục ngẫu nhiên và ghi SRS
+ * sai thẻ. Vì vậy chỉ nhận id thực sự có trong kho từ vựng / kanji.
+ */
+export function drillKindOf(id: string): "vocab" | "kanji" | null {
+  if (VOCAB_IDS.has(id)) return "vocab";
+  if (kanjiIds().has(id)) return "kanji";
+  return null;
+}
+
 export function makeKanjiReview(level: KanjiQuizLevel = "N5", count = 12, rand: () => number = Math.random) {
   const bag = level === "N3" || level === "N2" || level === "N1" ? KANJI_ADV_KINDS : KANJI_CORE_KINDS;
   return makeFromKinds(bag, count, rand, level);
