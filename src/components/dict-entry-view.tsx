@@ -21,7 +21,7 @@ export function DictEntryView({ entry }: { entry: DictionaryEntry }) {
   const wordHv = hanVietOfWord(entry.kanji);
 
   async function copyHead() {
-    const text = `${entry.kanji}　${entry.kana}　${entry.romaji}\n${entry.meanings.join(" · ")}`;
+    const text = `${entry.kanji}\u3000${entry.kana}\u3000${entry.romaji}\n${entry.meanings.join(" · ")}`;
     const ok = await copyToClipboard(text);
     if (ok) toast("Đã sao chép");
     else toast.error("Không sao chép được");

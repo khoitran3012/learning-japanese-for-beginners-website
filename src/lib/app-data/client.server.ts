@@ -278,7 +278,9 @@ function tokenIdentityKey(token: string): string {
             .digest("base64url");
         }
       }
-    } catch {}
+    } catch {
+      // Token không phải JWT hoặc payload hỏng — không sao, bên dưới băm thô.
+    }
   }
   return createHash("sha256").update(token).digest("base64url");
 }

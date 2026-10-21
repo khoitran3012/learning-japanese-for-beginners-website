@@ -5,7 +5,7 @@ const local = new LocalDataProvider();
 const remote = new RemoteDataProvider(local);
 setDataProvider(local);
 
-export function useLocalFirst(online = false) {
+export function preferLocalFirst(online = false) {
   setDataProvider(online ? remote : local);
   return getDataProvider();
 }

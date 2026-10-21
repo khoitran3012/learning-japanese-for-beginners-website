@@ -89,7 +89,7 @@ function Page() {
       window.clearTimeout(handle);
       stopSpeaking();
     };
-  }, [item?.id]);
+  }, [item]);
 
   if (!round.length && !done) {
     return (

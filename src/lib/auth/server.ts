@@ -266,7 +266,7 @@ const trustedOrigins = async (request?: Request): Promise<string[]> => {
 // HTTP on a public hostname cannot store `__Host-` / Secure cookies. Self-host
 // on khoitran3012.ddns.net is usually http:// — flip to regular cookies there.
 // Preview (`*.grok-sandbox.com`) and HTTPS deploys keep the `__Host-` prefix.
-function useInsecureCookies(): boolean {
+function usesInsecureCookies(): boolean {
   if (env("AKARI_INSECURE_COOKIES") === "1" || env("AKARI_SELF_HOST") === "1") return true;
   const publicUrl = env("BETTER_AUTH_URL") || env("AKARI_PUBLIC_ORIGIN");
   if (!publicUrl) return false;
@@ -278,7 +278,7 @@ function useInsecureCookies(): boolean {
   }
 }
 
-const insecureCookies = useInsecureCookies();
+const insecureCookies = usesInsecureCookies();
 const databaseUrl = env("DATABASE_URL");
 
 /**

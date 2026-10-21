@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { HIRAGANA, KATAKANA } from "@/data/kana";
@@ -11,6 +12,8 @@ import { GRAMMAR_N5 } from "@/data/grammar-n5";
 import { GRAMMAR_N4 } from "@/data/grammar-n4";
 import { useProgress, learnedCount, masteredCount } from "@/lib/akari/progress";
 import { isDue } from "@/lib/akari/srs";
+import { drillable, weakItems } from "@/lib/akari/weak";
+import { resolveStudyItem } from "@/lib/dictionary/catalog";
 import type { SrsItem } from "@/lib/akari/types";
 import { cn, todayKey } from "@/lib/utils";
 
@@ -70,6 +73,7 @@ function Page() {
   const graded = srsItems.reduce((acc, x) => acc + x.correct + x.incorrect, 0);
   const recalled = srsItems.reduce((acc, x) => acc + x.correct, 0);
   const recallPct = graded ? Math.round((recalled / graded) * 100) : 0;
+  const weak = weakItems(srs, 12).filter((w) => drillable(w.item.itemType));
 
   const quizPcts = quiz.map((q) => (q.total ? Math.round((q.score / q.total) * 100) : 0));
   const quizAvg = quizPcts.length ? Math.round(quizPcts.reduce((a, b) => a + b, 0) / quizPcts.length) : 0;
@@ -119,6 +123,40 @@ function Page() {
           ) : null}
         </CardContent>
       </Card>
+
+      {weak.length ? (
+        <Card className="mb-4">
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="font-medium">Chỗ yếu</h2>
+                <p className="text-xs text-muted">
+                  {weak.length} mục hay sai · cao nhất {Math.round(weak[0]!.missRate * 100)}% câu sai
+                </p>
+              </div>
+              <Button asChild size="sm">
+                <Link to="/weak">Luyện ngay</Link>
+              </Button>
+            </div>
+            <ul className="flex flex-wrap gap-2">
+              {weak.slice(0, 5).map(({ item, attempts }) => {
+                const r = resolveStudyItem(item.id);
+                return (
+                  <li key={item.id} className="rounded-lg border border-border bg-bg-elevated px-3 py-1.5 text-sm">
+                    <span className="font-jp">{r?.title ?? item.id}</span>
+                    <span className="ml-2 text-xs tabular-nums text-seal">
+                      sai {item.incorrect}/{attempts}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="text-xs text-subtle">
+              Buổi luyện chỉ hỏi lại đúng những mục này và tự cập nhật lịch ôn.
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
         <Card>

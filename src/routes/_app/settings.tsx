@@ -25,7 +25,7 @@ import { applyLocalAiFromSettings } from "@/lib/ai/provider";
 import { probeLocalAi } from "@/lib/ai/local-rpc";
 import { exportAll, importAll, validateBackup, wipeUserData } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
-import { useLocalFirst } from "@/lib/api/api-client";
+import { preferLocalFirst } from "@/lib/api/api-client";
 import type { ThemeMode } from "@/lib/akari/types";
 import { getDbInfo, type DbInfo } from "@/lib/akari/db-info";
 import { hasRecoveryCode, issueRecoveryCode } from "@/lib/akari/recovery";
@@ -51,7 +51,7 @@ function Page() {
   const [passBusy, setPassBusy] = useState(false);
 
   useEffect(() => {
-    useLocalFirst(settings.onlineDictionary);
+    preferLocalFirst(settings.onlineDictionary);
   }, [settings.onlineDictionary]);
 
   useEffect(() => {

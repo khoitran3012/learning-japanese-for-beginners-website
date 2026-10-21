@@ -52,7 +52,6 @@ function ExampleBlock({
   title,
   why,
   children,
-  speak,
   kana,
   romaji,
   vi,
@@ -62,7 +61,6 @@ function ExampleBlock({
   title: string;
   why: string;
   children: ReactNode;
-  speak: string;
   kana: string;
   romaji: string;
   vi: string;
@@ -123,7 +121,6 @@ export function OnKunGuide() {
             kind="on"
             title={TEACH_ON.label}
             why={TEACH_ON.why}
-            speak={TEACH_ON.kana}
             kana={TEACH_ON.kana}
             romaji={TEACH_ON.romaji}
             vi={TEACH_ON.vi}
@@ -135,7 +132,6 @@ export function OnKunGuide() {
             kind="kun"
             title={TEACH_KUN.label}
             why={TEACH_KUN.why}
-            speak={TEACH_KUN.kana}
             kana={TEACH_KUN.kana}
             romaji={TEACH_KUN.romaji}
             vi={TEACH_KUN.vi}

@@ -9,7 +9,7 @@ const LEVEL_RANK: Record<JlptLevel, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 
 
 let practiceCache: KanjiEntry[] | null = null;
 let allCache: KanjiEntry[] | null = null;
-let byLevelCache: Partial<Record<JlptLevel, KanjiEntry[]>> = {};
+const byLevelCache: Partial<Record<JlptLevel, KanjiEntry[]>> = {};
 
 function sortLearn(list: KanjiEntry[]) {
   return [...list].sort((a, b) => {

@@ -29,7 +29,7 @@ function Page() {
         type: item.itemType,
       };
     });
-  }, [due, showRomaji]);
+  }, [due]);
 
   return (
     <div>

@@ -37,6 +37,7 @@ import { Route as AppSongsRouteImport } from './routes/_app/songs'
 import { Route as AppSpeakRouteImport } from './routes/_app/speak'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
 import { Route as AppVocabularyRouteImport } from './routes/_app/vocabulary'
+import { Route as AppWeakRouteImport } from './routes/_app/weak'
 import { Route as AppDictionaryIndexRouteImport } from './routes/_app/dictionary.index'
 import { Route as AppDictionaryIdRouteImport } from './routes/_app/dictionary.$id'
 import { Route as AppGrammarIndexRouteImport } from './routes/_app/grammar.index'
@@ -197,6 +198,11 @@ const AppVocabularyRoute = AppVocabularyRouteImport.update({
   path: '/vocabulary',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWeakRoute = AppWeakRouteImport.update({
+  id: '/weak',
+  path: '/weak',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDictionaryIndexRoute = AppDictionaryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -327,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/speak': typeof AppSpeakRoute
   '/stats': typeof AppStatsRoute
   '/vocabulary': typeof AppVocabularyRouteWithChildren
+  '/weak': typeof AppWeakRoute
   '/dictionary/$id': typeof AppDictionaryIdRoute
   '/grammar/$id': typeof AppGrammarIdRoute
   '/hiragana/$id': typeof AppHiraganaIdRoute
@@ -366,6 +373,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/speak': typeof AppSpeakRoute
   '/stats': typeof AppStatsRoute
+  '/weak': typeof AppWeakRoute
   '/': typeof AppIndexRoute
   '/dictionary/$id': typeof AppDictionaryIdRoute
   '/grammar/$id': typeof AppGrammarIdRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/_app/speak': typeof AppSpeakRoute
   '/_app/stats': typeof AppStatsRoute
   '/_app/vocabulary': typeof AppVocabularyRouteWithChildren
+  '/_app/weak': typeof AppWeakRoute
   '/_app/': typeof AppIndexRoute
   '/_app/dictionary/$id': typeof AppDictionaryIdRoute
   '/_app/grammar/$id': typeof AppGrammarIdRoute
@@ -469,6 +478,7 @@ export interface FileRouteTypes {
     | '/speak'
     | '/stats'
     | '/vocabulary'
+    | '/weak'
     | '/dictionary/$id'
     | '/grammar/$id'
     | '/hiragana/$id'
@@ -508,6 +518,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/speak'
     | '/stats'
+    | '/weak'
     | '/'
     | '/dictionary/$id'
     | '/grammar/$id'
@@ -558,6 +569,7 @@ export interface FileRouteTypes {
     | '/_app/speak'
     | '/_app/stats'
     | '/_app/vocabulary'
+    | '/_app/weak'
     | '/_app/'
     | '/_app/dictionary/$id'
     | '/_app/grammar/$id'
@@ -783,6 +795,13 @@ declare module '@tanstack/react-router' {
       path: '/vocabulary'
       fullPath: '/vocabulary'
       preLoaderRoute: typeof AppVocabularyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/weak': {
+      id: '/_app/weak'
+      path: '/weak'
+      fullPath: '/weak'
+      preLoaderRoute: typeof AppWeakRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dictionary/': {
@@ -1079,6 +1098,7 @@ interface AppRouteChildren {
   AppSpeakRoute: typeof AppSpeakRoute
   AppStatsRoute: typeof AppStatsRoute
   AppVocabularyRoute: typeof AppVocabularyRouteWithChildren
+  AppWeakRoute: typeof AppWeakRoute
   AppIndexRoute: typeof AppIndexRoute
   AppToolsImportDictionaryRoute: typeof AppToolsImportDictionaryRoute
 }
@@ -1109,6 +1129,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSpeakRoute: AppSpeakRoute,
   AppStatsRoute: AppStatsRoute,
   AppVocabularyRoute: AppVocabularyRouteWithChildren,
+  AppWeakRoute: AppWeakRoute,
   AppIndexRoute: AppIndexRoute,
   AppToolsImportDictionaryRoute: AppToolsImportDictionaryRoute,
 }

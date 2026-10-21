@@ -23,6 +23,7 @@ import {
   Sparkles,
   Sprout,
   Star,
+  Target,
   Trophy,
   Type,
 } from "lucide-react";
@@ -56,6 +57,7 @@ export const NAV: NavItem[] = [
   { to: "/quiz", label: "Trắc nghiệm", icon: CircleHelp, group: "Luyện" },
   { to: "/play", label: "Giải trí", icon: Gamepad2, group: "Luyện" },
   { to: "/review", label: "Ôn tập", icon: RotateCcw, group: "Luyện" },
+  { to: "/weak", label: "Luyện chỗ yếu", icon: Target, group: "Luyện" },
   { to: "/leaderboard", label: "Thi đua", icon: Trophy, group: "Tôi" },
   { to: "/stats", label: "Thống kê", icon: BarChart3, group: "Tôi" },
   { to: "/favorites", label: "Yêu thích", icon: Star, group: "Tôi" },

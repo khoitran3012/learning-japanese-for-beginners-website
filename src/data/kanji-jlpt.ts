@@ -5,10 +5,6 @@ import RAW from "@/data/kanji-jlpt.json";
 
 type Row = [string, string, string, string, string, JlptLevel, string, string, string];
 
-function freqOf(level: JlptLevel): number {
-  return { N5: 1, N4: 2, N3: 3, N2: 4, N1: 5 }[level];
-}
-
 /** N5–N1 kanji. Thứ tự học: cấp thấp → cao, theo bài. */
 export const KANJI_JLPT: KanjiEntry[] = (RAW as Row[]).map((row) => {
   const [character, on, kun, meaning, strokes, level, exWord, exKana, exVi] = row;

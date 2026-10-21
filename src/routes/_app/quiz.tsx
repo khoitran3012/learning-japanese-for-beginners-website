@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { QuizCard } from "@/components/quiz-card";
 import { nextQuestion, type KanjiQuizLevel, type QuizKind, type QuizQuestion } from "@/lib/akari/quiz-engine";
 import { questionsClash } from "@/lib/akari/question-unique";
+import { srsOf } from "@/lib/akari/quiz-srs";
 import { addQuizResult } from "@/lib/akari/storage";
 import { useProgress } from "@/lib/akari/progress";
 import { uid } from "@/lib/utils";
 import { syncQuizToLeaderboard } from "@/lib/akari/sync-score";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
-import type { SrsItem } from "@/lib/akari/types";
 
 export const Route = createFileRoute("/_app/quiz")({ component: Page });
 
@@ -35,21 +35,6 @@ const KINDS: { id: QuizKind; label: string }[] = [
   { id: "grammar", label: "Ngữ pháp" },
 ];
 
-function srsOf(q: QuizQuestion): { id: string; type: SrsItem["itemType"] } {
-  if (q.kind === "kanji" || q.kind === "kanji-read" || q.kind === "listen-kanji" || q.kind === "radical") return { id: q.sourceId, type: "kanji" };
-  if (
-    q.kind === "vocab-meaning" ||
-    q.kind === "meaning-vocab" ||
-    q.kind === "listen-vocab" ||
-    q.kind === "vocab-kana" ||
-    q.kind === "cloze"
-  ) {
-    return { id: q.sourceId, type: "vocab" };
-  }
-  if (q.kind === "grammar" || q.kind === "particle") return { id: q.sourceId, type: "grammar" };
-  return { id: q.sourceId, type: "kana" };
-}
-
 function Page() {
   const [kind, setKind] = useState<QuizKind>("mix");
   const [kanjiLv, setKanjiLv] = useState<KanjiQuizLevel>("N5");
@@ -62,6 +47,8 @@ function Page() {
   const scoreRef = useRef(0);
   const countRef = useRef(0);
   const savedRef = useRef({ score: 0, count: 0 });
+  const wrongRef = useRef<QuizQuestion[]>([]);
+  const [wrongList, setWrongList] = useState<QuizQuestion[]>([]);
   const log = useProgress((s) => s.logStudy);
   const mark = useProgress((s) => s.mark);
   const streak = useProgress((s) => s.streak);
@@ -85,6 +72,8 @@ function Page() {
     scoreRef.current = 0;
     countRef.current = 0;
     savedRef.current = { score: 0, count: 0 };
+    wrongRef.current = [];
+    setWrongList([]);
     setScore(0);
     setIndex(0);
     setDone(false);
@@ -105,7 +94,9 @@ function Page() {
       total: dCount,
       durationMs: 0,
     });
-    await log(dCount, minutes);
+    // `mark()` đã ghi từng câu vào thống kê (1 mục, 0.4 phút) — ở đây chỉ cộng
+    // thêm thời gian của phiên, nếu không mỗi câu bị đếm hai lần.
+    await log(0, minutes);
     await syncQuizToLeaderboard({
       score: dScore,
       total: dCount,
@@ -117,6 +108,7 @@ function Page() {
 
   async function finish() {
     await persistDelta(Math.max(1, Math.round((countRef.current - savedRef.current.count) * 0.3)));
+    setWrongList([...wrongRef.current]);
     setDone(true);
   }
 
@@ -149,35 +141,57 @@ function Page() {
         </div>
       ) : null}
       {done ? (
-        <Card className="mx-auto max-w-md">
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-muted">Kết quả phiên này</p>
-            <p className="text-4xl font-semibold tabular-nums">
-              {score}/{countRef.current || 0}
-            </p>
-            <p className="mt-2 text-sm text-muted">
-              {countRef.current
-                ? `${Math.round((score / Math.max(1, countRef.current)) * 100)}% đúng`
-                : "Chưa trả lời câu nào"}
-            </p>
-            <Button
-              className="mt-4"
-              onClick={() => {
-                usedRef.current = new Set();
-                lastQ.current = null;
-                scoreRef.current = 0;
-                countRef.current = 0;
-                savedRef.current = { score: 0, count: 0 };
-                setScore(0);
-                setIndex(0);
-                setDone(false);
-                spawn(kind);
-              }}
-            >
-              Luyện tiếp
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="mx-auto max-w-md space-y-4">
+          <Card>
+            <CardContent className="py-10 text-center">
+              <p className="text-sm text-muted">Kết quả phiên này</p>
+              <p className="text-4xl font-semibold tabular-nums">
+                {score}/{countRef.current || 0}
+              </p>
+              <p className="mt-2 text-sm text-muted">
+                {countRef.current
+                  ? `${Math.round((score / Math.max(1, countRef.current)) * 100)}% đúng`
+                  : "Chưa trả lời câu nào"}
+              </p>
+              <Button
+                className="mt-4"
+                onClick={() => {
+                  usedRef.current = new Set();
+                  lastQ.current = null;
+                  scoreRef.current = 0;
+                  countRef.current = 0;
+                  savedRef.current = { score: 0, count: 0 };
+                  wrongRef.current = [];
+                  setWrongList([]);
+                  setScore(0);
+                  setIndex(0);
+                  setDone(false);
+                  spawn(kind);
+                }}
+              >
+                Luyện tiếp
+              </Button>
+            </CardContent>
+          </Card>
+          {wrongList.length ? (
+            <Card>
+              <CardContent className="space-y-2">
+                <h2 className="font-medium">Xem lại {wrongList.length} câu sai</h2>
+                <ul className="space-y-1.5 text-sm leading-relaxed text-muted">
+                  {wrongList.slice(0, 6).map((w, i) => (
+                    <li key={`${w.id}-${i}`}>{w.explain}</li>
+                  ))}
+                </ul>
+                {wrongList.length > 6 ? (
+                  <p className="text-xs text-subtle">… và {wrongList.length - 6} câu nữa</p>
+                ) : null}
+                <Button asChild size="sm" variant="secondary" className="mt-2">
+                  <Link to="/weak">Luyện chỗ yếu</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
       ) : q ? (
         <div className="space-y-3">
           <QuizCard
@@ -192,6 +206,8 @@ function Page() {
               if (ok) {
                 scoreRef.current += 1;
                 setScore(scoreRef.current);
+              } else {
+                wrongRef.current.push(q);
               }
               const srs = srsOf(q);
               void mark(srs.id, srs.type, ok ? "good" : "forgot");

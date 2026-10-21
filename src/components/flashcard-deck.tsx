@@ -90,7 +90,7 @@ export function FlashcardDeck({
       window.clearTimeout(handle);
       stopSpeaking();
     };
-  }, [card?.id, autoPlay]);
+  }, [card, autoPlay]);
 
   useEffect(() => {
     if (card && check === "idle") inputRef.current?.focus();

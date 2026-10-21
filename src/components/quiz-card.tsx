@@ -81,7 +81,7 @@ export function QuizCard({
       window.clearTimeout(handle);
       stopSpeaking();
     };
-  }, [autoPlay, q.id]);
+  }, [autoPlay, q.id, q.speak]);
 
   useEffect(() => {
     if (canType) inputRef.current?.focus();

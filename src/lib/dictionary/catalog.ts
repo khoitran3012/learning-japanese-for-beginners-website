@@ -11,17 +11,15 @@ import { kanaById } from "@/data/kana";
 import { radicalById } from "@/data/radicals";
 import { buildDictionary, searchLocal } from "./local";
 import { hasKanji } from "@/lib/akari/romaji";
-import type { DictionaryEntry, KanjiEntry } from "@/lib/akari/types";
+import type { DictionaryEntry } from "@/lib/akari/types";
 import type { SearchQuery } from "@/lib/api/data-provider";
 import { allImportedDictionary } from "@/lib/akari/storage";
 
 let builtin: DictionaryEntry[] | null = null;
 let importedCache: DictionaryEntry[] = [];
-let tick = 0;
 const listeners = new Set<() => void>();
 
 function emit() {
-  tick += 1;
   for (const fn of listeners) fn();
 }
 
