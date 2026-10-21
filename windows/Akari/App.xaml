@@ -1,0 +1,11 @@
+<Application x:Class="Akari.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+  <Application.Resources>
+    <SolidColorBrush x:Key="Paper" Color="#F4EFE6"/>
+    <SolidColorBrush x:Key="Ink" Color="#1C1915"/>
+    <SolidColorBrush x:Key="Mute" Color="#6B645C"/>
+    <SolidColorBrush x:Key="Seal" Color="#8C3A3A"/>
+  </Application.Resources>
+</Application>

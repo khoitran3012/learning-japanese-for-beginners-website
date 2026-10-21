@@ -1,0 +1,5 @@
+/tmp/akari-win/Akari.pdb
+/tmp/akari-win/Microsoft.Web.WebView2.Core.xml
+/tmp/akari-win/Microsoft.Web.WebView2.WinForms.xml
+/tmp/akari-win/Microsoft.Web.WebView2.Wpf.xml
+/tmp/akari-win/Akari.exe

@@ -16,11 +16,16 @@ const files = ["pglite.data", "pglite.wasm", "initdb.wasm"];
 function destDirs() {
   const out = [];
   const funcRoot = join(root, ".vercel/output/functions");
-  if (!existsSync(funcRoot)) return out;
-  for (const name of readdirSync(funcRoot)) {
-    const libs = join(funcRoot, name, "_libs");
-    if (existsSync(libs)) out.push(libs);
+  if (existsSync(funcRoot)) {
+    for (const name of readdirSync(funcRoot)) {
+      const libs = join(funcRoot, name, "_libs");
+      if (existsSync(libs)) out.push(libs);
+    }
   }
+  const server = join(root, ".output", "server");
+  if (existsSync(server)) out.push(server);
+  const libs = join(server, "_libs");
+  if (existsSync(libs)) out.push(libs);
   return out;
 }
 

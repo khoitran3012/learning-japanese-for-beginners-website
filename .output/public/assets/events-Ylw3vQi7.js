@@ -1,0 +1,1 @@
+import{r as e}from"./react-SIfiwpqq.js";var t=e({gardenEvents:()=>r}),n={},r={on(e,t){let r=n[e],i=r??new Set;return r||(n[e]=i),i.add(t),()=>{i.delete(t)}},emit(e,t){let r=n[e];if(r)for(let e of r)try{e(t)}catch{}}};export{r as n,t};

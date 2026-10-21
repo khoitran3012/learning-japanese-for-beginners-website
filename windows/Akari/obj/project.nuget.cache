@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "wiSHj1C5MfU=",
+  "success": true,
+  "projectFilePath": "/workspace/windows/Akari/Akari.csproj",
+  "expectedPackageFiles": [
+    "/tmp/nuget/microsoft.net.illink.tasks/8.0.31/microsoft.net.illink.tasks.8.0.31.nupkg.sha512",
+    "/tmp/nuget/microsoft.web.webview2/1.0.2903.40/microsoft.web.webview2.1.0.2903.40.nupkg.sha512",
+    "/tmp/nuget/microsoft.netcore.app.runtime.win-x64/8.0.31/microsoft.netcore.app.runtime.win-x64.8.0.31.nupkg.sha512",
+    "/tmp/nuget/microsoft.windowsdesktop.app.ref/8.0.31/microsoft.windowsdesktop.app.ref.8.0.31.nupkg.sha512",
+    "/tmp/nuget/microsoft.windowsdesktop.app.runtime.win-x64/8.0.31/microsoft.windowsdesktop.app.runtime.win-x64.8.0.31.nupkg.sha512",
+    "/tmp/nuget/microsoft.aspnetcore.app.runtime.win-x64/8.0.31/microsoft.aspnetcore.app.runtime.win-x64.8.0.31.nupkg.sha512",
+    "/tmp/nuget/microsoft.netcore.app.host.win-x64/8.0.31/microsoft.netcore.app.host.win-x64.8.0.31.nupkg.sha512"
+  ],
+  "logs": []
+}
