@@ -158,10 +158,24 @@ async function openPglite() {
     typeof process !== "undefined" ? process.env.AKARI_PGLITE_DIR?.trim() : undefined;
   const memoryOnly =
     typeof process !== "undefined" && process.env.AKARI_PGLITE_MEMORY === "1";
+  // Vercel / Lambda: read-only disk and one isolated instance per lambda, so the
+  // embedded DB cannot persist accounts across requests. The study features are
+  // client-side, so the app still works — but say so instead of failing quietly.
+  const serverless =
+    typeof process !== "undefined" &&
+    (process.env.VERCEL === "1" || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME));
 
   if (!raw || memoryOnly) {
     const pg = await instantiatePglite();
-    console.log("[db] PGLite in-memory" + (memoryOnly ? " (AKARI_PGLITE_MEMORY=1)" : ""));
+    if (serverless && !memoryOnly) {
+      console.warn(
+        "[db] Serverless không có DATABASE_URL — PGLite chỉ nằm trong RAM của từng " +
+          "instance: tài khoản và phiên đăng nhập sẽ mất khi instance tắt. " +
+          "Đặt DATABASE_URL (Neon) để lưu lâu dài.",
+      );
+    } else {
+      console.log("[db] PGLite in-memory" + (memoryOnly ? " (AKARI_PGLITE_MEMORY=1)" : ""));
+    }
     return pg;
   }
 

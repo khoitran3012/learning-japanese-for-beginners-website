@@ -84,3 +84,26 @@ Muốn mở cho nhiều người, tự dùng tên miền công cộng và ghi v�
 Nếu báo `PGlite failed to initialize`: dùng Node 22, xóa thư mục `data/pglite`, chạy lại. Lỗi SQL thì ứng dụng vẫn mở ở chế độ bộ nhớ.
 
 Tiến độ nằm trong IndexedDB. Cài đặt nằm trong localStorage. Sao lưu ở mục **Cài đặt**. Giọng đọc dùng tiếng Nhật của trình duyệt (`ja-JP`). Máy không có giọng đó vẫn học được, chỉ không nghe được.
+
+## Triển khai lên Vercel
+
+Ứng dụng chạy trên Vercel qua Nitro (TanStack Start). `vercel.json` ghim sẵn
+framework `tanstack-start`, và `npm run build` tạo đúng thư mục `.vercel/output`
+mà Vercel dùng — không cần đặt Build Command hay Output Directory.
+
+1. Import repo vào Vercel. Ô **Framework Preset** phải hiện **TanStack Start**.
+2. Thêm biến môi trường ở **Project Settings → Environment Variables**:
+
+| Biến | Bắt buộc | Ý nghĩa |
+| --- | --- | --- |
+| `DATABASE_URL` | Nên có | Chuỗi kết nối Postgres (Neon). Có biến này thì tài khoản, phiên đăng nhập và bảng xếp hạng mới được lưu thật. |
+| `BETTER_AUTH_SECRET` | Có | Chuỗi ngẫu nhiên từ 32 ký tự. Thiếu nó, mỗi instance sinh một khoá riêng nên người dùng bị đăng xuất liên tục. |
+| `BETTER_AUTH_URL` | Không | Chỉ đặt khi dùng tên miền riêng, ví dụ `https://akari.example.com`. Không đặt thì app tự nhận host của Vercel. |
+| `VITE_AUTH_ENABLED` | Không | Đặt `false` để tắt hẳn phần đăng nhập. |
+
+3. Bấm **Deploy**. Nếu có `DATABASE_URL`, bước build tự chạy migration trong
+   `migrations/` vào database đó.
+
+Không có `DATABASE_URL` thì app vẫn mở và học bình thường (tiến độ nằm trong
+trình duyệt), nhưng đăng nhập chỉ là tạm: mỗi lần Vercel tắt instance, tài khoản
+tạo trong RAM sẽ mất.

@@ -155,6 +155,12 @@ export default defineConfig(({ command, isPreview }) => ({
     // Self-host on khoitran3012.ddns.net (or any LAN/DDNS name). Vite 6+
     // otherwise blocks the Host header and the page never reaches auth.
     allowedHosts: true,
+    watch: {
+      // `npm run build` rewrites these. Watching them made the dev server die on
+      // Windows with `EBUSY ... pglite.wasm`, so a deploy build killed the live
+      // preview. Nothing here is source.
+      ignored: ["**/.vercel/**", "**/.output/**", "**/dist/**", "**/data/**"],
+    },
   },
   preview: {
     host: "127.0.0.1",

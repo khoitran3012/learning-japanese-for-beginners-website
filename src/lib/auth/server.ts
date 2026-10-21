@@ -107,6 +107,39 @@ const LOCAL_DEV_ORIGINS: string[] = [
 /** No-IP / self-host domain this app is published on. */
 const SELF_HOST_HOSTS: string[] = ["khoitran3012.ddns.net", "*.ddns.net"];
 
+/**
+ * Hosts this deployment is reachable on under Vercel.
+ *
+ * Vercel routes by Host, so trusting these names is safe. Without them the
+ * dynamic `baseURL` below cannot resolve the request origin on a deploy: it
+ * falls back to `http://localhost:8080`, so the OAuth `redirect_uri` and the
+ * session cookie point at localhost and sign-in silently fails. `BETTER_AUTH_URL`
+ * still wins when the deployer sets it explicitly.
+ */
+function vercelHosts(): string[] {
+  const out = new Set<string>();
+  for (const key of [
+    "VERCEL_PROJECT_PRODUCTION_URL",
+    "VERCEL_BRANCH_URL",
+    "VERCEL_URL",
+  ]) {
+    const raw = env(key);
+    if (!raw) continue;
+    try {
+      out.add(new URL(raw.includes("://") ? raw : `https://${raw}`).hostname);
+    } catch {
+      /* ignore malformed */
+    }
+  }
+  // Preview deployments get a fresh `*.vercel.app` host per commit, and
+  // production can be served from a generated alias as well as the project
+  // domain — the wildcard keeps every one of them resolvable.
+  if (out.size > 0 || env("VERCEL") === "1") out.add("*.vercel.app");
+  return [...out];
+}
+
+const VERCEL_HOSTS = vercelHosts();
+
 function loopbackHost(hostname: string): boolean {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
 }
@@ -155,6 +188,7 @@ const baseURL = explicitBaseURL ?? {
   // (not only the preview wildcard). Also accept the self-host DDNS name.
   allowedHosts: [
     ...previewAllowedHosts,
+    ...VERCEL_HOSTS,
     "localhost",
     "127.0.0.1",
     "[::1]",
@@ -173,9 +207,11 @@ const staticTrustedOrigins: string[] = explicitBaseURL
   : [
       // Host wildcards (matched against Origin's host)
       ...previewAllowedHosts,
+      ...VERCEL_HOSTS,
       ...SELF_HOST_HOSTS,
       // Full-origin wildcards (matched against Origin)
       ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
+      ...VERCEL_HOSTS.flatMap((host) => [`https://${host}`, `http://${host}`]),
       ...LOCAL_DEV_ORIGINS,
       ...extraOrigins,
     ];
@@ -186,6 +222,7 @@ function isSelfHostOrigin(origin: string): boolean {
     return (
       host === "khoitran3012.ddns.net" ||
       host.endsWith(".ddns.net") ||
+      host.endsWith(".vercel.app") ||
       host.endsWith(".grok-sandbox.com")
     );
   } catch {
@@ -244,6 +281,14 @@ function useInsecureCookies(): boolean {
 const insecureCookies = useInsecureCookies();
 const databaseUrl = env("DATABASE_URL");
 
+/**
+ * Client IP for Better Auth's rate limiter. On Vercel (and any reverse proxy)
+ * the socket address is the proxy itself, so without these headers every
+ * visitor shares one per-path bucket and sign-in starts returning 429 for
+ * everybody at once.
+ */
+const IP_HEADERS = ["x-forwarded-for", "x-real-ip", "cf-connecting-ip"];
+
 // Static broker OAuth endpoints (skip OIDC discovery on every sign-in / callback).
 // Discovery would cost an extra network hop to the broker before the popup can
 // even redirect to Google/X — the live-preview popup felt stuck on the app for
@@ -291,11 +336,23 @@ const grokOAuthPlugin = authConfigured
     })
   : null;
 
+// A random per-process secret is fine in dev, fatal on serverless: every lambda
+// instance mints a different one, so a session issued by one instance is
+// rejected by the next. Deploys must set BETTER_AUTH_SECRET.
+const authSecret = env("BETTER_AUTH_SECRET");
+if (!authSecret && (env("VERCEL") === "1" || env("AWS_LAMBDA_FUNCTION_NAME"))) {
+  console.error(
+    "[auth] Thiếu BETTER_AUTH_SECRET trên serverless — mỗi instance sinh một secret " +
+      "riêng nên người dùng sẽ bị đăng xuất ngẫu nhiên. Đặt BETTER_AUTH_SECRET trong " +
+      "Project Settings của Vercel.",
+  );
+}
+
 export const auth = betterAuth({
   baseURL,
   // Deployed apps inject BETTER_AUTH_SECRET. Preview: process-stable secret on
   // globalThis so HMR doesn't invalidate PGLite-backed sessions (see above).
-  secret: env("BETTER_AUTH_SECRET") ?? previewAuthSecret(),
+  secret: authSecret ?? previewAuthSecret(),
   database,
 
   // CSRF / origin check for credentialed auth POSTs (email sign-up/sign-in, …).
@@ -346,6 +403,7 @@ export const auth = betterAuth({
   advanced: insecureCookies
     ? {
         useSecureCookies: false,
+        ipAddress: { ipAddressHeaders: IP_HEADERS },
         defaultCookieAttributes: { secure: false, sameSite: "lax" as const, path: "/" },
         cookies: {
           session_token: { name: SESSION_TOKEN_COOKIE },
@@ -356,6 +414,7 @@ export const auth = betterAuth({
       }
     : {
         useSecureCookies: false,
+        ipAddress: { ipAddressHeaders: IP_HEADERS },
         defaultCookieAttributes: { secure: true, sameSite: "lax" as const, path: "/" },
         cookies: {
           session_token: { name: SESSION_TOKEN_COOKIE },
