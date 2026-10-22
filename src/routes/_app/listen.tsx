@@ -102,7 +102,9 @@ function Page() {
     setPlaying(null);
     const timers: number[] = [];
     if (mode === "dictation") {
-      timers.push(window.setTimeout(() => inputRef.current?.focus(), 80));
+      // Không tự mở bàn phím ảo trên điện thoại — bàn phím làm trang reflow.
+      const coarse = window.matchMedia("(pointer: coarse)").matches;
+      if (!coarse) timers.push(window.setTimeout(() => inputRef.current?.focus(), 80));
     }
     if (allowAuto.current) {
       timers.push(
@@ -297,42 +299,50 @@ function Page() {
               Nghe chậm
             </Button>
           </div>
-          {ttsMsg ? <p className="text-xs text-muted">{ttsMsg}</p> : null}
-          {mode === "choice" && heard && !revealed ? (
-            <div className="rounded-[10px] border border-dashed border-border bg-bg-elevated p-4">
-              <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-subtle">
-                Từ vừa nghe · bấm kanji để xác định
-              </p>
-              <JpText text={item.jp} className="text-2xl" hint={false} />
-              <p className="mt-2 text-xs text-subtle">
-                Trỏ vào chữ kanji — hiện hiragana và Hán-Việt. Nghĩa tiếng Việt chọn ở dưới.
-              </p>
-            </div>
-          ) : null}
+          {/* Chừa sẵn chỗ cho thông báo giọng đọc để không giật khi nó hiện ra. */}
+          <div className="min-h-[34px]">
+            {ttsMsg ? <p className="text-xs leading-relaxed text-muted">{ttsMsg}</p> : null}
+          </div>
           {mode === "choice" ? (
-            <div className="grid gap-2">
-              {item.options.map((o, idx) => {
-                const state = choiceState({
-                  revealed,
-                  isAnswer: idx === item.answerIndex,
-                  picked: picked === idx,
-                });
-                return (
-                  <ChoiceRow
-                    key={`${item.id}-${idx}`}
-                    state={state}
-                    disabled={revealed || !heard}
-                    onClick={() => {
-                      if (picked !== null || !heard) return;
-                      setPicked(idx);
-                      award(idx === item.answerIndex);
-                    }}
-                  >
-                    <span className="text-left text-sm leading-snug text-fg">{o}</span>
-                  </ChoiceRow>
-                );
-              })}
-            </div>
+            <>
+              {/* Chừa sẵn chỗ cho ô “từ vừa nghe” — nó xuất hiện sau khi bấm Nghe. */}
+              <div className="min-h-[136px]">
+                {heard && !revealed ? (
+                  <div className="rounded-[10px] border border-dashed border-border bg-bg-elevated p-4">
+                    <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-subtle">
+                      Từ vừa nghe · bấm kanji để xác định
+                    </p>
+                    <JpText text={item.jp} className="text-2xl" hint={false} />
+                    <p className="mt-2 text-xs text-subtle">
+                      Trỏ vào chữ kanji — hiện hiragana và Hán-Việt. Nghĩa tiếng Việt chọn ở dưới.
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+              <div className="grid content-start gap-2">
+                {item.options.map((o, idx) => {
+                  const state = choiceState({
+                    revealed,
+                    isAnswer: idx === item.answerIndex,
+                    picked: picked === idx,
+                  });
+                  return (
+                    <ChoiceRow
+                      key={`${item.id}-${idx}`}
+                      state={state}
+                      disabled={revealed || !heard}
+                      onClick={() => {
+                        if (picked !== null || !heard) return;
+                        setPicked(idx);
+                        award(idx === item.answerIndex);
+                      }}
+                    >
+                      <span className="text-left text-sm leading-snug text-fg">{o}</span>
+                    </ChoiceRow>
+                  );
+                })}
+              </div>
+            </>
           ) : (
             <div className="space-y-2">
               <Input
@@ -366,40 +376,45 @@ function Page() {
               </p>
             </div>
           )}
-          {revealed ? (
-            <div className="space-y-3">
-              {mode === "dictation" ? (
-                <p className={cn("text-sm font-medium", correct ? "text-forest" : "text-seal")}>
-                  {correct ? "Chính xác!" : checked && verdict === "no" ? "Chưa đúng" : ""}
-                </p>
-              ) : null}
-              <div className="rounded-[10px] border border-border bg-choice p-4 text-left">
-                {item.kind === "sentence" ? <p className="mb-1 text-xs text-subtle">{item.title}</p> : null}
-                <JpText text={item.jp} className="text-xl" hint={false} />
-                <p className="mt-1 font-jp text-sm text-muted">{item.kana}</p>
-                {showRomaji ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.romaji}</p> : null}
-                <p className="mt-1 text-sm leading-relaxed text-fg">{item.vi}</p>
+          {/* Khu vực phản hồi chừa sẵn chiều cao: bấm đáp án xong khối này hiện ra
+              mà trang không nhảy, nút “Tiếp” luôn nằm đúng chỗ. */}
+          <div className="min-h-[284px]">
+            {revealed ? (
+              <div className="space-y-3">
+                {mode === "dictation" ? (
+                  <p className={cn("text-sm font-medium", correct ? "text-forest" : "text-seal")}>
+                    {correct ? "Chính xác!" : checked && verdict === "no" ? "Chưa đúng" : ""}
+                  </p>
+                ) : null}
+                <div className="rounded-[10px] border border-border bg-choice p-4 text-left">
+                  {item.kind === "sentence" ? <p className="mb-1 text-xs text-subtle">{item.title}</p> : null}
+                  <JpText text={item.jp} className="text-xl" hint={false} />
+                  <p className="mt-1 font-jp text-sm text-muted">{item.kana}</p>
+                  {showRomaji ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.romaji}</p> : null}
+                  <p className="mt-1 text-sm leading-relaxed text-fg">{item.vi}</p>
+                </div>
+                {mode === "dictation" && !correct ? (
+                  <p className="text-xs leading-relaxed text-subtle">
+                    Nghe lại câu này một lần nữa rồi hãy sang câu mới — nghe lại ngay là lúc nhớ được
+                    nhất.
+                  </p>
+                ) : null}
+                <Button className="w-full" onClick={advance}>
+                  {i + 1 >= round.length ? "Xem kết quả" : "Tiếp"}
+                </Button>
               </div>
-              {mode === "dictation" && !correct ? (
-                <p className="text-xs leading-relaxed text-subtle">
-                  Nghe lại câu này một lần nữa rồi hãy sang câu mới — nghe lại ngay là lúc nhớ được nhất.
-                </p>
-              ) : null}
-              <Button className="w-full" onClick={advance}>
-                {i + 1 >= round.length ? "Xem kết quả" : "Tiếp"}
-              </Button>
-            </div>
-          ) : (
-            <p className="text-sm text-muted">
-              {mode === "dictation"
-                ? heard
-                  ? "Gõ lại bằng romaji hoặc kana rồi bấm Kiểm tra (hoặc Enter)."
-                  : "Bấm Nghe hoặc Nghe chậm. Trình duyệt chỉ đọc sau khi bạn bấm."
-                : heard
-                  ? "Chọn nghĩa khớp với từ/câu vừa nghe."
-                  : "Bấm Nghe hoặc Nghe chậm. Trình duyệt chỉ đọc sau khi bạn bấm."}
-            </p>
-          )}
+            ) : (
+              <p className="text-sm text-muted">
+                {mode === "dictation"
+                  ? heard
+                    ? "Gõ lại bằng romaji hoặc kana rồi bấm Kiểm tra (hoặc Enter)."
+                    : "Bấm Nghe hoặc Nghe chậm. Trình duyệt chỉ đọc sau khi bạn bấm."
+                  : heard
+                    ? "Chọn nghĩa khớp với từ/câu vừa nghe."
+                    : "Bấm Nghe hoặc Nghe chậm. Trình duyệt chỉ đọc sau khi bạn bấm."}
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

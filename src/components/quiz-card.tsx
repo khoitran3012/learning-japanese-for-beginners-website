@@ -84,7 +84,11 @@ export function QuizCard({
   }, [autoPlay, q.id, q.speak]);
 
   useEffect(() => {
-    if (canType) inputRef.current?.focus();
+    // Không tự mở bàn phím ảo trên điện thoại: bàn phím làm viewport đổi
+    // chiều cao và trang bị “nhảy” mỗi câu. Trên máy tính thì vẫn gõ ngay.
+    if (!canType) return;
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
+    inputRef.current?.focus();
   }, [canType, q.id]);
 
   function choose(idx: number) {
@@ -133,7 +137,7 @@ export function QuizCard({
             {q.speak ? <SpeakButton text={q.speak} kana={q.speak} /> : null}
           </>
         )}
-        {canType && !revealed ? (
+        {canType ? (
           <form
             className="flex gap-2"
             onSubmit={(e) => {
@@ -150,13 +154,16 @@ export function QuizCard({
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
+              disabled={revealed}
             />
-            <Button type="submit">OK</Button>
+            <Button type="submit" disabled={revealed}>
+              OK
+            </Button>
           </form>
         ) : null}
-        {typedOk === true ? <p className="text-sm font-medium text-forest">Đúng — khớp với phần gõ.</p> : null}
-        {typedOk === false ? <p className="text-sm font-medium text-seal">Chưa khớp. Đáp án đúng được tô xanh.</p> : null}
-        <div className="grid gap-2">
+        {/* Vùng đáp án chừa sẵn chiều cao cho tối đa 4 lựa chọn: số lựa chọn
+            khác nhau giữa các câu cũng không làm trang giật. */}
+        <div className="grid min-h-[200px] content-start gap-2">
           {q.options.map((o, idx) => {
             const meaning = (q.optionMeanings?.[idx] ?? "").trim();
             const romaji = (q.optionRomaji?.[idx] ?? "").trim();
@@ -184,14 +191,26 @@ export function QuizCard({
             );
           })}
         </div>
-        {revealed ? (
-          <div className="space-y-3">
-            <p className="text-sm text-muted">{q.explain}</p>
-            <Button onClick={onNext}>
-              {nextLabel ?? (endless ? "Câu tiếp" : index + 1 >= total ? "Xem điểm" : "Câu tiếp")}
-            </Button>
-          </div>
-        ) : null}
+        {/* Khu vực phản hồi luôn chiếm sẵn chỗ: trả lời xong khối này hiện ra
+            mà trang không nhảy, nút “Câu tiếp” luôn nằm đúng chỗ. */}
+        <div className="flex min-h-[116px] flex-col justify-end">
+          {revealed ? (
+            <div className="space-y-3">
+              {typedOk === true ? (
+                <p className="text-sm font-medium text-forest">Đúng — khớp với phần gõ.</p>
+              ) : null}
+              {typedOk === false ? (
+                <p className="text-sm font-medium text-seal">Chưa khớp. Đáp án đúng được tô xanh.</p>
+              ) : null}
+              <p className="max-h-[72px] overflow-y-auto text-sm leading-relaxed text-muted">
+                {q.explain}
+              </p>
+              <Button onClick={onNext}>
+                {nextLabel ?? (endless ? "Câu tiếp" : index + 1 >= total ? "Xem điểm" : "Câu tiếp")}
+              </Button>
+            </div>
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   );

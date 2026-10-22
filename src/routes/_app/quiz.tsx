@@ -124,9 +124,16 @@ function Page() {
         title="Trắc nghiệm"
         description="Mỗi câu random, không trùng từ/chữ vừa hỏi. Gõ hoặc chọn — điểm lưu mỗi 10 câu."
       />
-      <div className="mb-4 flex flex-wrap gap-2">
+      {/* Trên điện thoại 17 nút này chiếm 6 hàng và đẩy câu hỏi xuống dưới
+          màn hình — cho chúng nằm ngang trong một hàng cuộn được. */}
+      <div className="mb-4 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
         {KINDS.map((k) => (
-          <Button key={k.id} variant={kind === k.id ? "default" : "secondary"} onClick={() => setKind(k.id)}>
+          <Button
+            key={k.id}
+            className="shrink-0"
+            variant={kind === k.id ? "default" : "secondary"}
+            onClick={() => setKind(k.id)}
+          >
             {k.label}
           </Button>
         ))}

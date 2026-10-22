@@ -225,22 +225,28 @@ function Page() {
           {!micOn ? (
             <p className="text-xs text-muted">Máy này không nhận mic. Nghe mẫu, nói theo, rồi bấm Nói được.</p>
           ) : null}
-          {transcript ? <p className="text-sm text-fg">Nghe được: {transcript}</p> : null}
-          {micNote ? <p className="text-sm text-muted">{micNote}</p> : null}
-          {revealed ? (
-            <div className="rounded-[10px] border border-border bg-choice p-4">
-              <JpText text={item.word} className="text-3xl" />
-              <p className="mt-1 font-jp text-sm text-muted">{item.kana}</p>
-              {showRomaji ? <p className="text-sm text-accent">{item.romaji}</p> : null}
-              <p className="mt-3 text-xs uppercase tracking-[0.14em] text-subtle">Câu mẫu</p>
-              <JpText text={item.example_sentence} className="mt-1 text-lg" />
-              <p className="mt-1 text-sm text-muted">{item.example_meaning_vi}</p>
-            </div>
-          ) : (
-            <Button type="button" variant="secondary" onClick={() => setRevealed(true)}>
-              Hiện chữ
-            </Button>
-          )}
+          {/* Chừa chỗ cho kết quả nghe/kết luận để không giật khi chúng hiện ra. */}
+          <div className="min-h-[40px]">
+            {transcript ? <p className="text-sm text-fg">Nghe được: {transcript}</p> : null}
+            {micNote ? <p className="text-sm text-muted">{micNote}</p> : null}
+          </div>
+          {/* Chừa sẵn chỗ cho thẻ đáp án: bấm “Hiện chữ” không làm trang giật. */}
+          <div className="flex min-h-[196px] flex-col justify-end">
+            {revealed ? (
+              <div className="rounded-[10px] border border-border bg-choice p-4">
+                <JpText text={item.word} className="text-3xl" />
+                <p className="mt-1 font-jp text-sm text-muted">{item.kana}</p>
+                {showRomaji ? <p className="text-sm text-accent">{item.romaji}</p> : null}
+                <p className="mt-3 text-xs uppercase tracking-[0.14em] text-subtle">Câu mẫu</p>
+                <JpText text={item.example_sentence} className="mt-1 text-lg" />
+                <p className="mt-1 text-sm text-muted">{item.example_meaning_vi}</p>
+              </div>
+            ) : (
+              <Button type="button" variant="secondary" onClick={() => setRevealed(true)}>
+                Hiện chữ
+              </Button>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button type="button" disabled={graded !== null} onClick={() => grade(true)}>
               Nói được

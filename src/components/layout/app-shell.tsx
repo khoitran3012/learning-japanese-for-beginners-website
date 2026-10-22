@@ -111,7 +111,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <TooltipProvider>
-      <div className="min-h-dvh bg-bg text-fg">
+      {/* svh (small viewport height) thay cho dvh: chiều cao trang không đổi
+          khi bàn phím ảo bật lên trên điện thoại, nên không bị giật giao diện. */}
+      <div className="min-h-svh bg-bg text-fg">
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 overflow-y-auto border-r border-border bg-bg-elevated/80 px-3 py-5 backdrop-blur-sm lg:flex lg:flex-col">
           <Link to="/" className="mb-4 flex items-center gap-2.5 px-2">
             <span className="flex size-9 items-center justify-center rounded-[10px] bg-primary font-jp text-lg text-primary-fg">
