@@ -360,6 +360,10 @@ function Page() {
                   </Button>
                 ) : null}
               </div>
+              <p className="text-xs leading-relaxed text-subtle">
+                Mẹo: gõ romaji không dấu cũng được (kuukou = くうこう). Chưa nghe ra thì bấm “Nghe
+                chậm” — nghe hiểu rồi hãy nghe bình thường để luyện tốc độ thật.
+              </p>
             </div>
           )}
           {revealed ? (
@@ -376,6 +380,11 @@ function Page() {
                 {showRomaji ? <p className="mt-1 text-sm leading-relaxed text-muted">{item.romaji}</p> : null}
                 <p className="mt-1 text-sm leading-relaxed text-fg">{item.vi}</p>
               </div>
+              {mode === "dictation" && !correct ? (
+                <p className="text-xs leading-relaxed text-subtle">
+                  Nghe lại câu này một lần nữa rồi hãy sang câu mới — nghe lại ngay là lúc nhớ được nhất.
+                </p>
+              ) : null}
               <Button className="w-full" onClick={advance}>
                 {i + 1 >= round.length ? "Xem kết quả" : "Tiếp"}
               </Button>

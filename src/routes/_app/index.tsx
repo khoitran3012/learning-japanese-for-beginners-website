@@ -14,6 +14,8 @@ import { useProgress, learnedCount } from "@/lib/akari/progress";
 import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
 import { drillable, weakItems } from "@/lib/akari/weak";
+import { buildCoachTips } from "@/lib/akari/coach";
+import { CoachCard } from "@/components/coach-card";
 import { primaryLessonHref } from "@/lib/akari/lesson-links";
 import { HomeGardenCard } from "@/components/garden/GardenChrome";
 import { useGarden } from "@/lib/garden/use-garden";
@@ -53,6 +55,20 @@ function HomePage() {
   const goalPct = Math.min(100, (minutes / dailyGoal) * 100);
   const weakCount = weakItems(srs, 12).filter((w) => drillable(w.item)).length;
   const { garden } = useGarden();
+
+  // Gợi ý học tập: tính từ tiến độ thật nên nội dung đổi theo từng ngày.
+  const tips = buildCoachTips({
+    due,
+    weak: weakCount,
+    minutesToday: minutes,
+    dailyGoal,
+    streak,
+    quizAvg: quizScores.length ? quizPct : null,
+    learnedKana: hira + kata,
+    learnedVocab: vocab,
+    learnedKanji: kanji,
+    hasHistory: Object.keys(srs).length > 0 || completed.size > 0,
+  });
 
   const stats = [
     { label: "Hiragana", value: hira, total: hiraBase },
@@ -100,6 +116,10 @@ function HomePage() {
             <p className="text-2xl font-semibold tabular-nums">{quizPct}%</p>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mb-6">
+        <CoachCard tips={tips} />
       </div>
 
       <div className="mb-6">

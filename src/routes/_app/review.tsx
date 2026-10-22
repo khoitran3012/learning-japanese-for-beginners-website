@@ -41,21 +41,29 @@ function Page() {
       {!ready ? (
         <p className="text-sm text-muted">Đang tải tiến độ…</p>
       ) : (
-        <FlashcardDeck
-          cards={cards}
-          sessionKey={`review-${ready ? "1" : "0"}-${showRomaji ? "ro" : "ja"}`}
-          empty={
-            <EmptyState
-              title="Không có mục đến hạn"
-              description="Học thêm chữ hoặc từ, rồi quay lại đây. Thẻ từ sẽ đưa thẻ mới vào hàng ôn."
-              action={
-                <Button asChild>
-                  <Link to="/flashcards">Mở flashcard</Link>
-                </Button>
-              }
-            />
-          }
-        />
+        <>
+          {due.length > 0 ? (
+            <p className="mb-3 rounded-lg border border-border bg-bg-elevated px-4 py-3 text-sm text-muted">
+              Mẹo: trả lời thật thay vì đoán. Thẻ bạn chỉ “nhớ” sẽ được hẹn lại lâu hơn, thẻ bạn quên sẽ
+              quay lại sớm — đó chính là cách não tự sắp xếp.
+            </p>
+          ) : null}
+          <FlashcardDeck
+            cards={cards}
+            sessionKey={`review-${ready ? "1" : "0"}-${showRomaji ? "ro" : "ja"}`}
+            empty={
+              <EmptyState
+                title="Không có mục đến hạn"
+                description="Học thêm chữ hoặc từ, rồi quay lại đây. Thẻ từ sẽ đưa thẻ mới vào hàng ôn."
+                action={
+                  <Button asChild>
+                    <Link to="/flashcards">Mở flashcard</Link>
+                  </Button>
+                }
+              />
+            }
+          />
+        </>
       )}
     </div>
   );
