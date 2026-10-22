@@ -379,6 +379,11 @@ function Page() {
         description="Mỗi ngày: kanji mới, từ vựng mới, đề 15 câu, rồi ôn đúng chặng lộ trình."
       />
 
+      <p className="mb-6 rounded-lg border border-border bg-bg-elevated px-4 py-3 text-sm leading-relaxed text-muted">
+        Mẹo: làm bài hôm nay trước khi học mới ở đâu khác. Đề này được ghép từ những mục bạn
+        hay trượt, làm mỗi ngày là cách giữ chuỗi đều đặn — 10 phút mỗi ngày vẫn đủ để tiến.
+      </p>
+
       <Card className="mb-6">
         <CardContent className="space-y-3 py-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">Đề ngày {date}</p>

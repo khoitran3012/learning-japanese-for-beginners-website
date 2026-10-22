@@ -131,6 +131,11 @@ function Page() {
           </Button>
         ))}
       </div>
+      <p className="mb-4 rounded-lg border border-border bg-bg-elevated px-4 py-3 text-sm leading-relaxed text-muted">
+        Mẹo: nếu không biết thì cứ bỏ qua hoặc đoán — thẻ sai sẽ quay lại đúng lúc cần, còn đoán
+        mãi thì app tưởng bạn đã nhớ và hẹn thẻ đó ra xa. Sau phiên, xem mục “Xem lại câu sai” rồi
+        luyện lại ở “Luyện chỗ yếu”.
+      </p>
       {kind === "kanji" || kind === "kanji-read" || kind === "listen-kanji" ? (
         <div className="mb-4 flex flex-wrap gap-2">
           {(["N5", "N4", "N3", "N2", "N1", "core", "all"] as const).map((x) => (

@@ -8,7 +8,6 @@ import { useProgress } from "@/lib/akari/progress";
 import { isDue } from "@/lib/akari/srs";
 import { useSettings } from "@/lib/akari/settings";
 import { resolveStudyItem } from "@/lib/dictionary/catalog";
-import { shuffle } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/review")({ component: Page });
 
@@ -19,7 +18,9 @@ function Page() {
   const due = useMemo(() => Object.values(srs).filter(isDue), [srs]);
 
   const cards: FlashCard[] = useMemo(() => {
-    return shuffle(due).map((item) => {
+    // Không xáo trộn lúc render: server và client phải ra cùng thứ tự thẻ.
+    // FlashcardDeck sẽ xáo trộn sau khi hydrate.
+    return due.map((item) => {
       const r = resolveStudyItem(item.id);
       return {
         id: item.id,

@@ -33,7 +33,10 @@ export function FlashcardDeck({
   sessionKey?: string;
   doneExtra?: ReactNode;
 }) {
-  const [deck, setDeck] = useState<FlashCard[]>(() => shuffle(cards));
+  // Bộ thẻ xếp ngẫu nhiên nhưng phải giống nhau ở server và client, nên
+  // lần render đầu giữ nguyên thứ tự; effect bên dưới sẽ xáo trộn sau khi
+  // hydrate (nếu xáo ngay sẽ sinh lỗi hydration do thứ tự khác nhau).
+  const [deck, setDeck] = useState<FlashCard[]>(cards);
   const [i, setI] = useState(0);
   const [flip, setFlip] = useState(false);
   const [done, setDone] = useState(false);
@@ -293,6 +296,10 @@ export function FlashcardDeck({
           Dễ
         </Button>
       </div>
+      <p className="mt-2 text-center text-xs leading-relaxed text-subtle">
+        Quên = quay lại sau ~10 phút · Khó = hẹn lại sớm hơn · Nhớ = lùi 1–3 ngày · Dễ = lùi xa nhất.
+        Phím 1–4 để chấm nhanh.
+      </p>
       <p className="mt-3 text-center text-xs text-muted tabular-nums">
         Còn {deck.length} thẻ · đã lưu {saved}
         <span className="block text-muted">Gõ sai sẽ hiện đáp án rồi tự sang thẻ tiếp (ôn lại sau).</span>

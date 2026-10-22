@@ -19,6 +19,7 @@ import { Route as AppFavoritesRouteImport } from './routes/_app/favorites'
 import { Route as AppFlashcardsRouteImport } from './routes/_app/flashcards'
 import { Route as AppGardenRouteImport } from './routes/_app/garden'
 import { Route as AppGrammarRouteImport } from './routes/_app/grammar'
+import { Route as AppGuideRouteImport } from './routes/_app/guide'
 import { Route as AppHiraganaRouteImport } from './routes/_app/hiragana'
 import { Route as AppKanjiRouteImport } from './routes/_app/kanji'
 import { Route as AppKatakanaRouteImport } from './routes/_app/katakana'
@@ -106,6 +107,11 @@ const AppGardenRoute = AppGardenRouteImport.update({
 const AppGrammarRoute = AppGrammarRouteImport.update({
   id: '/grammar',
   path: '/grammar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGuideRoute = AppGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHiraganaRoute = AppHiraganaRouteImport.update({
@@ -315,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/flashcards': typeof AppFlashcardsRoute
   '/garden': typeof AppGardenRoute
   '/grammar': typeof AppGrammarRouteWithChildren
+  '/guide': typeof AppGuideRoute
   '/hiragana': typeof AppHiraganaRouteWithChildren
   '/kanji': typeof AppKanjiRouteWithChildren
   '/katakana': typeof AppKatakanaRouteWithChildren
@@ -362,6 +369,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof AppFavoritesRoute
   '/flashcards': typeof AppFlashcardsRoute
   '/garden': typeof AppGardenRoute
+  '/guide': typeof AppGuideRoute
   '/leaderboard': typeof AppLeaderboardRoute
   '/listen': typeof AppListenRoute
   '/my-words': typeof AppMyWordsRoute
@@ -407,6 +415,7 @@ export interface FileRoutesById {
   '/_app/flashcards': typeof AppFlashcardsRoute
   '/_app/garden': typeof AppGardenRoute
   '/_app/grammar': typeof AppGrammarRouteWithChildren
+  '/_app/guide': typeof AppGuideRoute
   '/_app/hiragana': typeof AppHiraganaRouteWithChildren
   '/_app/kanji': typeof AppKanjiRouteWithChildren
   '/_app/katakana': typeof AppKatakanaRouteWithChildren
@@ -460,6 +469,7 @@ export interface FileRouteTypes {
     | '/flashcards'
     | '/garden'
     | '/grammar'
+    | '/guide'
     | '/hiragana'
     | '/kanji'
     | '/katakana'
@@ -507,6 +517,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/flashcards'
     | '/garden'
+    | '/guide'
     | '/leaderboard'
     | '/listen'
     | '/my-words'
@@ -551,6 +562,7 @@ export interface FileRouteTypes {
     | '/_app/flashcards'
     | '/_app/garden'
     | '/_app/grammar'
+    | '/_app/guide'
     | '/_app/hiragana'
     | '/_app/kanji'
     | '/_app/katakana'
@@ -669,6 +681,13 @@ declare module '@tanstack/react-router' {
       path: '/grammar'
       fullPath: '/grammar'
       preLoaderRoute: typeof AppGrammarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/guide': {
+      id: '/_app/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof AppGuideRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/hiragana': {
@@ -1080,6 +1099,7 @@ interface AppRouteChildren {
   AppFlashcardsRoute: typeof AppFlashcardsRoute
   AppGardenRoute: typeof AppGardenRoute
   AppGrammarRoute: typeof AppGrammarRouteWithChildren
+  AppGuideRoute: typeof AppGuideRoute
   AppHiraganaRoute: typeof AppHiraganaRouteWithChildren
   AppKanjiRoute: typeof AppKanjiRouteWithChildren
   AppKatakanaRoute: typeof AppKatakanaRouteWithChildren
@@ -1111,6 +1131,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFlashcardsRoute: AppFlashcardsRoute,
   AppGardenRoute: AppGardenRoute,
   AppGrammarRoute: AppGrammarRouteWithChildren,
+  AppGuideRoute: AppGuideRoute,
   AppHiraganaRoute: AppHiraganaRouteWithChildren,
   AppKanjiRoute: AppKanjiRouteWithChildren,
   AppKatakanaRoute: AppKatakanaRouteWithChildren,

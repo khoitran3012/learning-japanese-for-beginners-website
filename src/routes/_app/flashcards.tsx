@@ -15,7 +15,6 @@ import { useSettings } from "@/lib/akari/settings";
 import { isDue } from "@/lib/akari/srs";
 import { findBuiltin, findEntry, resolveStudyItem, useDictionary } from "@/lib/dictionary/catalog";
 import { toHiragana } from "@/lib/akari/kana-util";
-import { shuffle } from "@/lib/utils";
 import type { JlptLevel } from "@/lib/akari/types";
 
 export const Route = createFileRoute("/_app/flashcards")({ component: Page });
@@ -137,7 +136,9 @@ function Page() {
 
     const due = built.filter((c) => !srs[c.id] || isDue(srs[c.id]!));
     const rest = built.filter((c) => srs[c.id] && !isDue(srs[c.id]!));
-    return [...shuffle(due), ...shuffle(rest)].slice(0, perDay);
+    // Thứ tự giữ nguyên lúc render (server và client phải giống nhau) —
+    // FlashcardDeck sẽ xáo trộn sau khi hydrate.
+    return [...due, ...rest].slice(0, perDay);
   }, [deck, kanjiLv, perDay, showRomaji, myWords, srs, dict]);
 
   return (

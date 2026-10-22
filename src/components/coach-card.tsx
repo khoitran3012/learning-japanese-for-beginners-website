@@ -104,7 +104,16 @@ export function CoachCard({ tips }: { tips: CoachTip[] }) {
         </ul>
 
         <div className="border-t border-border pt-4">
-          <h3 className="text-sm font-medium">Mẹo để học dễ hơn</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-medium">Mẹo để học dễ hơn</h3>
+            <DynamicLink
+              to="/guide"
+              className="inline-flex items-center gap-1 text-xs font-medium text-accent underline-offset-4 hover:underline"
+            >
+              Hướng dẫn đầy đủ
+              <ArrowRight className="size-3" />
+            </DynamicLink>
+          </div>
           <ul className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
             {visible.map((tip) => {
               const Icon = STUDY_ICON[tip.id] ?? Sparkles;
