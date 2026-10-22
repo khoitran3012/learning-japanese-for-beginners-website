@@ -41,7 +41,9 @@ export function useOnlineUsers() {
     const load = () => {
       void listOnlineUsers()
         .then((rows) => {
-          if (!cancelled) setUsers(rows);
+          // Server lỗi (hoặc phiên bản deploy khác) có thể trả về undefined —
+          // không được để `users` thành undefined vì nó làm sập cả khung app.
+          if (!cancelled) setUsers(Array.isArray(rows) ? rows : []);
         })
         .catch(() => {
           if (!cancelled) setUsers([]);
